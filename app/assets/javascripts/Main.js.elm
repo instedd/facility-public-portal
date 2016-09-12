@@ -34,18 +34,23 @@ init = (initialModel, Cmd.none)
 -- UPDATE
 
 type Msg = Input String
-         | SuggestionsSuccess (List Suggestion)
+         | SuggestionsSuccess String (List Suggestion)
          | SuggestionsFailed Http.Error
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
                        Input query -> ({model | query = query}, getSuggestions query)
-                       SuggestionsSuccess suggestions -> ({model | suggestions = suggestions}, Cmd.none)
+                       SuggestionsSuccess query suggestions -> if (query == model.query)
+                                                               then
+                                                                   ({model | suggestions = suggestions}, Cmd.none)
+                                                               else
+                                                                   -- Ignore out of order results
+                                                                   (model, Cmd.none)
                        _ -> (model, Cmd.none)
 
 getSuggestions : String -> Cmd Msg
-getSuggestions query = let url = "http://localhost:3000/api/suggest?q=" ++ query
-                       in Task.perform SuggestionsFailed SuggestionsSuccess (Http.get decodeSuggestions url)
+getSuggestions query = let url = "/api/suggest?q=" ++ query
+                       in Task.perform SuggestionsFailed (SuggestionsSuccess query) (Http.get decodeSuggestions url)
 
 decodeSuggestions : Json.Decode.Decoder (List Suggestion)
 decodeSuggestions = Json.Decode.list <| Json.Decode.object2 buildSuggestion
