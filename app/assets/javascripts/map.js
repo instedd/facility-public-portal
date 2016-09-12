@@ -9,7 +9,7 @@ $( document ).ready(function() {
 
   L.tileLayer(tileUrl, {
     maxZoom: 18,
-    id: 'mfr/cit0bzmcg007e2xr0r2b0m1b5',
+    id: 'mapbox/streets-v9',
     accessToken: 'pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ'
   }).addTo(map);
 });
