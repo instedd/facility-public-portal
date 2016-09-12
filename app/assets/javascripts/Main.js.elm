@@ -8,8 +8,6 @@ import Html.Events
 import Json.Decode exposing ((:=))
 import Task
 
-
-
 main : Program Never
 main =
   App.program
@@ -34,12 +32,14 @@ init = (initialModel, Cmd.none)
 -- UPDATE
 
 type Msg = Input String
+
          | SuggestionsSuccess String (List Suggestion)
          | SuggestionsFailed Http.Error
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
                        Input query -> ({model | query = query}, getSuggestions query)
+
                        SuggestionsSuccess query suggestions -> if (query == model.query)
                                                                then
                                                                    ({model | suggestions = suggestions}, Cmd.none)
@@ -67,6 +67,9 @@ subscriptions model = Sub.none
 
 -- VIEW
 
+view : Model -> Html Msg
+view model = div [] [ mapControlView model ]
+
 mapControlView : Model -> Html Msg
 mapControlView model = div [ class "map-control" ]
                            [ div [ class "row header" ]
@@ -74,16 +77,19 @@ mapControlView model = div [ class "map-control" ]
                                  , h1 [] [ text "Ministry of Health" ]
                                  ]
                            , div [ class "row" ]
-                                 [ input  [ value model.query
-                                          , Html.Events.onInput Input ] [] ]
-                           , div [ class "row suggestions" ]
-                                 [ li []
-                                      (List.map suggestionView model.suggestions)
-                                 ]
+                                 ([ input  [ value model.query
+                                           , placeholder "Search health facilities"
+                                           , Html.Events.onInput Input ]
+                                          []
+                                  ] ++ suggestionsView model)
                            ]
 
-suggestionView : Suggestion -> Html Msg
-suggestionView s = li [ class "suggestion" ] [ text s.name ]
+suggestionsView : Model -> List (Html Msg)
+suggestionsView model = if model.query == ""
+                        then []
+                        else if List.isEmpty model.suggestions
+                             then [div [class "row"] [text "Nothing found..."]]
+                             else List.map suggestionView model.suggestions
 
-view : Model -> Html Msg
-view model = div [] [ mapControlView model ]
+suggestionView : Suggestion -> Html Msg
+suggestionView s = div [ class "row suggestion" ] [ text s.name ]

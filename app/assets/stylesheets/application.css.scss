@@ -36,11 +36,18 @@ body {
   overflow: hidden;
   border-radius: 4px;
 
+  &>.row {
+    padding: 0 15px 0 15px;
+
+    &>:last-child {
+      margin-bottom: 0;
+    }
+  }
+
   .header {
     background-color: #0F47AF;
     color: white;
     padding: 10px 0 15px 15px;
-    padding-top: 10px;
 
     span {
       text-transform: uppercase;
@@ -52,6 +59,10 @@ body {
       font-size: 21px;
       margin: 0;
     }
+  }
+
+  input {
+    font-size: 18px;
   }
 
   .suggestions {
