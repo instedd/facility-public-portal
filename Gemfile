@@ -20,6 +20,7 @@ gem 'jbuilder', '~> 2.5'
 
 source 'https://rails-assets.org' do
   gem 'rails-assets-materialize'
+  gem 'rails-assets-leaflet'
 end
 
 group :development, :test do

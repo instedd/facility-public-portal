@@ -2,6 +2,7 @@ port module Main exposing (..)
 
 import Html exposing (..)
 import Html.App as App
+import Html.Attributes exposing (..)
 
 main : Program Never
 main =
@@ -37,5 +38,15 @@ subscriptions model = Sub.none
 
 -- VIEW
 
+mapControlView : Model -> Html Msg
+mapControlView model = div [ class "map-control" ]
+                           [ div [ class "row header" ]
+                                 [ span [] [ text "Ethiopia" ]
+                                 , h1 [] [ text "Ministry of Health" ]
+                                 ]
+                           , div [ class "row" ]
+                                 [ text "Search!" ]
+                           ]
+
 view : Model -> Html Msg
-view model = div [] [ p [] [ text (toString model)] ]
+view model = div [] [ mapControlView model ]
