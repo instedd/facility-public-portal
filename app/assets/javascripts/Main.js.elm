@@ -32,7 +32,6 @@ init = (initialModel, Cmd.none)
 -- UPDATE
 
 type Msg = Input String
-
          | SuggestionsSuccess String (List Suggestion)
          | SuggestionsFailed Http.Error
 
