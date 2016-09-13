@@ -1,11 +1,13 @@
 port module Main exposing (..)
 
-import Http
+import Geolocation
 import Html exposing (..)
 import Html.App as App
 import Html.Attributes exposing (..)
 import Html.Events
+import Http
 import Json.Decode exposing ((:=))
+import String
 import Task
 
 main : Program Never
@@ -21,23 +23,33 @@ main =
 -- MODEL
 
 type alias Suggestion = { kind : String, name : String }
-type alias Model = { query : String, suggestions : List Suggestion }
+type alias Model = { query : String
+                   , suggestions : List Suggestion
+                   , userLocation : Maybe (Float,Float)
+                   }
 
 initialModel : Model
-initialModel = { query = "", suggestions = [] }
+initialModel = { query = ""
+               , suggestions = []
+               , userLocation = Nothing
+               }
 
 init : (Model, Cmd Msg)
-init = (initialModel, Cmd.none)
+init = (initialModel, Task.perform LocationFailed LocationDetected Geolocation.now)
 
 -- UPDATE
 
 type Msg = Input String
          | SuggestionsSuccess String (List Suggestion)
          | SuggestionsFailed Http.Error
+         | LocationDetected Geolocation.Location
+         | LocationFailed Geolocation.Error
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
-                       Input query -> ({model | query = query}, getSuggestions query)
+                       Input query ->
+                           let model' = {model | query = query}
+                           in (model', getSuggestions model')
 
                        SuggestionsSuccess query suggestions -> if (query == model.query)
                                                                then
@@ -45,11 +57,21 @@ update msg model = case msg of
                                                                else
                                                                    -- Ignore out of order results
                                                                    (model, Cmd.none)
-                       _ -> (model, Cmd.none)
 
-getSuggestions : String -> Cmd Msg
-getSuggestions query = let url = "/api/suggest?q=" ++ query
-                       in Task.perform SuggestionsFailed (SuggestionsSuccess query) (Http.get decodeSuggestions url)
+                       LocationDetected location ->
+                          ({model | userLocation = Just (location.latitude, location.longitude)}, Cmd.none)
+
+                       _ ->
+                           (model, Cmd.none)
+
+getSuggestions : Model -> Cmd Msg
+getSuggestions model = let url = String.concat [ "/api/suggest?"
+                                               , "q=", model.query
+                                               , model.userLocation
+                                                   |> Maybe.map (\ (lat,lng) -> "&lat=" ++ (toString lat) ++ "&lng=" ++ (toString lng))
+                                                   |> Maybe.withDefault ""
+                                               ]
+                       in Task.perform SuggestionsFailed (SuggestionsSuccess model.query) (Http.get decodeSuggestions url)
 
 decodeSuggestions : Json.Decode.Decoder (List Suggestion)
 decodeSuggestions = Json.Decode.list <| Json.Decode.object2 buildSuggestion

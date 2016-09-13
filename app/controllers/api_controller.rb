@@ -3,8 +3,16 @@ class ApiController < ActionController::Base
 
   def suggest
     query = params[:q]
-    results = ElasticsearchService.instance.facilities_around(9.002507, 38.747244)
 
+    lat = params[:lat]
+    lng = params[:lng]
+
+    if !lat || !lng
+      # Center of Addis Ababa
+      lat, lng = 8.979787, 38.758917
+    end
+
+    results = ElasticsearchService.instance.facilities_around(lat, lng)
     render json: results
   end
 end
