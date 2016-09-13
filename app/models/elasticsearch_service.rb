@@ -48,10 +48,15 @@ class ElasticsearchService
     })
   end
 
-  def facilities_around(lat, lng)
+  def search_facilities(query, lat, lng)
     result = client.search({
       index: @index_name,
       body: {
+        query: {
+          match_phrase_prefix: {
+            name: query
+          }
+        },
         sort: {
           _geo_distance: {
             position: {

@@ -12,7 +12,7 @@ class ApiController < ActionController::Base
       lat, lng = 8.979787, 38.758917
     end
 
-    results = ElasticsearchService.instance.facilities_around(lat, lng)
+    results = ElasticsearchService.instance.search_facilities(query, lat, lng)
     render json: results
   end
 end
