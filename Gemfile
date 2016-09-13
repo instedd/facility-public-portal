@@ -18,6 +18,8 @@ gem 'jbuilder', '~> 2.5'
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 
+gem 'elasticsearch'
+
 source 'https://rails-assets.org' do
   gem 'rails-assets-materialize'
   gem 'rails-assets-leaflet'
