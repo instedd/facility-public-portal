@@ -3,15 +3,8 @@ class ApiController < ActionController::Base
 
   def suggest
     query = params[:q]
+    results = ElasticsearchService.instance.facilities_around(9.002507, 38.747244)
 
-    render json: [
-             { kind: "facility", name: "facility #{query} 1"},
-             { kind: "facility", name: "facility #{query} 2"},
-             { kind: "facility", name: "facility #{query} 3"},
-
-             { kind: "service", name: "service #{query} 1"},
-             { kind: "service", name: "service #{query} 2"},
-             { kind: "service", name: "service #{query} 3"},
-           ]
+    render json: results
   end
 end

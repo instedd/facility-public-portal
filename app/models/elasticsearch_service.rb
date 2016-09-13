@@ -18,7 +18,11 @@ class ElasticsearchService
       body: {
         facility: {
           properties: {
-            name: {type: 'string'},
+            name: {
+              type: 'string',
+              index: 'analyzed',
+              analyzer: "standard"
+            },
             position: {type: 'geo_point'}
           }
         }
@@ -27,7 +31,7 @@ class ElasticsearchService
   end
 
   def index_facility(facility)
-    raise "Invalid facility" unless is_valid?(facility)
+    return false unless is_valid?(facility)
 
     client.index({
       index: @index_name,
@@ -35,13 +39,33 @@ class ElasticsearchService
       id: facility["id"],
       body: {
         name: facility["name"],
-        type: facility["type"],
+        kind: facility["facility_type"],
         position: {
           lat: facility["lat"],
-          lon: facility["lng"]
+          lon: facility["long"]
         }
       }
     })
+  end
+
+  def facilities_around(lat, lng)
+    result = client.search({
+      index: @index_name,
+      body: {
+        sort: {
+          _geo_distance: {
+            position: {
+              lat: lat,
+              lon: lng
+            },
+            order: "asc",
+            unit:  "km",
+            distance_type: "plane"
+          }
+        }
+    }})
+
+    result["hits"]["hits"].map { |r| r["_source"] }
   end
 
   def self.instance
@@ -56,7 +80,7 @@ class ElasticsearchService
   private
 
   def is_valid?(facility)
-    ["name", "type", "lat", "lng"].none? { |field| facility[field].empty? }
+    ["name", "facility_type", "lat", "long"].none? { |field| facility[field].blank? }
   end
 
 end

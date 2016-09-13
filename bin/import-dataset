@@ -17,6 +17,12 @@ unless File.exists? filename
   exit 1
 end
 
+imported = 0
+
 CSV.foreach(filename, headers: true) do |row|
-  ElasticsearchService.instance.index_facility(row)
+  if ElasticsearchService.instance.index_facility(row)
+    imported += 1
+  end
 end
+
+puts "Imported #{imported} facilities"
