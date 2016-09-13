@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+APP_PATH = File.expand_path('../../config/application',  __dir__)
+require_relative '../config/boot'
+require_relative '../config/environment'
+
+require 'csv'
+
+unless ARGV.size == 1
+  puts "Usage: #{__FILE__} dataset.csv"
+  exit 1
+end
+
+filename = ARGV[0]
+
+unless File.exists? filename
+  puts "Could not open file #{filename}"
+  exit 1
+end
+
+CSV.foreach(filename, headers: true) do |row|
+  ElasticsearchService.instance.index_facility(row)
+end
