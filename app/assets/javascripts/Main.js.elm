@@ -94,7 +94,7 @@ view : Model -> Html Msg
 view model = div [] [ mapControlView model ]
 
 mapControlView : Model -> Html Msg
-mapControlView model = div [ class "map-control" ]
+mapControlView model = div [ class "map-control z-depth-1" ]
                            [ div [ class "row header" ]
                                  [ span [] [ text "Ethiopia" ]
                                  , h1 [] [ text "Ministry of Health" ]
