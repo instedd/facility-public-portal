@@ -8,8 +8,10 @@ import Html.Events
 import Http
 import Js exposing (..)
 import Json.Decode exposing ((:=))
+import Process
 import String
 import Task
+import Time
 
 type alias Flags = { fakeUserPosition : Bool
                    , initialPosition : LatLng
@@ -41,14 +43,20 @@ init flags = let model = { query = ""
                          , suggestions = []
                          , userLocation = Nothing
                          }
-             in if flags.fakeUserPosition
-                    then update (LocationDetected flags.initialPosition) model
-                    else (model, geolocateUser)
+                 cmd =  if flags.fakeUserPosition
+                        then fakeGeolocateUser flags.initialPosition
+                        else geolocateUser
+             in (model, cmd)
+
+fakeGeolocateUser : LatLng -> Cmd Msg
+fakeGeolocateUser pos = Process.sleep (1.5 * Time.second)
+                      |> Task.map (always pos)
+                      |> Task.perform LocationFailed LocationDetected
 
 geolocateUser : Cmd Msg
 geolocateUser = Geolocation.now
-                |> Task.map (\location -> (location.latitude, location.longitude))
-                |> Task.perform LocationFailed LocationDetected
+              |> Task.map (\location -> (location.latitude, location.longitude))
+              |> Task.perform LocationFailed LocationDetected
 
 -- UPDATE
 

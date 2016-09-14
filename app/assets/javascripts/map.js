@@ -19,6 +19,7 @@ $(document).ready(function() {
     displayUserLocation: function (o) {
       var latLng = [o.lat, o.lng];
       map.panTo(latLng);
+      map.setZoom(14);
 
       var popup = L.popup({closeButton: false})
                    .setLatLng(latLng)
