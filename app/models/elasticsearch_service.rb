@@ -7,11 +7,11 @@ class ElasticsearchService
     @index_name = index_name
   end
 
-  def init_index
+  def setup_index
     client.indices.create index: @index_name
   end
 
-  def init_mappings
+  def setup_mappings
     client.indices.put_mapping({
       index: @index_name,
       type: 'facility',
