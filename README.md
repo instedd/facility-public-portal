@@ -1,24 +1,61 @@
-# README
+# Facility Public Portal
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## Development
 
-Things you may want to cover:
+### Elm
 
-* Ruby version
+To compile Elm code, first install Node.js (tested on LTS v4.5.0).
+This can be done either via Homebrew or by [downloading the binaries](https://nodejs.org/en/download/), extracting them and adding the corresponding entries to your shell's `PATH` variable.
 
-* System dependencies
+Then install Elm and this project's dependencies:
 
-* Configuration
+```
+$ npm install -g elm
+$ elm package install
+```
 
-* Database creation
+Once  installed, Elm files will be automatically compiled as part of the Rails asset pipeline.
 
-* Database initialization
+### Elasticsearch and PostgreSQL
 
-* How to run the test suite
+This project needs Elasticsearch v2.4 and PostgreSQL v9.5 (**TODO** do we really need Postgres?).
+Both can be run in development using Docker:
 
-* Services (job queues, cache servers, search engines, etc.)
+```
+$ docker-compose up -d
+```
 
-* Deployment instructions
+Data from these containers is preserved between restarts. To stop any running instance **and delete data volumes**, use:
 
-* ...
+```
+$ docker-compose down -v
+```
+
+To see logs for the running containers use `docker-compose logs -f`.
+
+As a one-time setup, create the development database and initialize Elasticsearch indices with the following commands:
+
+```
+$ bin/rake db:setup
+$ bin/rake elasticsearch:setup
+```
+
+After that, CSV facilities information can be indexed as follows:
+
+```
+$ bin/import-dataset "Ethiopian Master Facility Registry_sites.csv"
+```
+
+### Ruby and Rails
+
+This project uses Ruby v2.3.1. All Ruby dependencies (including Rails 5) can be installed using Bundler:
+
+```
+$ bin/bundle install --path=.bundle
+```
+
+After that, the application can be run in development mode as follows:
+
+```
+$ bin/rails s
+```
