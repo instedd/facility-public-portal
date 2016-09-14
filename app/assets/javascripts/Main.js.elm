@@ -11,9 +11,13 @@ import Json.Decode exposing ((:=))
 import String
 import Task
 
-main : Program Never
+type alias Flags = { fakeUserPosition : Bool
+                   , initialPosition : LatLng
+                   }
+
+main : Program Flags
 main =
-  App.program
+  App.programWithFlags
     { init = init
     , view = view
     , update = update
@@ -22,28 +26,36 @@ main =
 
 
 -- MODEL
+type alias LatLng = (Float, Float)
 
 type alias Suggestion = { kind : String, name : String }
+
 type alias Model = { query : String
                    , suggestions : List Suggestion
-                   , userLocation : Maybe (Float,Float)
+                   , userLocation : Maybe LatLng
                    }
 
-initialModel : Model
-initialModel = { query = ""
-               , suggestions = []
-               , userLocation = Nothing
-               }
 
-init : (Model, Cmd Msg)
-init = (initialModel, Task.perform LocationFailed LocationDetected Geolocation.now)
+init : Flags -> (Model, Cmd Msg)
+init flags = let model = { query = ""
+                         , suggestions = []
+                         , userLocation = Nothing
+                         }
+             in if flags.fakeUserPosition
+                    then update (LocationDetected flags.initialPosition) model
+                    else (model, geolocateUser)
+
+geolocateUser : Cmd Msg
+geolocateUser = Geolocation.now
+                |> Task.map (\location -> (location.latitude, location.longitude))
+                |> Task.perform LocationFailed LocationDetected
 
 -- UPDATE
 
 type Msg = Input String
          | SuggestionsSuccess String (List Suggestion)
          | SuggestionsFailed Http.Error
-         | LocationDetected Geolocation.Location
+         | LocationDetected LatLng
          | LocationFailed Geolocation.Error
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -59,9 +71,8 @@ update msg model = case msg of
                                                                    -- Ignore out of order results
                                                                    model ! [Cmd.none]
 
-                       LocationDetected location ->
-                          let pos = (location.latitude, location.longitude)
-                          in { model | userLocation = Just pos } ! [Js.displayUserLocation pos]
+                       LocationDetected pos ->
+                          { model | userLocation = Just pos } ! [Js.displayUserLocation pos]
 
                        _ ->
                            (model, Cmd.none)

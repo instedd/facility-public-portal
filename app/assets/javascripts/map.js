@@ -1,9 +1,11 @@
-$( document ).ready(function() {
-  var elm = Elm.Main.embed(document.getElementById('elm'));
+$(document).ready(function() {
+  var elmContainer = document.getElementById('elm');
+
+  var elm = Elm.Main.embed(elmContainer, FPP.settings);
 
   var map = L.map('map', {
     zoomControl: false
-  }).setView([51.505, -0.09], 13);
+  }).setView(FPP.settings.initialPosition, 13);
 
   var tileUrl = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={accessToken}';
 
