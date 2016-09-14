@@ -1,4 +1,4 @@
-port module Main exposing (..)
+module Main exposing (..)
 
 import Geolocation
 import Html exposing (..)
@@ -6,6 +6,7 @@ import Html.App as App
 import Html.Attributes exposing (..)
 import Html.Events
 import Http
+import Js exposing (..)
 import Json.Decode exposing ((:=))
 import String
 import Task
@@ -53,13 +54,14 @@ update msg model = case msg of
 
                        SuggestionsSuccess query suggestions -> if (query == model.query)
                                                                then
-                                                                   ({model | suggestions = suggestions}, Cmd.none)
+                                                                   { model | suggestions = suggestions } ! [Cmd.none]
                                                                else
                                                                    -- Ignore out of order results
-                                                                   (model, Cmd.none)
+                                                                   model ! [Cmd.none]
 
                        LocationDetected location ->
-                          ({model | userLocation = Just (location.latitude, location.longitude)}, Cmd.none)
+                          let pos = (location.latitude, location.longitude)
+                          in { model | userLocation = Just pos } ! [Js.displayUserLocation pos]
 
                        _ ->
                            (model, Cmd.none)

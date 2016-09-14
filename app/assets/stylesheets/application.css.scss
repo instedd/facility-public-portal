@@ -69,3 +69,10 @@ body {
      list-style: none;
   }
 }
+
+.leaflet-popup-content-wrapper {
+  border-radius: 3px;
+  font-size: 15px;
+  font-weight: bold;
+  font-family: 'Roboto', sans-serif;
+}
