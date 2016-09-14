@@ -18,6 +18,10 @@ $( document ).ready(function() {
       var latLng = [o.lat, o.lng];
       map.panTo(latLng);
 
+      var popup = L.popup({closeButton: false})
+                   .setLatLng(latLng)
+                   .setContent('You are here');
+
       var userMarker = L.layerGroup([
         L.circleMarker(latLng, {
           radius: 20,
@@ -32,13 +36,11 @@ $( document ).ready(function() {
           fillColor: '#F44336',
           opacity: 1,
           fillOpacity: 1
-        }),
-        L.popup({closeButton: false})
-          .setLatLng(latLng)
-          .setContent('You are here')
+        }).bindPopup(popup),
       ]);
 
       userMarker.addTo(map);
+      popup.openOn(map);
     }
   };
 
