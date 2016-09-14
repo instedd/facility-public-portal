@@ -4,3 +4,12 @@ services:
     image: elasticsearch:2.4
     ports:
       - "9200:9200"
+
+  postgres:
+    image: postgres:9.5
+    environment:
+      POSTGRES_PASSWORD: fpp
+      POSTGRES_USER: fpp
+      POSTGRES_DB: fpp
+    ports:
+      - "5555:5432"
