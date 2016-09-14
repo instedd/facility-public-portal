@@ -101,6 +101,7 @@ mapControlView model = div [ class "map-control z-depth-1" ]
                                  ]
                            , div [ class "row" ]
                                  ([ input  [ value model.query
+                                           , autofocus True
                                            , placeholder "Search health facilities"
                                            , Html.Events.onInput Input ]
                                           []
