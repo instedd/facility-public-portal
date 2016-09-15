@@ -51,7 +51,7 @@ class ElasticsearchService
     })
   end
 
-  def search_services(query)
+  def suggest_services(query)
     result = client.search({
       index: @index_name,
       type: 'service',
@@ -66,11 +66,12 @@ class ElasticsearchService
     result["hits"]["hits"].map { |r| r["_source"] }
   end
 
-  def search_facilities(query, lat, lng)
+  def suggest_facilities(query, lat, lng, count = 5)
     result = client.search({
       index: @index_name,
       type: 'facility',
       body: {
+        size: count,
         query: {
           match_phrase_prefix: {
             name: query

@@ -13,8 +13,8 @@ class ApiController < ActionController::Base
     end
 
     results = {
-      facilities: ElasticsearchService.instance.search_facilities(query, lat, lng),
-      services: ElasticsearchService.instance.search_services(query)
+      facilities: ElasticsearchService.instance.suggest_facilities(query, lat, lng),
+      services: ElasticsearchService.instance.suggest_services(query)
     }
     render json: results
   end
