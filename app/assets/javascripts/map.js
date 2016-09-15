@@ -47,7 +47,7 @@ $(document).ready(function() {
     }
   };
 
-  elm.ports.commands.subscribe(function(msg) {
+  elm.ports.jsCommand.subscribe(function(msg) {
     commands[msg[0]](msg[1]);
   });
 });
