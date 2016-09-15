@@ -7,7 +7,7 @@ import Html.Attributes exposing (..)
 import Html.Events
 import Http
 import Js exposing (..)
-import Json.Decode exposing ((:=))
+import Json.Decode as Decode exposing ((:=))
 import Process
 import String
 import Task
@@ -70,15 +70,15 @@ type Msg = Input String
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
                        Input query ->
-                           let model' = {model | query = query}
-                           in (model', getSuggestions model')
+                           let model' = { model | query = query }
+                           in ({ model | query = query }, getSuggestions model')
 
-                       SuggestionsSuccess query suggestions -> if (query == model.query)
-                                                               then
-                                                                   { model | suggestions = suggestions } ! [Cmd.none]
-                                                               else
-                                                                   -- Ignore out of order results
-                                                                   model ! [Cmd.none]
+                       SuggestionsSuccess query suggestions ->
+                           if (query == model.query)
+                           then
+                              { model | suggestions = suggestions } ! [Cmd.none]
+                           else
+                               model ! [Cmd.none] -- Ignore out of order results
 
                        LocationDetected pos ->
                           { model | userLocation = Just pos } ! [Js.displayUserLocation pos]
@@ -95,21 +95,21 @@ getSuggestions model = let url = String.concat [ "/api/suggest?"
                                                ]
                        in Task.perform SuggestionsFailed (SuggestionsSuccess model.query) (Http.get decodeSuggestions url)
 
-decodeSuggestions : Json.Decode.Decoder (List Suggestion)
-decodeSuggestions = Json.Decode.object2 (++)
-                                        ("facilities" := Json.Decode.list decodeFacility)
-                                        ("services"   := Json.Decode.list decodeService)
+decodeSuggestions : Decode.Decoder (List Suggestion)
+decodeSuggestions = Decode.object2 (++)
+                                   ("facilities" := Decode.list decodeFacility)
+                                   ("services"   := Decode.list decodeService)
 
-decodeService : Json.Decode.Decoder Suggestion
-decodeService = Json.Decode.object2 Service
-                                    ("name"     := Json.Decode.string)
-                                    ("count"    := Json.Decode.int)
+decodeService : Decode.Decoder Suggestion
+decodeService = Decode.object2 Service
+                               ("name"     := Decode.string)
+                               ("count"    := Decode.int)
 
-decodeFacility : Json.Decode.Decoder Suggestion
-decodeFacility = Json.Decode.object3 Facility
-                                     ("name"     := Json.Decode.string)
-                                     ("kind"     := Json.Decode.string)
-                                     ("services" := Json.Decode.list Json.Decode.string)
+decodeFacility : Decode.Decoder Suggestion
+decodeFacility = Decode.object3 Facility
+                                ("name"     := Decode.string)
+                                ("kind"     := Decode.string)
+                                ("services" := Decode.list Decode.string)
 
 -- SUBSCRIPTIONS
 
