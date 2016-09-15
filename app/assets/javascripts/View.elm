@@ -2,13 +2,20 @@ module View exposing (view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events
+import Html.Events as Events
 import Messages exposing (..)
 import Models exposing (..)
+import Routing
 import String
 
 view : Model -> Html Msg
-view model = div [] [ mapControlView model ]
+view model = div [ id "container"]
+                 [ mapControlView model
+                 , mapCanvas
+                 ]
+
+mapCanvas : Html Msg
+mapCanvas = div [ id "map" ] []
 
 mapControlView : Model -> Html Msg
 mapControlView model = div [ class "map-control z-depth-1" ]
@@ -20,7 +27,7 @@ mapControlView model = div [ class "map-control z-depth-1" ]
                                  ([ input  [ value model.query
                                            , autofocus True
                                            , placeholder "Search health facilities"
-                                           , Html.Events.onInput Input ]
+                                           , Events.onInput Input ]
                                           []
                                   ] ++ suggestionsView model)
                            ]
@@ -34,8 +41,9 @@ suggestionsView model = if model.query == ""
 
 suggestionView : Suggestion -> Html Msg
 suggestionView s = case s of
-                       Facility name kind services ->
-                           div [ class "row suggestion facility" ]
+                       Facility id name kind services ->
+                           div [ class "row suggestion facility"
+                               , Events.onClick <| Navigate (Routing.FacilityRoute id) ]
                                [ text name ]
                        Service name count ->
                            div [ class "row suggestion service" ]

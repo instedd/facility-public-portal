@@ -16,14 +16,9 @@
  *= require_self
  */
 
-html, body, #container, #map {
-    height: 100%;
-    width: 100%;
-}
-
-body {
-    padding: 0;
-    margin: 0;
+html, body, #container, #elm, #map {
+  height: 100%;
+  width: 100%;
 }
 
 .map-control {
@@ -65,8 +60,18 @@ body {
     font-size: 18px;
   }
 
-  .suggestion.service {
-    font-weight: bold;
+  .suggestion {
+    margin: 0;
+    padding: 10px 0 10px 10px;
+    cursor: default;
+
+    &:hover {
+      background-color: #FAFAFA;
+    }
+
+    &.service {
+      font-weight: bold;
+    }
   }
 }
 

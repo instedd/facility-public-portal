@@ -1,12 +1,14 @@
-module Update exposing (update)
+module Update exposing (update, urlUpdate)
 
 import Commands exposing (..)
 import Http
 import Json.Decode exposing (..)
 import Messages exposing (..)
 import Models exposing (..)
+import Navigation
 import String
 import Task
+import Routing exposing (..)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
@@ -24,8 +26,14 @@ update msg model = case msg of
                        LocationDetected pos ->
                           { model | userLocation = Just pos } ! [Commands.displayUserLocation pos]
 
+                       Navigate route ->
+                           (model, Routing.navigate route)
+
                        _ ->
                            (model, Cmd.none)
+
+urlUpdate : Result String Route -> Model -> (Model, Cmd Msg)
+urlUpdate result model = ({ model | route = Routing.routeFromResult result }, Cmd.none)
 
 getSuggestions : Model -> Cmd Msg
 getSuggestions model = let url = String.concat [ "/api/suggest?"
@@ -47,7 +55,8 @@ decodeService = object2 Service
                         ("count" := int)
 
 decodeFacility : Decoder Suggestion
-decodeFacility = object3 Facility
+decodeFacility = object4 Facility
+                         ("id"       := int)
                          ("name"     := string)
                          ("kind"     := string)
                          ("services" := list string)

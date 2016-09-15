@@ -30,6 +30,7 @@ def each_fility(filename)
   CSV.foreach(filename, headers: true) do |row|
     if is_valid? row
       facility = {
+        id: row["resmap-id"].to_i,
         name: row["name"],
         kind: row["facility_type"],
         position: {

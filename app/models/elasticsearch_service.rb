@@ -18,7 +18,11 @@ class ElasticsearchService
       body: {
         facility: {
           properties: {
+            id: {
+              type: 'long',
+            },
             name: {
+              type: 'string',
               type: 'string',
               index: 'analyzed',
               analyzer: "standard"

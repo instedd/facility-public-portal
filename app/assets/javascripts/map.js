@@ -1,25 +1,27 @@
 $(document).ready(function() {
   var elmContainer = document.getElementById('elm');
-
   var elm = Elm.Main.embed(elmContainer, FPP.settings);
 
-  var map = L.map('map', {
-    zoomControl: false
-  }).setView(FPP.settings.initialPosition, 13);
-
-  var tileUrl = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={accessToken}';
-
-  L.tileLayer(tileUrl, {
-    maxZoom: 18,
-    id: 'mapbox/streets-v9',
-    accessToken: 'pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ'
-  }).addTo(map);
-
   var commands = {
+    initializeMap: function(o) {
+      var latLng = [o.lat, o.lng];
+      FPP.map = L.map('map', {
+        zoomControl: false
+      }).setView(latLng, 13);
+
+      var tileUrl = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={accessToken}';
+
+      L.tileLayer(tileUrl, {
+        maxZoom: 18,
+        id: 'mapbox/streets-v9',
+        accessToken: 'pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ'
+      }).addTo(FPP.map);
+    },
+
     displayUserLocation: function (o) {
       var latLng = [o.lat, o.lng];
-      map.panTo(latLng);
-      map.setZoom(14);
+      FPP.map.panTo(latLng);
+      FPP.map.setZoom(14);
 
       var popup = L.popup({closeButton: false})
                    .setLatLng(latLng)
@@ -42,8 +44,8 @@ $(document).ready(function() {
         }).bindPopup(popup),
       ]);
 
-      userMarker.addTo(map);
-      popup.openOn(map);
+      userMarker.addTo(FPP.map);
+      popup.openOn(FPP.map);
     }
   };
 
