@@ -31,26 +31,41 @@ class ElasticsearchService
   end
 
   def index_facility(facility)
-    return false unless is_valid?(facility)
-
     client.index({
       index: @index_name,
       type: 'facility',
       id: facility["id"],
-      body: {
-        name: facility["name"],
-        kind: facility["facility_type"],
-        position: {
-          lat: facility["lat"],
-          lon: facility["long"]
-        }
-      }
+      body: facility
     })
+  end
+
+  def index_service(service)
+    client.index({
+      index: @index_name,
+      type: 'service',
+      body: service
+    })
+  end
+
+  def search_services(query)
+    result = client.search({
+      index: @index_name,
+      type: 'service',
+      body: {
+        query: {
+          match_phrase_prefix: {
+            name: query
+          }
+        },
+    }})
+
+    result["hits"]["hits"].map { |r| r["_source"] }
   end
 
   def search_facilities(query, lat, lng)
     result = client.search({
       index: @index_name,
+      type: 'facility',
       body: {
         query: {
           match_phrase_prefix: {
@@ -80,12 +95,6 @@ class ElasticsearchService
 
   def self.client
     self.instance.client
-  end
-
-  private
-
-  def is_valid?(facility)
-    ["name", "facility_type", "lat", "long"].none? { |field| facility[field].blank? }
   end
 
 end

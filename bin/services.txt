@@ -1,0 +1,39 @@
+Basic client services
+Client records
+Basic laboratory tests
+Advanced laboratory tests
+Diagnostic equipment
+Child health services
+Family planning services
+Anc services
+Pmtct services
+Malaria services
+Maternal health services
+Emergency obstetric care
+Hiv testing and counseling services
+Non communicable disease  ncd
+Tuberculosis services
+Tb treatment
+Neglected tropical disease (nTd)
+Regular electricity
+Power source
+Regular water
+Water source
+Visual and auditory privacy
+Latrine type
+Regular communication
+Communication equipment
+Ambulance
+Avg travel time amb stat
+Medical specialist
+General practicioner
+Health officer (integrated emergency surgical officer)
+Bsc nurse
+Diploma nurse
+Specialized nurse
+Diploma midwife
+Pharmacy professionals
+Med lab professionals
+Other paramedics
+Health extension worker
+Supportive staff

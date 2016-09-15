@@ -30,7 +30,8 @@ main =
 -- MODEL
 type alias LatLng = (Float, Float)
 
-type alias Suggestion = { kind : String, name : String }
+type Suggestion = Facility String String (List String)
+                | Service String Int
 
 type alias Model = { query : String
                    , suggestions : List Suggestion
@@ -95,12 +96,20 @@ getSuggestions model = let url = String.concat [ "/api/suggest?"
                        in Task.perform SuggestionsFailed (SuggestionsSuccess model.query) (Http.get decodeSuggestions url)
 
 decodeSuggestions : Json.Decode.Decoder (List Suggestion)
-decodeSuggestions = Json.Decode.list <| Json.Decode.object2 buildSuggestion
-                                                            ("kind" := Json.Decode.string)
-                                                            ("name" := Json.Decode.string)
+decodeSuggestions = Json.Decode.object2 (++)
+                                        ("facilities" := Json.Decode.list decodeFacility)
+                                        ("services"   := Json.Decode.list decodeService)
 
-buildSuggestion : String -> String -> Suggestion
-buildSuggestion kind name = { kind = kind, name = name}
+decodeService : Json.Decode.Decoder Suggestion
+decodeService = Json.Decode.object2 Service
+                                    ("name"     := Json.Decode.string)
+                                    ("count"    := Json.Decode.int)
+
+decodeFacility : Json.Decode.Decoder Suggestion
+decodeFacility = Json.Decode.object3 Facility
+                                     ("name"     := Json.Decode.string)
+                                     ("kind"     := Json.Decode.string)
+                                     ("services" := Json.Decode.list Json.Decode.string)
 
 -- SUBSCRIPTIONS
 
@@ -135,4 +144,10 @@ suggestionsView model = if model.query == ""
                              else List.map suggestionView model.suggestions
 
 suggestionView : Suggestion -> Html Msg
-suggestionView s = div [ class "row suggestion" ] [ text s.name ]
+suggestionView s = case s of
+                       Facility name kind services ->
+                           div [ class "row suggestion facility" ]
+                               [ text name ]
+                       Service name count ->
+                           div [ class "row suggestion service" ]
+                               [ text <| String.concat [ name, " (", toString count, " facilities)" ]]
