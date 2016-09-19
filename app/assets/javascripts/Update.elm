@@ -5,10 +5,9 @@ import Http
 import Json.Decode exposing (..)
 import Messages exposing (..)
 import Models exposing (..)
-import Navigation
+import Routing exposing (..)
 import String
 import Task
-import Routing exposing (..)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
@@ -42,21 +41,13 @@ getSuggestions model = let url = String.concat [ "/api/suggest?"
                                                    |> Maybe.map (\ (lat,lng) -> "&lat=" ++ (toString lat) ++ "&lng=" ++ (toString lng))
                                                    |> Maybe.withDefault ""
                                                ]
-                       in Task.perform SuggestionsFailed (SuggestionsSuccess model.query) (Http.get decodeSuggestions url)
+                       in Task.perform SuggestionsFailed (SuggestionsSuccess model.query) (Http.get suggestionsDecoder url)
 
-decodeSuggestions : Decoder (List Suggestion)
-decodeSuggestions = object2 (++)
-                            ("facilities" := list decodeFacility)
-                            ("services"   := list decodeService)
-
-decodeService : Decoder Suggestion
-decodeService = object2 Service
-                        ("name"  := string)
-                        ("count" := int)
-
-decodeFacility : Decoder Suggestion
-decodeFacility = object4 Facility
-                         ("id"       := int)
-                         ("name"     := string)
-                         ("kind"     := string)
-                         ("services" := list string)
+suggestionsDecoder : Decoder (List Suggestion)
+suggestionsDecoder = object2 (++)
+                             ("facilities" := list (object4 Facility ("id"       := int)
+                                                                     ("name"     := string)
+                                                                     ("kind"     := string)
+                                                                     ("services" := list string)))
+                             ("services"   := list (object2 Service ("name"  := string)
+                                                                    ("count" := int)))
