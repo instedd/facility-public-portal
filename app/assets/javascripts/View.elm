@@ -28,11 +28,14 @@ mapControlView model = div [ class "map-control z-depth-1" ]
                            ]
 
 inputForm : Model -> Html Msg
-inputForm model = input  [ value model.query
-                         , autofocus True
-                         , placeholder "Search health facilities"
-                         , Events.onInput Input ]
-                         []
+inputForm model = Html.form [ Events.onSubmit Search ]
+                            [ input  [ value model.query
+                                     , autofocus True
+                                     , placeholder "Search health facilities"
+                                     , Events.onInput Input
+                                     ]
+                                     []
+                            ]
 
 suggestionsView : Model -> List (Html Msg)
 suggestionsView model = if model.query == ""
@@ -43,10 +46,10 @@ suggestionsView model = if model.query == ""
 
 suggestionView : Suggestion -> Html Msg
 suggestionView s = case s of
-                       Facility id name kind services ->
+                       F {id,name,kind,services} ->
                            div [ class "row suggestion facility"
                                , Events.onClick <| Navigate (Routing.FacilityRoute id) ]
                                [ text name ]
-                       Service name count ->
+                       S {name,count} ->
                            div [ class "row suggestion service" ]
                                [ text <| String.concat [ name, " (", toString count, " facilities)" ]]

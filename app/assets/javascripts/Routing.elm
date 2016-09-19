@@ -1,34 +1,35 @@
-module Routing exposing (..)
+module Routing exposing (Route(..), parser, navigate, searchPath, routeFromResult)
 
-import String
+import Dict exposing (Dict)
+import Http
+import Models exposing (SearchSpec)
 import Navigation
+import String
 import UrlParser exposing (..)
 
 type Route
-    = SearchRoute
+    = SearchRoute SearchSpec
     | FacilityRoute Int
     | NotFoundRoute
 
-matchers : Parser (Route -> a) a
-matchers = oneOf [ format SearchRoute (s "")
-                 , format FacilityRoute (s "facilities" </> int)
-                 ]
+
+parser : Navigation.Parser (Result String Route)
+parser = Navigation.makeParser locationParser
 
 navigate : Route -> Cmd msg
 navigate route = let url = case route of
-                             SearchRoute -> "/"
+                             SearchRoute params -> searchPath "/" params
                              FacilityRoute id -> "/facilities/" ++ (toString id)
                              NotFoundRoute -> "/not-found"
                  in
                      Navigation.newUrl url
 
-hashParser : Navigation.Location -> Result String Route
-hashParser location = location.pathname         -- corresponds to document.location.pathname
-                    |> String.dropLeft 1        -- remove / at the beginning
-                    |> parse identity matchers  -- parse
-
-parser : Navigation.Parser (Result String Route)
-parser = Navigation.makeParser hashParser
+searchPath : String -> SearchSpec -> String
+searchPath base params = String.concat [ base
+                                       , params.q
+                                         |> Maybe.map (\ q -> "?q=" ++ q)
+                                         |> Maybe.withDefault ""
+                                       ]
 
 routeFromResult : Result String Route -> Route
 routeFromResult result = case result of
@@ -36,3 +37,36 @@ routeFromResult result = case result of
                                route
                            Err string ->
                                NotFoundRoute
+
+-- PRIVATE
+
+{-
+  Match against path of document location, and optionally add
+  information from query string to the parsed route.
+-}
+matchers : Parser (((Dict String String) -> Route) -> a) a
+matchers = let
+              makeSearchRoute params      = SearchRoute { q = Dict.get "q" params }
+              makeFacilityRoute id params = FacilityRoute id
+           in oneOf [ format makeSearchRoute (s "")
+                    , format makeFacilityRoute (s "facilities" </> int)
+                    ]
+
+parseQuery : String -> Dict String String
+parseQuery query = query                                        -- "?a=foo&b=bar&baz"
+                  |> String.dropLeft 1                          -- "a=foo&b=bar&baz"
+                  |> String.split "&"                           -- ["a=foo","b=bar","baz"]
+                  |> List.map (\p -> case String.split "=" p of
+                                         key::value::[] ->
+                                             [(key, Http.uriDecode value)]
+                                         _              ->
+                                             [])                -- [[("a", "foo")], [("b", "bar")], []]
+                  |> List.concat                                -- [("a", "foo"), ("b", "bar")]
+                  |> Dict.fromList
+
+locationParser : Navigation.Location -> Result String Route
+locationParser location = let query = parseQuery location.search
+                          in location.pathname           -- corresponds to document.location.pathname
+                             |> String.dropLeft 1        -- remove / at the beginning
+                             |> parse identity matchers  -- parse
+                             |> Result.map (\p -> p query)

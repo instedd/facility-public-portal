@@ -1,19 +1,25 @@
 module Update exposing (update, urlUpdate)
 
-import Commands exposing (..)
-import Http
-import Json.Decode exposing (..)
+import Commands
 import Messages exposing (..)
 import Models exposing (..)
 import Routing exposing (..)
-import String
-import Task
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
                        Input query ->
                            let model' = { model | query = query }
-                           in ({ model | query = query }, getSuggestions model')
+                           in (model', Commands.getSuggestions model')
+
+                       Search ->
+                           (model, Routing.navigate <| Routing.SearchRoute { q = Just model.query })
+
+                       SearchSuccess facilities ->
+                          ({model | results = Just facilities}, Cmd.none)
+
+                       SearchFailed e ->
+                           -- TODO
+                           (model, Cmd.none)
 
                        SuggestionsSuccess query suggestions ->
                            if (query == model.query)
@@ -22,32 +28,26 @@ update msg model = case msg of
                            else
                                model ! [Cmd.none] -- Ignore out of order results
 
+                       SuggestionsFailed e ->
+                           -- TODO
+                           (model, Cmd.none)
+
                        LocationDetected pos ->
                           { model | userLocation = Just pos } ! [Commands.displayUserLocation pos]
+
+                       LocationFailed e ->
+                           -- TODO
+                           (model, Cmd.none)
 
                        Navigate route ->
                            (model, Routing.navigate route)
 
-                       _ ->
-                           (model, Cmd.none)
-
 urlUpdate : Result String Route -> Model -> (Model, Cmd Msg)
-urlUpdate result model = ({ model | route = Routing.routeFromResult result }, Cmd.none)
+urlUpdate result model = let
+                             route  = Routing.routeFromResult result
+                         in case route of
+                             SearchRoute params ->
+                                 (model, Commands.search params)
 
-getSuggestions : Model -> Cmd Msg
-getSuggestions model = let url = String.concat [ "/api/suggest?"
-                                               , "q=", model.query
-                                               , model.userLocation
-                                                   |> Maybe.map (\ (lat,lng) -> "&lat=" ++ (toString lat) ++ "&lng=" ++ (toString lng))
-                                                   |> Maybe.withDefault ""
-                                               ]
-                       in Task.perform SuggestionsFailed (SuggestionsSuccess model.query) (Http.get suggestionsDecoder url)
-
-suggestionsDecoder : Decoder (List Suggestion)
-suggestionsDecoder = object2 (++)
-                             ("facilities" := list (object4 Facility ("id"       := int)
-                                                                     ("name"     := string)
-                                                                     ("kind"     := string)
-                                                                     ("services" := list string)))
-                             ("services"   := list (object2 Service ("name"  := string)
-                                                                    ("count" := int)))
+                             _ ->
+                                 (model, Cmd.none)

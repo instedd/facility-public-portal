@@ -1,10 +1,14 @@
 port module Commands exposing (..)
 
+import Decoders exposing (..)
 import Geolocation
+import Http
 import Json.Encode exposing (..)
 import Messages exposing (..)
 import Models exposing (..)
 import Process
+import Routing
+import String
 import Task
 import Time
 
@@ -32,3 +36,16 @@ geolocateUser : Cmd Msg
 geolocateUser = Geolocation.now
               |> Task.map (\location -> (location.latitude, location.longitude))
               |> Task.perform LocationFailed LocationDetected
+
+getSuggestions : Model -> Cmd Msg
+getSuggestions model = let url = String.concat [ "/api/suggest?"
+                                               , "q=", model.query
+                                               , model.userLocation
+                                                   |> Maybe.map (\ (lat,lng) -> "&lat=" ++ (toString lat) ++ "&lng=" ++ (toString lng))
+                                                   |> Maybe.withDefault ""
+                                               ]
+                       in Task.perform SuggestionsFailed (SuggestionsSuccess model.query) (Http.get Decoders.suggestions url)
+
+search : SearchSpec -> Cmd Msg
+search params = let url = Routing.searchPath "/api/search" params
+                in Task.perform SearchFailed SearchSuccess (Http.get Decoders.search url)

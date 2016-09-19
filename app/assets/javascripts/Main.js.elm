@@ -21,11 +21,12 @@ main = Navigation.programWithFlags Routing.parser
                                    , urlUpdate = Update.urlUpdate
                                    }
 
+-- TODO: navigate to parsed route here
 init : Flags -> Result String Routing.Route -> (Model, Cmd Msg)
-init flags route = let model = { route = Routing.routeFromResult route
-                               , query = ""
+init flags route = let model = { query = ""
                                , suggestions = []
                                , userLocation = Nothing
+                               , results = Nothing
                                }
                        cmds  = [ Commands.initializeMap flags.initialPosition
                                , if flags.fakeUserPosition
