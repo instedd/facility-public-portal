@@ -43,7 +43,10 @@ $ bin/rake elasticsearch:setup
 After that, CSV facilities information can be indexed as follows:
 
 ```
+$ curl -XPUT localhost:9200/fpp/_settings -d '{"index" : {"refresh_interval" : "-1"} }'
 $ bin/import-dataset "Ethiopian Master Facility Registry_sites.csv"
+$ curl -XPUT localhost:9200/fpp/_settings -d '{"index" : {"refresh_interval" : "1s"} }'
+$ curl -XPOST localhost:9200/fpp/_forcemerge?max_num_segments=5
 ```
 
 ### Ruby and Rails
