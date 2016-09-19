@@ -70,9 +70,12 @@ searchResults model = case model.results of
                           Just facilities -> List.map facility facilities
 
 facility : Facility -> Html Msg
-facility f = div [ class "row entry result" ]
+facility f = div [ class "row entry result"
+                 , Events.onClick <| Navigate (Routing.FacilityRoute f.id)
+                 ]
                  [ text f.name
-                 , span [ class "kind" ] [ text f.kind]]
+                 , span [ class "kind" ] [ text f.kind]
+                 ]
 
 inspector : Model -> Html Msg
 inspector model = div [ id "inspector"
