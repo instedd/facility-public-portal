@@ -15,7 +15,7 @@ update msg model = case msg of
                            (model, Routing.navigate <| Routing.SearchRoute { q = Just model.query })
 
                        SearchSuccess facilities ->
-                          ({model | results = Just facilities}, Cmd.none)
+                          ({model | results = Just facilities, suggestions = Nothing}, Cmd.none)
 
                        SearchFailed e ->
                            -- TODO
@@ -24,7 +24,7 @@ update msg model = case msg of
                        SuggestionsSuccess query suggestions ->
                            if (query == model.query)
                            then
-                              { model | suggestions = suggestions } ! [Cmd.none]
+                              { model | suggestions = Just suggestions } ! [Cmd.none]
                            else
                                model ! [Cmd.none] -- Ignore out of order results
 

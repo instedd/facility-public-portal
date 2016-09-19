@@ -17,7 +17,7 @@ type alias Service = { name : String
 type Suggestion = F Facility | S Service
 
 type alias Model = { query : String
-                   , suggestions : List Suggestion
+                   , suggestions : Maybe (List Suggestion)
                    , userLocation : Maybe LatLng
                    , results : Maybe (List Facility)
                    }

@@ -56,21 +56,36 @@ html, body, #container, #elm, #map {
     }
   }
 
-  input {
-    font-size: 18px;
+  .search {
+    margin-bottom: 0;
+    input {
+      font-size: 18px;
+    }
   }
 
-  .suggestion {
-    margin: 0;
-    padding: 10px 0 10px 10px;
-    cursor: default;
+  .listing {
+    .entry {
+      margin: 0;
+      padding: 10px 0 10px 10px;
+      cursor: default;
 
-    &:hover {
-      background-color: #FAFAFA;
-    }
+      &:hover {
+        background-color: #FAFAFA;
+      }
 
-    &.service {
-      font-weight: bold;
+      &.suggestion.service {
+        font-weight: bold;
+      }
+
+      &.result {
+        font-size: 15px;
+
+        .kind {
+          font-size: 14px;
+          display: block;
+          color: grey;
+        }
+      }
     }
   }
 }

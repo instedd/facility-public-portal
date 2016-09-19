@@ -24,7 +24,7 @@ main = Navigation.programWithFlags Routing.parser
 -- TODO: navigate to parsed route here
 init : Flags -> Result String Routing.Route -> (Model, Cmd Msg)
 init flags route = let model = { query = ""
-                               , suggestions = []
+                               , suggestions = Nothing
                                , userLocation = Nothing
                                , results = Nothing
                                }
