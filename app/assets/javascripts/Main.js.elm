@@ -22,7 +22,7 @@ main = Navigation.programWithFlags Routing.parser
                                    }
 
 init : Flags -> Result String Routing.Route -> (Model, Cmd Msg)
-init flags route = let model = { route = (Routing.routeFromResult route)
+init flags route = let model = { route = Routing.routeFromResult route
                                , query = ""
                                , suggestions = []
                                , userLocation = Nothing
