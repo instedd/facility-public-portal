@@ -23,7 +23,6 @@ class ElasticsearchService
             },
             name: {
               type: 'string',
-              type: 'string',
               index: 'analyzed',
               analyzer: "standard"
             },
