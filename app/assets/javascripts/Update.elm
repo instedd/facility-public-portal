@@ -12,7 +12,8 @@ update msg model = case msg of
                            in (model', Commands.getSuggestions model')
 
                        Search ->
-                           (model, Routing.navigate <| Routing.SearchRoute { q = Just model.query })
+                           let newRoute = Routing.SearchRoute { q = Just model.query, latLng = model.userLocation }
+                           in (model, Routing.navigate <| newRoute)
 
                        SearchSuccess facilities ->
                           ({model | results = Just facilities, suggestions = Nothing}, Cmd.none)

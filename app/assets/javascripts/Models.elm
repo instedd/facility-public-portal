@@ -2,7 +2,9 @@ module Models exposing (..)
 
 type alias LatLng = (Float, Float)
 
-type alias SearchSpec = { q : Maybe String }
+type alias SearchSpec = { q : Maybe String
+                        , latLng : Maybe LatLng
+                        }
 
 type alias Facility = { id : Int
                       , name : String

@@ -38,12 +38,8 @@ geolocateUser = Geolocation.now
               |> Task.perform LocationFailed LocationDetected
 
 getSuggestions : Model -> Cmd Msg
-getSuggestions model = let url = String.concat [ "/api/suggest?"
-                                               , "q=", model.query
-                                               , model.userLocation
-                                                   |> Maybe.map (\ (lat,lng) -> "&lat=" ++ (toString lat) ++ "&lng=" ++ (toString lng))
-                                                   |> Maybe.withDefault ""
-                                               ]
+getSuggestions model = let params = { q = Just model.query, latLng = model.userLocation }
+                           url    = Routing.searchPath "/api/suggest" params
                        in Task.perform SuggestionsFailed (SuggestionsSuccess model.query) (Http.get Decoders.suggestions url)
 
 search : SearchSpec -> Cmd Msg
