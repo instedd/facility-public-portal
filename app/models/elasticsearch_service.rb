@@ -50,6 +50,49 @@ class ElasticsearchService
     })
   end
 
+  def search_facilities(params)
+    validate_search(params)
+
+    search_body = {
+      size: 50,
+      query: {},
+      sort: {}
+    }
+
+    if params[:q]
+      search_body[:query][:match_phrase_prefix] = { name: params[:q] }
+    end
+
+    if params[:service]
+    end
+
+    if params[:lat] && params[:lng]
+      search_body[:sort] = {
+        _geo_distance: {
+          position: {
+            lat: params[:lat],
+            lon: params[:lng]
+          },
+          order: "asc",
+          unit:  "km",
+          distance_type: "plane"
+        }
+      }
+    end
+
+    if params[:count]
+      search_body[:size] = params[:count]
+    end
+
+    result = client.search({
+      index: @index_name,
+      type: 'facility',
+      body: search_body
+    })
+
+    result["hits"]["hits"].map { |r| r["_source"] }
+  end
+
   def suggest_services(query)
     result = client.search({
       index: @index_name,
@@ -99,6 +142,12 @@ class ElasticsearchService
 
   def self.client
     self.instance.client
+  end
+
+  private
+
+  def validate_search(params)
+    # TODO
   end
 
 end

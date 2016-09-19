@@ -24,13 +24,15 @@ mapControlView model = div [ class "map-control z-depth-1" ]
                                  , h1 [] [ text "Ministry of Health" ]
                                  ]
                            , div [ class "row" ]
-                                 ([ input  [ value model.query
-                                           , autofocus True
-                                           , placeholder "Search health facilities"
-                                           , Events.onInput Input ]
-                                          []
-                                  ] ++ suggestionsView model)
+                                 (inputForm model :: suggestionsView model)
                            ]
+
+inputForm : Model -> Html Msg
+inputForm model = input  [ value model.query
+                         , autofocus True
+                         , placeholder "Search health facilities"
+                         , Events.onInput Input ]
+                         []
 
 suggestionsView : Model -> List (Html Msg)
 suggestionsView model = if model.query == ""

@@ -1,6 +1,10 @@
 class ApiController < ActionController::Base
   protect_from_forgery with: :exception
 
+  def search
+    render json: ElasticsearchService.instance.search_facilities(params)
+  end
+
   def suggest
     query = params[:q]
 
