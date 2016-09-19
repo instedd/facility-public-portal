@@ -6,7 +6,6 @@ default: &default
 docker_local: &docker_local
   <<: *default
   host: localhost
-  port: 5555
   user: fpp
   password: fpp
 
