@@ -71,24 +71,17 @@ $(document).ready(function() {
     },
 
     fitContent: function() {
-      var bounds = [];
+      var controlWidth = document.getElementById("map-control").offsetWidth; // TODO: review for mobile
+      var group = L.featureGroup(FPP.facilityLayerGroup.getLayers());
 
       if (FPP.userMarker) {
-        var marker = FPP.userMarker.getLayers()[0];
-        bounds.push(marker.getLatLng());
+        group.addLayer(FPP.userMarker.getLayers()[0]);
       }
 
-      if (FPP.facilityLayerGroup) {
-        var markers = FPP.facilityLayerGroup.getLayers();
-        for(var i = 0; i < markers.length; i++) {
-          var layer = markers[i];
-          bounds.push(layer.getLatLng());
-        }
-      }
-
-      FPP.map.fitBounds(bounds);
+      FPP.map.fitBounds(group.getBounds(), { paddingTopLeft: [controlWidth, 0] });
     }
   };
+
   window.commands = commands;
 
   elm.ports.jsCommand.subscribe(function(msg) {

@@ -25,7 +25,7 @@ mapCanvas =
 
 mapControl : Model -> Html Msg
 mapControl model =
-    div [ class "map-control z-depth-1" ]
+    div [ id "map-control", class "z-depth-1" ]
         [ header
         , searchBar model
         , content model
@@ -57,22 +57,20 @@ searchBar model =
 
 content : Model -> Html Msg
 content model =
-    case model.suggestions of
-        Nothing ->
-            case model.results of
-                Nothing ->
-                    case model.facility of
-                        Nothing ->
-                            div [] []
+    let
+        facilityView =
+            model.facility
+                |> Maybe.map facilityDetail
+                |> Maybe.withDefault (div [] [])
 
-                        Just f ->
-                            facilityDetail f
-
-                _ ->
-                    searchResults model
-
-        Just s ->
-            suggestions model s
+        searchResultsView =
+            model.results
+                |> Maybe.map (always (searchResults model))
+                |> Maybe.withDefault facilityView
+    in
+        model.suggestions
+            |> Maybe.map (suggestions model)
+            |> Maybe.withDefault searchResultsView
 
 
 facilityDetail : Facility -> Html Msg

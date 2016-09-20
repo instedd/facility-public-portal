@@ -24,8 +24,14 @@ update msg model =
                 ( model, Routing.navigate <| newRoute )
 
         SearchSuccess facilities ->
-            { model | results = Just facilities, suggestions = Nothing }
-                ! ((List.map Commands.addFacilityMarker facilities) ++ [ Commands.clearFacilityMarkers ])
+            let
+                addFacilities =
+                    List.map Commands.addFacilityMarker facilities
+
+                commands =
+                    (Commands.fitContent :: addFacilities) ++ [ Commands.clearFacilityMarkers ]
+            in
+                { model | results = Just facilities, suggestions = Nothing } ! commands
 
         SearchFailed e ->
             -- TODO
