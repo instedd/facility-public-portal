@@ -2,7 +2,7 @@ $(document).ready(function() {
   var elmContainer = document.getElementById('elm');
   var elm = Elm.Main.embed(elmContainer, FPP.settings);
 
-  var commands = {
+  FPP.commands = {
     initializeMap: function(o) {
       var latLng = [o.lat, o.lng];
       FPP.map = L.map('map', {
@@ -49,7 +49,6 @@ $(document).ready(function() {
     },
 
     addFacilityMarker: function(o) {
-      console.log("addFacilityMarker");
       var latLng = [o.position.lat, o.position.lng];
 
       var facilityMarker =
@@ -66,7 +65,6 @@ $(document).ready(function() {
     },
 
     clearFacilityMarkers: function() {
-      console.log("clearFacilityMarkers");
       FPP.facilityLayerGroup.clearLayers();
     },
 
@@ -78,13 +76,14 @@ $(document).ready(function() {
         group.addLayer(FPP.userMarker.getLayers()[0]);
       }
 
-      FPP.map.fitBounds(group.getBounds(), { paddingTopLeft: [controlWidth, 0] });
+      // bounds are invalid when there are no elements
+      if (group.getBounds().isValid()) {
+        FPP.map.fitBounds(group.getBounds(), { paddingTopLeft: [controlWidth, 0] });
+      }
     }
   };
 
-  window.commands = commands;
-
   elm.ports.jsCommand.subscribe(function(msg) {
-    commands[msg[0]](msg[1]);
+    FPP.commands[msg[0]](msg[1]);
   });
 });
