@@ -2,6 +2,7 @@ module Routing exposing (Route(..), parser, navigate, searchPath, routeFromResul
 
 import Dict exposing (Dict)
 import Http
+import Maybe exposing (andThen)
 import Models exposing (SearchSpec)
 import Navigation
 import String
@@ -11,7 +12,6 @@ type Route
     = SearchRoute SearchSpec
     | FacilityRoute Int
     | NotFoundRoute
-
 
 parser : Navigation.Parser (Result String Route)
 parser = Navigation.makeParser locationParser
@@ -25,21 +25,17 @@ navigate route = let url = case route of
                      Navigation.newUrl url
 
 searchPath : String -> SearchSpec -> String
-searchPath base params = String.concat [ base
-                                       , params.q
-                                         |> Maybe.map (\ q -> "?q=" ++ q)
-                                         |> Maybe.withDefault ""
-                                       , params.latLng
-                                         |> Maybe.map (\ (lat,lng) -> "&lat=" ++ (toString lat) ++ "&lng=" ++ (toString lng))
-                                         |> Maybe.withDefault ""
-                                       ]
+searchPath base params = let queryParams = List.concat [ params.q
+                                                         |> Maybe.map (\q -> [("q", q)])
+                                                         |> Maybe.withDefault []
+                                                       , params.latLng
+                                                         |> Maybe.map (\ (lat,lng) -> [("lat", toString lat), ("lng", toString lng)])
+                                                         |> Maybe.withDefault []
+                                                       ]
+                         in buildPath base queryParams
 
 routeFromResult : Result String Route -> Route
-routeFromResult result = case result of
-                           Ok route ->
-                               route
-                           Err string ->
-                               NotFoundRoute
+routeFromResult = Result.withDefault NotFoundRoute
 
 -- PRIVATE
 
@@ -57,30 +53,29 @@ matchers = let
                     , format makeFacilityRoute (s "facilities" </> int)
                     ]
 
+paramsLatLng : Dict String String -> Maybe Models.LatLng
+paramsLatLng params = let mlat = floatParam "lat" params
+                          mlng = floatParam "lng" params
+                      in
+                          mlat `andThen` \lat -> Maybe.map ((,) lat) mlng
+
 floatParam : String -> Dict String String -> Maybe Float
 floatParam key params = case Dict.get key params of
                             Nothing -> Nothing
                             Just v  -> Result.toMaybe (String.toFloat v)
 
-paramsLatLng : Dict String String -> Maybe Models.LatLng
-paramsLatLng params = case floatParam "lat" params of
-                          Nothing -> Nothing
-                          Just lat ->
-                              case floatParam "lng" params of
-                                  Nothing -> Nothing
-                                  Just lng -> Just (lat, lng)
-
 parseQuery : String -> Dict String String
-parseQuery query = query                                        -- "?a=foo&b=bar&baz"
-                  |> String.dropLeft 1                          -- "a=foo&b=bar&baz"
-                  |> String.split "&"                           -- ["a=foo","b=bar","baz"]
-                  |> List.map (\p -> case String.split "=" p of
-                                         key::value::[] ->
-                                             [(key, Http.uriDecode value)]
-                                         _              ->
-                                             [])                -- [[("a", "foo")], [("b", "bar")], []]
-                  |> List.concat                                -- [("a", "foo"), ("b", "bar")]
-                  |> Dict.fromList
+parseQuery query = query                        -- "?a=foo&b=bar&baz"
+                 |> String.dropLeft 1           -- "a=foo&b=bar&baz"
+                 |> String.split "&"            -- ["a=foo","b=bar","baz"]
+                 |> List.map parseParam         -- [[("a", "foo")], [("b", "bar")], []]
+                 |> List.concat                 -- [("a", "foo"), ("b", "bar")]
+                 |> Dict.fromList
+
+parseParam : String -> List (String, String)
+parseParam s = case String.split "=" s of
+                k::v::[] -> [(k, Http.uriDecode v)]
+                _        -> []
 
 locationParser : Navigation.Location -> Result String Route
 locationParser location = let query = parseQuery location.search
@@ -88,3 +83,10 @@ locationParser location = let query = parseQuery location.search
                              |> String.dropLeft 1        -- remove / at the beginning
                              |> parse identity matchers  -- parse
                              |> Result.map (\p -> p query)
+
+buildPath : String -> List (String, String) -> String
+buildPath base queryParams = case queryParams of
+                            [] -> base
+                            _  -> String.concat [ base , "?"
+                                                , queryParams |> List.map (\ (k,v) -> k ++ "=" ++ Http.uriEncode v)
+                                                              |> String.join "&"]
