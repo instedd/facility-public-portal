@@ -34,6 +34,7 @@ init flags route =
             , suggestions = Nothing
             , userLocation = Nothing
             , results = Nothing
+            , facility = Nothing
             }
 
         cmds =

@@ -93,6 +93,20 @@ class ElasticsearchService
     result["hits"]["hits"].map { |r| r["_source"] }
   end
 
+  def get_facility(id)
+    result = client.search({
+      index: @index_name,
+      type: 'facility',
+      body: {
+        size: 1,
+        query: {
+          match: {id: id}
+        },
+    }})
+
+    result["hits"]["hits"].first["_source"]
+  end
+
   def suggest_services(query)
     result = client.search({
       index: @index_name,

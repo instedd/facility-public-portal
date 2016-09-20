@@ -28,7 +28,7 @@ mapControl model =
     div [ class "map-control z-depth-1" ]
         [ header
         , searchBar model
-        , listing model
+        , content model
         ]
 
 
@@ -55,27 +55,46 @@ searchBar model =
         ]
 
 
-listing : Model -> Html Msg
-listing model =
+content : Model -> Html Msg
+content model =
     case model.suggestions of
         Nothing ->
-            div [ class "row listing" ] (searchResults model)
+            case model.results of
+                Nothing ->
+                    case model.facility of
+                        Nothing ->
+                            div [] []
+
+                        Just f ->
+                            facilityDetail f
+
+                _ ->
+                    searchResults model
 
         Just s ->
-            div [ class "row listing" ] (suggestions model s)
+            suggestions model s
 
 
-suggestions : Model -> List Suggestion -> List (Html Msg)
+facilityDetail : Facility -> Html Msg
+facilityDetail facility =
+    div [ class "row" ] [ text facility.name ]
+
+
+suggestions : Model -> List Suggestion -> Html Msg
 suggestions model s =
-    case s of
-        [] ->
-            if model.query == "" then
-                []
-            else
-                [ text "Nothing found..." ]
+    let
+        entries =
+            case s of
+                [] ->
+                    if model.query == "" then
+                        []
+                    else
+                        [ text "Nothing found..." ]
 
-        _ ->
-            List.map suggestion s
+                _ ->
+                    List.map suggestion s
+    in
+        div [ class "row listing" ] entries
 
 
 suggestion : Suggestion -> Html Msg
@@ -93,14 +112,15 @@ suggestion s =
                 [ text <| String.concat [ name, " (", toString count, " facilities)" ] ]
 
 
-searchResults : Model -> List (Html Msg)
+searchResults : Model -> Html Msg
 searchResults model =
-    case model.results of
-        Nothing ->
-            []
-
-        Just facilities ->
-            List.map facility facilities
+    let
+        entries =
+            model.results
+                |> Maybe.withDefault []
+                |> List.map facility
+    in
+        div [ class "row listing" ] entries
 
 
 facility : Facility -> Html Msg

@@ -35,4 +35,5 @@ type alias Model =
     , suggestions : Maybe (List Suggestion)
     , userLocation : Maybe LatLng
     , results : Maybe (List Facility)
+    , facility : Maybe Facility
     }

@@ -22,4 +22,9 @@ class ApiController < ActionController::Base
     }
     render json: results
   end
+
+  def get_facility
+    id = params[:id].to_i
+    render json: ElasticsearchService.instance.get_facility(id)
+  end
 end

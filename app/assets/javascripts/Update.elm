@@ -48,6 +48,13 @@ update msg model =
             -- TODO
             ( model, Cmd.none )
 
+        FacilityFecthSuccess facility ->
+            ( { model | query = facility.name, facility = Just facility }, Cmd.none )
+
+        FacilityFethFailed error ->
+            -- TODO
+            ( model, Cmd.none )
+
         Navigate route ->
             ( model, Routing.navigate route )
 
@@ -60,7 +67,18 @@ urlUpdate result model =
     in
         case route of
             SearchRoute params ->
-                ( { model | query = Maybe.withDefault "" params.q }, Commands.search params )
+                let
+                    model =
+                        { model | query = Maybe.withDefault "" params.q }
+                in
+                    ( model, Commands.search params )
+
+            FacilityRoute id ->
+                let
+                    model =
+                        { model | suggestions = Nothing, results = Nothing }
+                in
+                    ( model, Commands.fetchFacility id )
 
             _ ->
                 ( model, Cmd.none )

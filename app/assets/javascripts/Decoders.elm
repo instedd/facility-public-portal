@@ -1,4 +1,4 @@
-module Decoders exposing (search, suggestions)
+module Decoders exposing (..)
 
 import Models exposing (..)
 import Json.Decode exposing (..)

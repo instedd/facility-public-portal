@@ -71,3 +71,12 @@ search params =
             Routing.searchPath "/api/search" params
     in
         Task.perform SearchFailed SearchSuccess (Http.get Decoders.search url)
+
+
+fetchFacility : Int -> Cmd Msg
+fetchFacility id =
+    let
+        url =
+            "/api/facilities/" ++ (toString id)
+    in
+        Task.perform FacilityFethFailed FacilityFecthSuccess (Http.get Decoders.facility url)

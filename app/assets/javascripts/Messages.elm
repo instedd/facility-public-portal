@@ -15,4 +15,6 @@ type Msg
     | SuggestionsFailed Http.Error
     | LocationDetected LatLng
     | LocationFailed Geolocation.Error
+    | FacilityFecthSuccess Facility
+    | FacilityFethFailed Http.Error
     | Navigate Route
