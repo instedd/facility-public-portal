@@ -21,7 +21,7 @@ main =
         { init = init
         , view = View.view
         , update = Update.update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         , urlUpdate = Update.urlUpdate
         }
 
@@ -50,3 +50,8 @@ init flags route =
             ]
     in
         model ! cmds
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    facilityMarkerClicked (\id -> Navigate (Routing.FacilityRoute id))

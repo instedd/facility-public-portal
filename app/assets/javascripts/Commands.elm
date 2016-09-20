@@ -16,6 +16,9 @@ import Time
 port jsCommand : Command -> Cmd msg
 
 
+port facilityMarkerClicked : (Int -> msg) -> Sub msg
+
+
 type alias Command =
     ( String, Json.Encode.Value )
 
@@ -56,7 +59,8 @@ encodeLatLng ( lat, lng ) =
 encodeFacility : Facility -> Json.Encode.Value
 encodeFacility facility =
     object
-        [ ( "position", encodeLatLng facility.position )
+        [ ( "id", int facility.id )
+        , ( "position", encodeLatLng facility.position )
         ]
 
 

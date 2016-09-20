@@ -50,6 +50,7 @@ $(document).ready(function() {
 
     addFacilityMarker: function(o) {
       var latLng = [o.position.lat, o.position.lng];
+      var id = o.id;
 
       var facilityMarker =
         L.circleMarker(latLng, {
@@ -59,6 +60,8 @@ $(document).ready(function() {
           fillColor: '#0F47AF',
           opacity: 1,
           fillOpacity: 1
+        }).on('click', function(){
+          elm.ports.facilityMarkerClicked.send(id);
         });
 
       FPP.facilityLayerGroup.addLayer(facilityMarker);
