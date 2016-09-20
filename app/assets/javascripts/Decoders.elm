@@ -18,10 +18,11 @@ suggestions =
 
 facility : Decoder Facility
 facility =
-    object4 (\id name kind services -> { id = id, name = name, kind = kind, services = services })
+    object5 (\id name kind position services -> { id = id, name = name, kind = kind, position = position, services = services })
         ("id" := int)
         ("name" := string)
         ("kind" := string)
+        ("position" := latLng)
         ("services" := list string)
 
 
@@ -30,3 +31,10 @@ service =
     object2 (\name count -> { name = name, count = count })
         ("name" := string)
         ("count" := int)
+
+
+latLng : Decoder LatLng
+latLng =
+    object2 (\lat lng -> ( lat, lng ))
+        ("lat" := float)
+        ("lng" := float)

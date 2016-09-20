@@ -16,6 +16,8 @@ $(document).ready(function() {
         id: 'mapbox/streets-v9',
         accessToken: 'pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ'
       }).addTo(FPP.map);
+
+      FPP.facilityLayerGroup = L.layerGroup().addTo(FPP.map);
     },
 
     displayUserLocation: function (o) {
@@ -46,8 +48,31 @@ $(document).ready(function() {
 
       userMarker.addTo(FPP.map);
       popup.openOn(FPP.map);
+    },
+
+    addFacilityMarker: function(o) {
+      console.log("addFacilityMarker");
+      var latLng = [o.position.lat, o.position.lng];
+
+      var facilityMarker =
+        L.circleMarker(latLng, {
+          radius: 8,
+          weight: 2,
+          color: 'white',
+          fillColor: '#0F47AF',
+          opacity: 1,
+          fillOpacity: 1
+        });
+
+      FPP.facilityLayerGroup.addLayer(facilityMarker);
+    },
+
+    clearFacilityMarkers: function() {
+      console.log("clearFacilityMarkers");
+      FPP.facilityLayerGroup.clearLayers();
     }
   };
+  window.commands = commands;
 
   elm.ports.jsCommand.subscribe(function(msg) {
     commands[msg[0]](msg[1]);

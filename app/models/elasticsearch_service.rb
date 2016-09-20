@@ -90,7 +90,7 @@ class ElasticsearchService
       body: search_body
     })
 
-    result["hits"]["hits"].map { |r| r["_source"] }
+    result["hits"]["hits"].map { |r| api_latlng r["_source"] }
   end
 
   def get_facility(id)
@@ -104,7 +104,7 @@ class ElasticsearchService
         },
     }})
 
-    result["hits"]["hits"].first["_source"]
+    api_latlng result["hits"]["hits"].first["_source"]
   end
 
   def suggest_services(query)
@@ -145,8 +145,8 @@ class ElasticsearchService
           }
         }
     }})
-
-    result["hits"]["hits"].map { |r| r["_source"] }
+    # TODO split model for suggesting facilities just id and name
+    result["hits"]["hits"].map { |r| api_latlng r["_source"] }
   end
 
   def self.instance
@@ -162,6 +162,12 @@ class ElasticsearchService
 
   def validate_search(params)
     # TODO
+  end
+
+  def api_latlng(document)
+    document["position"]["lat"] = document["position"]["lat"].to_f
+    document["position"]["lng"] = document["position"].delete("lon").to_f
+    document
   end
 
 end

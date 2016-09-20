@@ -30,11 +30,28 @@ displayUserLocation pos =
     jsCommand ( "displayUserLocation", encodeLatLng pos )
 
 
+clearFacilityMarkers : Cmd msg
+clearFacilityMarkers =
+    jsCommand ( "clearFacilityMarkers", null )
+
+
+addFacilityMarker : Facility -> Cmd msg
+addFacilityMarker facility =
+    jsCommand ( "addFacilityMarker", encodeFacility facility )
+
+
 encodeLatLng : ( Float, Float ) -> Json.Encode.Value
 encodeLatLng ( lat, lng ) =
     object
         [ ( "lat", float lat )
         , ( "lng", float lng )
+        ]
+
+
+encodeFacility : Facility -> Json.Encode.Value
+encodeFacility facility =
+    object
+        [ ( "position", encodeLatLng facility.position )
         ]
 
 

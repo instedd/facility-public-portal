@@ -14,6 +14,7 @@ type alias SearchSpec =
 type alias Facility =
     { id : Int
     , name : String
+    , position : LatLng
     , kind : String
     , services : List String
     }
