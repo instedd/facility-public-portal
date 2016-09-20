@@ -20,16 +20,14 @@ $(document).ready(function() {
       FPP.facilityLayerGroup = L.layerGroup().addTo(FPP.map);
     },
 
-    displayUserLocation: function (o) {
+    addUserMarker: function (o) {
       var latLng = [o.lat, o.lng];
-      FPP.map.panTo(latLng);
-      FPP.map.setZoom(14);
 
       var popup = L.popup({closeButton: false})
                    .setLatLng(latLng)
                    .setContent('You are here');
 
-      var userMarker = L.layerGroup([
+      FPP.userMarker = L.layerGroup([
         L.circleMarker(latLng, {
           radius: 20,
           opacity: 0,
@@ -46,7 +44,7 @@ $(document).ready(function() {
         }).bindPopup(popup),
       ]);
 
-      userMarker.addTo(FPP.map);
+      FPP.userMarker.addTo(FPP.map);
       popup.openOn(FPP.map);
     },
 
@@ -70,6 +68,25 @@ $(document).ready(function() {
     clearFacilityMarkers: function() {
       console.log("clearFacilityMarkers");
       FPP.facilityLayerGroup.clearLayers();
+    },
+
+    fitContent: function() {
+      var bounds = [];
+
+      if (FPP.userMarker) {
+        var marker = FPP.userMarker.getLayers()[0];
+        bounds.push(marker.getLatLng());
+      }
+
+      if (FPP.facilityLayerGroup) {
+        var markers = FPP.facilityLayerGroup.getLayers();
+        for(var i = 0; i < markers.length; i++) {
+          var layer = markers[i];
+          bounds.push(layer.getLatLng());
+        }
+      }
+
+      FPP.map.fitBounds(bounds);
     }
   };
   window.commands = commands;

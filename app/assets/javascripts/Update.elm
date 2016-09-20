@@ -43,14 +43,16 @@ update msg model =
             ( model, Cmd.none )
 
         LocationDetected pos ->
-            { model | userLocation = Just pos } ! [ Commands.displayUserLocation pos ]
+            { model | userLocation = Just pos }
+                ! [ Commands.fitContent, Commands.addUserMarker pos ]
 
         LocationFailed e ->
             -- TODO
             ( model, Cmd.none )
 
         FacilityFecthSuccess facility ->
-            ( { model | query = facility.name, facility = Just facility }, Cmd.none )
+            { model | query = facility.name, facility = Just facility }
+                ! [ Commands.fitContent, Commands.addFacilityMarker facility ]
 
         FacilityFethFailed error ->
             -- TODO
@@ -72,14 +74,14 @@ urlUpdate result model =
                     model =
                         { model | query = Maybe.withDefault "" params.q }
                 in
-                    ( model, Commands.search params )
+                    model ! [ Commands.search params ]
 
             FacilityRoute id ->
                 let
                     model =
                         { model | suggestions = Nothing, results = Nothing }
                 in
-                    ( model, Commands.fetchFacility id )
+                    model ! [ Commands.fetchFacility id, Commands.clearFacilityMarkers ]
 
             _ ->
                 ( model, Cmd.none )

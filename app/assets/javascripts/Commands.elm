@@ -25,9 +25,14 @@ initializeMap pos =
     jsCommand ( "initializeMap", encodeLatLng pos )
 
 
-displayUserLocation : ( Float, Float ) -> Cmd msg
-displayUserLocation pos =
-    jsCommand ( "displayUserLocation", encodeLatLng pos )
+addUserMarker : ( Float, Float ) -> Cmd msg
+addUserMarker pos =
+    jsCommand ( "addUserMarker", encodeLatLng pos )
+
+
+fitContent : Cmd msg
+fitContent =
+    jsCommand ( "fitContent", null )
 
 
 clearFacilityMarkers : Cmd msg
