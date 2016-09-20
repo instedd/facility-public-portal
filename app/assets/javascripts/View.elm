@@ -6,15 +6,13 @@ import Html.Events as Events
 import Messages exposing (..)
 import Models exposing (..)
 import Routing
-import String
 
 
 view : Model -> Html Msg
 view model =
     div [ id "container" ]
-        [ mapControl model
-        , mapCanvas
-          -- , inspector model
+        [ mapCanvas
+        , mapControl model
         ]
 
 
@@ -27,31 +25,43 @@ mapControl : Model -> Html Msg
 mapControl model =
     div [ id "map-control", class "z-depth-1" ]
         [ header
-        , searchBar model
         , content model
         ]
 
 
 header : Html Msg
 header =
-    div [ class "row header" ]
-        [ span [] [ text "Ethiopia" ]
-        , h1 [] [ text "Ministry of Health" ]
+    nav [ id "TopNav", class "z-depth-0" ]
+        [ div [ class "nav-wrapper" ]
+            [ a []
+                [ img [ src "/assets/logo.png" ] [] ]
+            , a [ class "right" ]
+                [ icon "menu" ]
+            ]
         ]
 
 
 searchBar : Model -> Html Msg
 searchBar model =
-    div [ class "row search" ]
-        [ Html.form [ Events.onSubmit Search ]
-            [ input
-                [ value model.query
-                , autofocus True
-                , placeholder "Search health facilities"
-                , Events.onInput Input
+    div [ class "search-box" ]
+        [ div [ class "search" ]
+            [ Html.form [ Events.onSubmit Search ]
+                [ input [ type' "text", placeholder "Search health facilities", Events.onInput Input ] []
+                , icon "search"
                 ]
-                []
             ]
+        , div [ class "location" ]
+            [ a [ href "#!" ]
+                [ icon "my_location" ]
+            ]
+        ]
+
+
+searchView : Model -> Html Msg -> Html Msg
+searchView model content =
+    div []
+        [ searchBar model
+        , content
         ]
 
 
@@ -66,16 +76,26 @@ content model =
         searchResultsView =
             model.results
                 |> Maybe.map (always (searchResults model))
+                |> Maybe.map (searchView model)
                 |> Maybe.withDefault facilityView
     in
         model.suggestions
             |> Maybe.map (suggestions model)
+            |> Maybe.map (searchView model)
             |> Maybe.withDefault searchResultsView
 
 
 facilityDetail : Facility -> Html Msg
 facilityDetail facility =
-    div [ class "row" ] [ text facility.name ]
+    div [ class "facilityDetail" ]
+        [ div [ class "title" ]
+            [ text facility.name ]
+        , div [ class "services" ]
+            [ span [] [ text "Services" ]
+            , ul []
+                (List.map (\s -> li [] [ text s ]) facility.services)
+            ]
+        ]
 
 
 suggestions : Model -> List Suggestion -> Html Msg
@@ -92,22 +112,28 @@ suggestions model s =
                 _ ->
                     List.map suggestion s
     in
-        div [ class "row listing" ] entries
+        div [ class "collection results" ] entries
 
 
 suggestion : Suggestion -> Html Msg
 suggestion s =
     case s of
         F { id, name, kind, services } ->
-            div
-                [ class "row entry suggestion facility"
+            a
+                [ class "collection-item avatar suggestion facility"
                 , Events.onClick <| Navigate (Routing.FacilityRoute id)
                 ]
-                [ text name ]
+                [ icon "location_on"
+                , span [ class "title" ] [ text name ]
+                ]
 
         S { name, count } ->
-            div [ class "row entry suggestion service" ]
-                [ text <| String.concat [ name, " (", toString count, " facilities)" ] ]
+            a
+                [ class "collection-item avatar suggestion service" ]
+                [ icon "label"
+                , span [ class "title" ] [ text name ]
+                , p [ class "kind" ] [ text (toString count ++ " facilities") ]
+                ]
 
 
 searchResults : Model -> Html Msg
@@ -118,17 +144,18 @@ searchResults model =
                 |> Maybe.withDefault []
                 |> List.map facility
     in
-        div [ class "row listing" ] entries
+        div [ class "collection results" ] entries
 
 
 facility : Facility -> Html Msg
 facility f =
-    div
-        [ class "row entry result"
+    a
+        [ class "collection-item result avatar"
         , Events.onClick <| Navigate (Routing.FacilityRoute f.id)
         ]
-        [ text f.name
-        , span [ class "kind" ] [ text f.kind ]
+        [ icon "location_on"
+        , span [ class "title" ] [ text f.name ]
+        , p [ class "kind" ] [ text f.kind ]
         ]
 
 
@@ -139,3 +166,8 @@ inspector model =
         , class "z-depth-1"
         ]
         [ pre [] [ text (toString model) ] ]
+
+
+icon : String -> Html Msg
+icon name =
+    i [ class "material-icons" ] [ text name ]
