@@ -60,7 +60,7 @@ urlUpdate result model =
     in
         case route of
             SearchRoute params ->
-                ( model, Commands.search params )
+                ( { model | query = Maybe.withDefault "" params.q }, Commands.search params )
 
             _ ->
                 ( model, Cmd.none )
