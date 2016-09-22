@@ -7,6 +7,7 @@ import Models exposing (SearchSpec)
 import Navigation
 import String
 import UrlParser exposing (..)
+import Utils exposing (..)
 
 
 type Route
@@ -45,6 +46,9 @@ searchPath base params =
                 [ params.q
                     |> Maybe.map (\q -> [ ( "q", q ) ])
                     |> Maybe.withDefault []
+                , params.s
+                    |> Maybe.map (\s -> [ ( "s", toString s ) ])
+                    |> Maybe.withDefault []
                 , params.latLng
                     |> Maybe.map (\( lat, lng ) -> [ ( "lat", toString lat ), ( "lng", toString lng ) ])
                     |> Maybe.withDefault []
@@ -72,6 +76,9 @@ matchers =
         makeSearchRoute params =
             SearchRoute
                 { q = Dict.get "q" params
+                , s =
+                    Dict.get "s" params
+                        &> (String.toInt >> Result.toMaybe)
                 , latLng = paramsLatLng params
                 }
 

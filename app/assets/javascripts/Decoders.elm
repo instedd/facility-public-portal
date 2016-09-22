@@ -23,14 +23,15 @@ facility =
         ("name" := string)
         ("kind" := string)
         ("position" := latLng)
-        ("services" := list string)
+        ("service_names" := list string)
 
 
 service : Decoder Service
 service =
-    object2 (\name count -> { name = name, count = count })
+    object3 (\id name facilityCount -> { id = id, name = name, facilityCount = facilityCount })
+        ("id" := int)
         ("name" := string)
-        ("count" := int)
+        ("facility_count" := int)
 
 
 latLng : Decoder LatLng

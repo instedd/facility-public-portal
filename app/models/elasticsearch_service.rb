@@ -33,11 +33,23 @@ class ElasticsearchService
     })
   end
 
-  def index_facility(facility)
+  def index_facility(record, services_by_code)
+    facility = {
+      id: record[:id].to_i,
+      name: record[:name],
+      kind: record[:facility_type],
+      position: {
+        lat: record[:lat],
+        lon: record[:long]
+      },
+      service_names: record[:service_codes].map { |c| services_by_code[c][:name]},
+      service_ids: record[:service_codes].map { |c| services_by_code[c][:id]}
+    }
+
     client.index({
       index: @index_name,
       type: 'facility',
-      id: facility["id"],
+      id: facility[:id],
       body: facility
     })
   end
@@ -46,6 +58,7 @@ class ElasticsearchService
     client.index({
       index: @index_name,
       type: 'service',
+      id: service[:id],
       body: service
     })
   end
@@ -55,15 +68,16 @@ class ElasticsearchService
 
     search_body = {
       size: 50,
-      query: {},
+      query: { bool: { must: [] } },
       sort: {}
     }
 
     if params[:q]
-      search_body[:query][:match_phrase_prefix] = { name: params[:q] }
+      search_body[:query][:bool][:must] << { match_phrase_prefix: { name: params[:q] } }
     end
 
-    if params[:service]
+    if params[:s]
+      search_body[:query][:bool][:must] << { match: { service_ids: params[:s] } }
     end
 
     if params[:lat] && params[:lng]

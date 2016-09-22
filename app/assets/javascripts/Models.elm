@@ -7,6 +7,7 @@ type alias LatLng =
 
 type alias SearchSpec =
     { q : Maybe String
+    , s : Maybe Int
     , latLng : Maybe LatLng
     }
 
@@ -21,8 +22,9 @@ type alias Facility =
 
 
 type alias Service =
-    { name : String
-    , count : Int
+    { id : Int
+    , name : String
+    , facilityCount : Int
     }
 
 

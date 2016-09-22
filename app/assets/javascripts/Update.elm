@@ -28,9 +28,9 @@ update msg model =
         Search ->
             let
                 newRoute =
-                    Routing.SearchRoute { q = Just model.query, latLng = model.userLocation }
+                    Routing.SearchRoute { q = Just model.query, s = Nothing, latLng = model.userLocation }
             in
-                ( model, Routing.navigate <| newRoute )
+                ( model, Routing.navigate newRoute )
 
         SearchSuccess facilities ->
             let

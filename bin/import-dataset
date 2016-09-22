@@ -9,37 +9,22 @@ require 'csv'
 #
 # TODO: we still don't have a definitive data source for provided services
 # nor a defined input format.
-def each_fility(filename)
-  all_services = ["basic_client_services", "client_records", "basic_laboratory_tests",
-                  "advanced_laboratory_tests", "diagnostic_equipment", "child_health_services",
-                  "family_planning_services", "anc_services", "pmtct_services", "malaria_services",
-                  "maternal_health_services", "emergency_obstetric_care", "hiv_testing_and_counseling_services",
-                  "non_communicable_disease__ncd", "tuberculosis_services", "tb_treatment",
-                  "neglected_tropical_disease__ntd", "regular_electricity", "power_source", "regular_water",
-                  "water_source", "visual_and_auditory_privacy", "latrine_type", "regular_communication",
-                  "communication_equipment", "ambulance", "avg_travel_time_amb_stat", "medical_specialist",
-                  "general_practicioner", "health_officer___integrated_emergency_surgical_officer", "bsc_nurse",
-                  "diploma_nurse", "specialized_nurse", "diploma_midwife", "pharmacy_professionals",
-                  "med_lab_professionals", "other_paramedics", "health_extension_worker", "supportive_staff"
-                 ].map { |l| l.gsub("_", " ").strip.capitalize }
-
+def earch_record(filename)
   def is_valid?(row)
     ["name", "facility_type", "lat", "long"].none? { |field| row[field].blank? }
   end
 
   CSV.foreach(filename, headers: true) do |row|
     if is_valid? row
-      facility = {
+      record = {
         id: row["resmap-id"].to_i,
         name: row["name"],
-        kind: row["facility_type"],
-        position: {
-          lat: row["lat"],
-          lon: row["long"]
-        },
-        services: all_services.sample(rand(5))
+        facility_type: row["facility_type"],
+        lat: row["lat"],
+        long: row["long"],
+        service_codes: row["services"].split("|")
       }
-      yield facility
+      yield record
     end
   end
 end
@@ -61,26 +46,39 @@ end
 imported_facilities = 0
 imported_services = 0
 
-facility_count_by_service = Hash.new(0)
+service_codes = []
 
-each_fility(filename) do |facility|
-  if ElasticsearchService.instance.index_facility(facility)
+earch_record(filename) do |record|
+  record[:service_codes].each do
+     |s| service_codes << s
+  end
+end
+
+services = service_codes.uniq.map.with_index do |code, i|
+  {
+    id: i+1,
+    name: code.gsub(/__+/, " - ").gsub("_", " ").strip.capitalize,
+    code: code,
+    facility_count: 0
+  }
+end
+
+services_by_code = services.index_by { |s| s[:code] }
+
+earch_record(filename) do |record|
+  if ElasticsearchService.instance.index_facility(record, services_by_code)
     imported_facilities += 1
 
-    facility[:services].each do |s|
-      facility_count_by_service[s] += 1
+    record[:service_codes].each do |code|
+      services_by_code[code][:facility_count] += 1
     end
   end
 end
 
-facility_count_by_service.each do |service_name, count|
-  service = {
-    name: service_name,
-    count: count
-  }
-
+services.each do |service|
   ElasticsearchService.instance.index_service service
   imported_services += 1
 end
+
 
 puts "Imported #{imported_facilities} facilities and #{imported_services} services."

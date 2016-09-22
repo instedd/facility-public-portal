@@ -93,7 +93,7 @@ facilityDetail facility =
             [ span [] [ text facility.name ]
             , i
                 [ class "material-icons right"
-                , onClick <| Navigate (Routing.SearchRoute { q = Nothing, latLng = Nothing })
+                , onClick <| navSearch { q = Nothing, s = Nothing, latLng = Nothing }
                 ]
                 [ text "clear" ]
             ]
@@ -117,29 +117,31 @@ suggestions model s =
                         [ text "Nothing found..." ]
 
                 _ ->
-                    List.map suggestion s
+                    List.map (suggestion model) s
     in
         div [ class "collection results" ] entries
 
 
-suggestion : Suggestion -> Html Msg
-suggestion s =
+suggestion : Model -> Suggestion -> Html Msg
+suggestion model s =
     case s of
         F { id, name, kind, services } ->
             a
                 [ class "collection-item avatar suggestion facility"
-                , onClick <| Navigate (Routing.FacilityRoute id)
+                , onClick <| navFacility id
                 ]
                 [ icon "location_on"
                 , span [ class "title" ] [ text name ]
                 ]
 
-        S { name, count } ->
+        S { id, name, facilityCount } ->
             a
-                [ class "collection-item avatar suggestion service" ]
+                [ class "collection-item avatar suggestion service"
+                , onClick <| navSearch { q = Nothing, s = Just id, latLng = model.userLocation }
+                ]
                 [ icon "label"
                 , span [ class "title" ] [ text name ]
-                , p [ class "kind" ] [ text (toString count ++ " facilities") ]
+                , p [ class "kind" ] [ text (toString facilityCount ++ " facilities") ]
                 ]
 
 
@@ -158,7 +160,7 @@ facility : Facility -> Html Msg
 facility f =
     a
         [ class "collection-item result avatar"
-        , onClick <| Navigate (Routing.FacilityRoute f.id)
+        , onClick <| navFacility f.id
         ]
         [ icon "location_on"
         , span [ class "title" ] [ text f.name ]
@@ -175,6 +177,10 @@ inspector model =
         [ pre [] [ text (toString model) ] ]
 
 
+
+-- HELPERS
+
+
 onClick : msg -> Attribute msg
 onClick message =
     Events.onWithOptions "click"
@@ -182,6 +188,16 @@ onClick message =
         , stopPropagation = True
         }
         (Json.Decode.succeed message)
+
+
+navFacility : Int -> Msg
+navFacility id =
+    Navigate (Routing.FacilityRoute id)
+
+
+navSearch : SearchSpec -> Msg
+navSearch spec =
+    Navigate (Routing.SearchRoute spec)
 
 
 icon : String -> Html Msg
