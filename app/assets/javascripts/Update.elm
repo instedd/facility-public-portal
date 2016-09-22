@@ -88,7 +88,10 @@ urlUpdate result model =
             SearchRoute params ->
                 let
                     model =
-                        { model | query = Maybe.withDefault "" params.q }
+                        { model
+                            | query = Maybe.withDefault "" params.q
+                            , hideResults = isSearchEmpty params
+                        }
                 in
                     model ! [ Commands.search params ]
 

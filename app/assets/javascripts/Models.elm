@@ -40,4 +40,5 @@ type alias Model =
     , suggestions : Maybe (List Suggestion)
     , results : Maybe (List Facility)
     , facility : Maybe Facility
+    , hideResults : Bool
     }

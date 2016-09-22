@@ -1,5 +1,7 @@
 module Utils exposing (..)
 
+import Models exposing (..)
+
 
 (&>) : Maybe a -> (a -> Maybe b) -> Maybe b
 (&>) =
@@ -12,3 +14,8 @@ stringToQuery q =
         Nothing
     else
         Just q
+
+
+isSearchEmpty : SearchSpec -> Bool
+isSearchEmpty spec =
+    spec.q == Nothing && spec.s == Nothing && spec.latLng == Nothing

@@ -76,7 +76,7 @@ content model =
 
         searchResultsView =
             model.results
-                |> Maybe.map (always (searchResults model))
+                |> Maybe.map (searchResults model)
                 |> Maybe.map (searchView model)
                 |> Maybe.withDefault facilityView
     in
@@ -145,13 +145,14 @@ suggestion model s =
                 ]
 
 
-searchResults : Model -> Html Msg
-searchResults model =
+searchResults : Model -> List Facility -> Html Msg
+searchResults model results =
     let
         entries =
-            model.results
-                |> Maybe.withDefault []
-                |> List.map facility
+            if model.hideResults then
+                []
+            else
+                List.map facility results
     in
         div [ class "collection results" ] entries
 
