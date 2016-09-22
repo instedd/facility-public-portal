@@ -21,6 +21,8 @@ $color_wild_sand_approx: rgb(245,245,245);
 $color_mountain_mist_approx: #999999;
 $blue: #0f47af;
 $light-blue: #4367a4;
+$grey1: grey;
+$grey2: #a6b3d9;
 
 html, body, #container, #elm, #map {
   height: 100%;
@@ -143,7 +145,7 @@ html, body, #container, #elm, #map {
     }
 
     .kind {
-      color: grey;
+      color: $grey1;
     }
   }
 }
@@ -160,6 +162,11 @@ html, body, #container, #elm, #map {
     color: white;
     font-size: 20px;
     padding-bottom: 8px;
+
+    i {
+      cursor: default;
+      color: $grey2;
+    }
   }
 
   .services {
@@ -168,7 +175,7 @@ html, body, #container, #elm, #map {
       text-transform: uppercase;
       font-weight: bold;
       font-size: 15.5px;
-      color: grey;
+      color: $grey1;
     }
     li {
       margin-top: 8px;

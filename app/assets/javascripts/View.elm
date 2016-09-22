@@ -89,7 +89,13 @@ facilityDetail : Facility -> Html Msg
 facilityDetail facility =
     div [ class "facilityDetail" ]
         [ div [ class "title" ]
-            [ text facility.name ]
+            [ span [] [ text facility.name ]
+            , i
+                [ class "material-icons right"
+                , Events.onClick <| Navigate (Routing.SearchRoute { q = Nothing, latLng = Nothing })
+                ]
+                [ text "clear" ]
+            ]
         , div [ class "services" ]
             [ span [] [ text "Services" ]
             , ul []
