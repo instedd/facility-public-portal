@@ -29,23 +29,23 @@ main =
 init : Flags -> Result String Routing.Route -> ( Model, Cmd Msg )
 init flags route =
     let
+        fakeLocation =
+            if flags.fakeUserPosition then
+                Just flags.initialPosition
+            else
+                Nothing
+
         model =
             { query = ""
-            , suggestions = Nothing
             , userLocation = Nothing
+            , fakeLocation = fakeLocation
+            , suggestions = Nothing
             , results = Nothing
             , facility = Nothing
             }
 
         cmds =
             [ Commands.initializeMap flags.initialPosition
-            , if
-                flags.fakeUserPosition
-                -- TODO: detect only when user presses button
-              then
-                Commands.fakeGeolocateUser flags.initialPosition
-              else
-                Commands.geolocateUser
             , Routing.navigate (Routing.routeFromResult route)
             ]
     in

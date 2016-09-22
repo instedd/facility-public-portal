@@ -6,6 +6,7 @@ import Html.Events as Events
 import Messages exposing (..)
 import Models exposing (..)
 import Routing
+import Json.Decode
 
 
 view : Model -> Html Msg
@@ -51,7 +52,7 @@ searchBar model =
                 ]
             ]
         , div [ class "location" ]
-            [ a [ href "#!" ]
+            [ a [ href "#", onClick GeolocateUser ]
                 [ icon "my_location" ]
             ]
         ]
@@ -92,7 +93,7 @@ facilityDetail facility =
             [ span [] [ text facility.name ]
             , i
                 [ class "material-icons right"
-                , Events.onClick <| Navigate (Routing.SearchRoute { q = Nothing, latLng = Nothing })
+                , onClick <| Navigate (Routing.SearchRoute { q = Nothing, latLng = Nothing })
                 ]
                 [ text "clear" ]
             ]
@@ -127,7 +128,7 @@ suggestion s =
         F { id, name, kind, services } ->
             a
                 [ class "collection-item avatar suggestion facility"
-                , Events.onClick <| Navigate (Routing.FacilityRoute id)
+                , onClick <| Navigate (Routing.FacilityRoute id)
                 ]
                 [ icon "location_on"
                 , span [ class "title" ] [ text name ]
@@ -157,7 +158,7 @@ facility : Facility -> Html Msg
 facility f =
     a
         [ class "collection-item result avatar"
-        , Events.onClick <| Navigate (Routing.FacilityRoute f.id)
+        , onClick <| Navigate (Routing.FacilityRoute f.id)
         ]
         [ icon "location_on"
         , span [ class "title" ] [ text f.name ]
@@ -172,6 +173,15 @@ inspector model =
         , class "z-depth-1"
         ]
         [ pre [] [ text (toString model) ] ]
+
+
+onClick : msg -> Attribute msg
+onClick message =
+    Events.onWithOptions "click"
+        { preventDefault = True
+        , stopPropagation = True
+        }
+        (Json.Decode.succeed message)
 
 
 icon : String -> Html Msg

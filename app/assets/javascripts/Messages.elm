@@ -8,6 +8,7 @@ import Routing exposing (Route)
 
 type Msg
     = Input String
+    | GeolocateUser
     | Search
     | SearchSuccess (List Facility)
     | SearchFailed Http.Error

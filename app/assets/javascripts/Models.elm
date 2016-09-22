@@ -33,8 +33,9 @@ type Suggestion
 
 type alias Model =
     { query : String
-    , suggestions : Maybe (List Suggestion)
     , userLocation : Maybe LatLng
+    , fakeLocation : Maybe LatLng
+    , suggestions : Maybe (List Suggestion)
     , results : Maybe (List Facility)
     , facility : Maybe Facility
     }

@@ -16,6 +16,15 @@ update msg model =
             in
                 ( model', Commands.getSuggestions model' )
 
+        GeolocateUser ->
+            let
+                cmd =
+                    model.fakeLocation
+                        |> Maybe.map Commands.fakeGeolocateUser
+                        |> Maybe.withDefault Commands.geolocateUser
+            in
+                ( model, cmd )
+
         Search ->
             let
                 newRoute =
