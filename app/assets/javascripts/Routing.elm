@@ -75,7 +75,9 @@ matchers =
     let
         makeSearchRoute params =
             SearchRoute
-                { q = Dict.get "q" params
+                { q =
+                    Dict.get "q" params
+                        &> stringToQuery
                 , s =
                     Dict.get "s" params
                         &> (String.toInt >> Result.toMaybe)

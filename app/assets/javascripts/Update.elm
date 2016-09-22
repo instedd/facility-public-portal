@@ -4,6 +4,7 @@ import Commands
 import Messages exposing (..)
 import Models exposing (..)
 import Routing exposing (..)
+import Utils exposing (..)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -28,7 +29,7 @@ update msg model =
         Search ->
             let
                 newRoute =
-                    Routing.SearchRoute { q = Just model.query, s = Nothing, latLng = model.userLocation }
+                    Routing.SearchRoute { q = stringToQuery model.query, s = Nothing, latLng = model.userLocation }
             in
                 ( model, Routing.navigate newRoute )
 
