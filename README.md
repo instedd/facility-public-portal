@@ -40,15 +40,6 @@ $ bin/rake db:setup
 $ bin/rake elasticsearch:setup
 ```
 
-After that, CSV facilities information can be indexed as follows:
-
-```
-$ curl -XPUT localhost:9200/fpp/_settings -d '{"index" : {"refresh_interval" : "-1"} }'
-$ bin/import-dataset "Ethiopian Master Facility Registry_sites.csv"
-$ curl -XPUT localhost:9200/fpp/_settings -d '{"index" : {"refresh_interval" : "1s"} }'
-$ curl -XPOST localhost:9200/fpp/_forcemerge?max_num_segments=5
-```
-
 ### Ruby and Rails
 
 This project uses Ruby v2.3.1. All Ruby dependencies (including Rails 5) can be installed using Bundler:
@@ -62,3 +53,7 @@ After that, the application can be run in development mode as follows:
 ```
 $ bin/rails s
 ```
+
+## Importing data
+
+See [this guide](docs/importing.md).
