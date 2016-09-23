@@ -5,7 +5,10 @@ require_relative '../config/environment'
 
 require 'csv'
 
-# Yields all facilities and their provided services given a CSV input file.
+# Yields all records of the CSV input file, as hashes with one field per
+# column of the input file. The only exception is the "services" field, that
+# is replaced by "service_codes", which is the result of spliting the service
+# list by "|".
 #
 # TODO: we still don't have a definitive data source for provided services
 # nor a defined input format.
@@ -16,14 +19,9 @@ def earch_record(filename)
 
   CSV.foreach(filename, headers: true) do |row|
     if is_valid? row
-      record = {
-        id: row["resmap-id"].to_i,
-        name: row["name"],
-        facility_type: row["facility_type"],
-        lat: row["lat"],
-        long: row["long"],
-        service_codes: row["services"].split("|")
-      }
+      record = row.to_h.with_indifferent_access
+      services_str = record.delete(:services)
+      record[:service_codes] = services_str.split("|")
       yield record
     end
   end

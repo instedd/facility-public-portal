@@ -2,7 +2,7 @@ class ElasticsearchService
 
   attr_reader :client
 
-  def initialize(url, index_name, should_log = Rails.env.development?)
+  def initialize(url, index_name, should_log: Rails.env.development?)
     @client     = Elasticsearch::Client.new url: url, log: should_log
     @index_name = index_name
   end
@@ -33,9 +33,13 @@ class ElasticsearchService
     })
   end
 
+  def drop_index
+    client.indices.delete index: @index_name
+  end
+
   def index_facility(record, services_by_code)
     facility = {
-      id: record[:id].to_i,
+      id: record[:'resmap-id'].to_i,
       name: record[:name],
       kind: record[:facility_type],
       position: {
@@ -50,7 +54,7 @@ class ElasticsearchService
       index: @index_name,
       type: 'facility',
       id: facility[:id],
-      body: facility
+      body: facility,
     })
   end
 
