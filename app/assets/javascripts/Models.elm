@@ -18,6 +18,7 @@ type alias Facility =
     , position : LatLng
     , kind : String
     , services : List String
+    , adm : List String
     }
 
 

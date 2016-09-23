@@ -37,19 +37,7 @@ class ElasticsearchService
     client.indices.delete index: @index_name
   end
 
-  def index_facility(record, services_by_code)
-    facility = {
-      id: record[:'resmap-id'].to_i,
-      name: record[:name],
-      kind: record[:facility_type],
-      position: {
-        lat: record[:lat],
-        lon: record[:long]
-      },
-      service_names: record[:service_codes].map { |c| services_by_code[c][:name]},
-      service_ids: record[:service_codes].map { |c| services_by_code[c][:id]}
-    }
-
+  def index_facility(facility)
     client.index({
       index: @index_name,
       type: 'facility',
@@ -67,11 +55,20 @@ class ElasticsearchService
     })
   end
 
-  def search_facilities(params)
+  def index_location(location)
+    client.index({
+      index: @index_name,
+      type: 'location',
+      id: location[:id],
+      body: location
+    })
+  end
+
+  def search_facilities(params, count: 50)
     validate_search(params)
 
     search_body = {
-      size: 50,
+      size: count,
       query: { bool: { must: [] } },
       sort: {}
     }
@@ -140,31 +137,32 @@ class ElasticsearchService
     result["hits"]["hits"].map { |r| r["_source"] }
   end
 
-  def suggest_facilities(query, lat, lng, count = 5)
+  def suggest_facilities(params)
+    # TODO
+    #
+    # For the moment we are just perforing a search restricted to 5 results.
+    # Suggesting will probably involve using the suggest Elasticsearch API, which
+    # trades scoring and analysis capabilities in favour of search speed.
+    #
+    # Also, we should consider returning a summary payload to reduce network traffic.
+    search_facilities(params, count: 5)
+  end
+
+  def suggest_locations(query)
     result = client.search({
-      index: @index_name,
-      type: 'facility',
-      body: {
-        size: count,
-        query: {
-          match_phrase_prefix: {
-            name: query
-          }
-        },
-        sort: {
-          _geo_distance: {
-            position: {
-              lat: lat,
-              lon: lng
-            },
-            order: "asc",
-            unit:  "km",
-            distance_type: "plane"
-          }
-        }
-    }})
-    # TODO split model for suggesting facilities just id and name
-    result["hits"]["hits"].map { |r| api_latlng r["_source"] }
+                             index: @index_name,
+                             type: 'location',
+                             body: {
+                               query: {
+                                 match_phrase_prefix: {
+                                   name: query
+                                 }
+                               },
+                             }})
+
+    result["hits"]["hits"].map do |r|
+      r["_source"].slice("name", "facility_count", "parent_name")
+    end
   end
 
   def self.instance

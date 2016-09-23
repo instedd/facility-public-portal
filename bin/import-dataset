@@ -3,32 +3,6 @@ APP_PATH = File.expand_path('../../config/application',  __dir__)
 require_relative '../config/boot'
 require_relative '../config/environment'
 
-require 'csv'
-
-# Yields all records of the CSV input file, as hashes with one field per
-# column of the input file. The only exception is the "services" field, that
-# is replaced by "service_codes", which is the result of spliting the service
-# list by "|".
-#
-# TODO: we still don't have a definitive data source for provided services
-# nor a defined input format.
-def earch_record(filename)
-  def is_valid?(row)
-    ["name", "facility_type", "lat", "long"].none? { |field| row[field].blank? }
-  end
-
-  CSV.foreach(filename, headers: true) do |row|
-    if is_valid? row
-      record = row.to_h.with_indifferent_access
-      services_str = record.delete(:services)
-      record[:service_codes] = services_str.split("|")
-      yield record
-    end
-  end
-end
-
-# -----------------------------------------------------------
-
 unless ARGV.size == 1
   puts "Usage: #{__FILE__} dataset.csv"
   exit 1
@@ -41,42 +15,9 @@ unless File.exists? filename
   exit 1
 end
 
-imported_facilities = 0
-imported_services = 0
+result = Indexer.index_csv(filename)
 
-service_codes = []
-
-earch_record(filename) do |record|
-  record[:service_codes].each do
-     |s| service_codes << s
-  end
-end
-
-services = service_codes.uniq.map.with_index do |code, i|
-  {
-    id: i+1,
-    name: code.gsub(/__+/, " - ").gsub("_", " ").strip.capitalize,
-    code: code,
-    facility_count: 0
-  }
-end
-
-services_by_code = services.index_by { |s| s[:code] }
-
-earch_record(filename) do |record|
-  if ElasticsearchService.instance.index_facility(record, services_by_code)
-    imported_facilities += 1
-
-    record[:service_codes].each do |code|
-      services_by_code[code][:facility_count] += 1
-    end
-  end
-end
-
-services.each do |service|
-  ElasticsearchService.instance.index_service service
-  imported_services += 1
-end
-
-
-puts "Imported #{imported_facilities} facilities and #{imported_services} services."
+puts "Done! Imported:"
+puts "\t-#{result[:imported_facilities]} facilities"
+puts "\t-#{result[:imported_services]} services"
+puts "\t-#{result[:imported_locations]} locations"

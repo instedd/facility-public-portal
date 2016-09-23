@@ -18,12 +18,22 @@ suggestions =
 
 facility : Decoder Facility
 facility =
-    object5 (\id name kind position services -> { id = id, name = name, kind = kind, position = position, services = services })
+    object6
+        (\id name kind position services adm ->
+            { id = id
+            , name = name
+            , kind = kind
+            , position = position
+            , services = services
+            , adm = adm
+            }
+        )
         ("id" := int)
         ("name" := string)
         ("kind" := string)
         ("position" := latLng)
         ("service_names" := list string)
+        ("adm" := list string)
 
 
 service : Decoder Service

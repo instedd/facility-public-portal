@@ -3,10 +3,11 @@ module View exposing (view)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events
+import Json.Decode
 import Messages exposing (..)
 import Models exposing (..)
 import Routing
-import Json.Decode
+import String
 
 
 view : Model -> Html Msg
@@ -125,14 +126,22 @@ suggestions model s =
 suggestion : Model -> Suggestion -> Html Msg
 suggestion model s =
     case s of
-        F { id, name, kind, services } ->
-            a
-                [ class "collection-item avatar suggestion facility"
-                , onClick <| navFacility id
-                ]
-                [ icon "location_on"
-                , span [ class "title" ] [ text name ]
-                ]
+        F { id, name, kind, services, adm } ->
+            let
+                sub =
+                    adm
+                        |> List.drop 1
+                        |> List.reverse
+                        |> String.join ", "
+            in
+                a
+                    [ class "collection-item avatar suggestion facility"
+                    , onClick <| navFacility id
+                    ]
+                    [ icon "local_hospital"
+                    , span [ class "title" ] [ text name ]
+                    , p [ class "sub" ] [ text sub ]
+                    ]
 
         S { id, name, facilityCount } ->
             a
@@ -141,7 +150,7 @@ suggestion model s =
                 ]
                 [ icon "label"
                 , span [ class "title" ] [ text name ]
-                , p [ class "kind" ] [ text (toString facilityCount ++ " facilities") ]
+                , p [ class "sub" ] [ text (toString facilityCount ++ " facilities") ]
                 ]
 
 
@@ -165,7 +174,7 @@ facility f =
         ]
         [ icon "location_on"
         , span [ class "title" ] [ text f.name ]
-        , p [ class "kind" ] [ text f.kind ]
+        , p [ class "sub" ] [ text f.kind ]
         ]
 
 
