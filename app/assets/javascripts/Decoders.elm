@@ -11,9 +11,10 @@ search =
 
 suggestions : Decoder (List Suggestion)
 suggestions =
-    object2 (++)
+    object3 (\f s l -> f ++ l ++ s)
         ("facilities" := list (map F facility))
         ("services" := list (map S service))
+        ("locations" := list (map L location))
 
 
 facility : Decoder Facility
@@ -42,6 +43,13 @@ service =
         ("id" := int)
         ("name" := string)
         ("facility_count" := int)
+
+
+location : Decoder Location
+location =
+    object2 (\name parentName -> { name = name, parentName = parentName })
+        ("name" := string)
+        ("parent_name" := string)
 
 
 latLng : Decoder LatLng

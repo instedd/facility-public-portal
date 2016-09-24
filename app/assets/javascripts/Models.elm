@@ -29,9 +29,16 @@ type alias Service =
     }
 
 
+type alias Location =
+    { name : String
+    , parentName : String
+    }
+
+
 type Suggestion
     = F Facility
     | S Service
+    | L Location
 
 
 type alias Model =

@@ -127,21 +127,15 @@ suggestion : Model -> Suggestion -> Html Msg
 suggestion model s =
     case s of
         F { id, name, kind, services, adm } ->
-            let
-                sub =
-                    adm
-                        |> List.drop 1
-                        |> List.reverse
-                        |> String.join ", "
-            in
-                a
-                    [ class "collection-item avatar suggestion facility"
-                    , onClick <| navFacility id
-                    ]
-                    [ icon "local_hospital"
-                    , span [ class "title" ] [ text name ]
-                    , p [ class "sub" ] [ text sub ]
-                    ]
+            a
+                [ class "collection-item avatar suggestion facility"
+                , onClick <| navFacility id
+                ]
+                [ icon "local_hospital"
+                , span [ class "title" ] [ text name ]
+                , p [ class "sub" ]
+                    [ text (adm |> List.drop 1 |> List.reverse |> String.join ", ") ]
+                ]
 
         S { id, name, facilityCount } ->
             a
@@ -150,7 +144,17 @@ suggestion model s =
                 ]
                 [ icon "label"
                 , span [ class "title" ] [ text name ]
-                , p [ class "sub" ] [ text (toString facilityCount ++ " facilities") ]
+                , p [ class "sub" ]
+                    [ text <| toString facilityCount ++ " facilities" ]
+                ]
+
+        L { name, parentName } ->
+            a
+                [ class "collection-item avatar suggestion location" ]
+                [ icon "location_on"
+                , span [ class "title" ] [ text name ]
+                , p [ class "sub" ]
+                    [ text parentName ]
                 ]
 
 
@@ -172,7 +176,7 @@ facility f =
         [ class "collection-item result avatar"
         , onClick <| navFacility f.id
         ]
-        [ icon "location_on"
+        [ icon "local_hospital"
         , span [ class "title" ] [ text f.name ]
         , p [ class "sub" ] [ text f.kind ]
         ]

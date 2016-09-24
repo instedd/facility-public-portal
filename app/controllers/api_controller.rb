@@ -6,11 +6,13 @@ class ApiController < ActionController::Base
   end
 
   def suggest
+    service = ElasticsearchService.instance
     query = params[:q]
 
     results = {
-      facilities: ElasticsearchService.instance.suggest_facilities(params),
-      services: ElasticsearchService.instance.suggest_services(query)
+      facilities: service.suggest_facilities(params),
+      services: service.suggest_services(query),
+      locations: service.suggest_locations(query)
     }
     render json: results
   end

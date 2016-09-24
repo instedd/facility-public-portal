@@ -153,6 +153,7 @@ class ElasticsearchService
                              index: @index_name,
                              type: 'location',
                              body: {
+                               size: 3,
                                query: {
                                  match_phrase_prefix: {
                                    name: query
