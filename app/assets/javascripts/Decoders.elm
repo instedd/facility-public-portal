@@ -11,7 +11,7 @@ search =
 
 suggestions : Decoder (List Suggestion)
 suggestions =
-    object3 (\f s l -> f ++ l ++ s)
+    object3 (\f s l -> f ++ s ++ l)
         ("facilities" := list (map F facility))
         ("services" := list (map S service))
         ("locations" := list (map L location))
