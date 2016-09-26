@@ -49,6 +49,9 @@ searchPath base params =
                 , params.s
                     |> Maybe.map (\s -> [ ( "s", toString s ) ])
                     |> Maybe.withDefault []
+                , params.l
+                    |> Maybe.map (\l -> [ ( "l", toString l ) ])
+                    |> Maybe.withDefault []
                 , params.latLng
                     |> Maybe.map (\( lat, lng ) -> [ ( "lat", toString lat ), ( "lng", toString lng ) ])
                     |> Maybe.withDefault []
@@ -80,6 +83,9 @@ matchers =
                         &> stringToQuery
                 , s =
                     Dict.get "s" params
+                        &> (String.toInt >> Result.toMaybe)
+                , l =
+                    Dict.get "l" params
                         &> (String.toInt >> Result.toMaybe)
                 , latLng = paramsLatLng params
                 }

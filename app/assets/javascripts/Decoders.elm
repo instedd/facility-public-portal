@@ -47,7 +47,8 @@ service =
 
 location : Decoder Location
 location =
-    object2 (\name parentName -> { name = name, parentName = parentName })
+    object3 (\id name parentName -> { id = id, name = name, parentName = parentName })
+        ("id" := int)
         ("name" := string)
         ("parent_name" := string)
 

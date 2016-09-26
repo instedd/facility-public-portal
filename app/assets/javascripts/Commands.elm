@@ -82,7 +82,7 @@ getSuggestions : Model -> Cmd Msg
 getSuggestions model =
     let
         params =
-            { q = Just model.query, s = Nothing, latLng = model.userLocation }
+            { q = Just model.query, s = Nothing, l = Nothing, latLng = model.userLocation }
 
         url =
             Routing.searchPath "/api/suggest" params

@@ -63,6 +63,15 @@ RSpec.describe ElasticsearchService do
       end
     end
 
+    describe "by administrative location" do
+      it "works!" do
+        search_assert({ l: 1 }, expected_ids: [1,2])
+        search_assert({ l: 2 }, expected_ids: [1,2])
+        search_assert({ l: 3 }, expected_ids: 1)
+        search_assert({ l: 4 }, expected_ids: 2)
+      end
+    end
+
     describe "sorting by user location" do
       it "works!" do
         search_assert({ lat: 8.959169, lng: 38.827452 }, expected_ids: [1, 2])
@@ -88,11 +97,14 @@ RSpec.describe ElasticsearchService do
     describe "locations" do
       it "works" do
         results = @service.suggest_locations("Hadi")
-        expect(results).to eq([{
-                                 "name" => "Hadiya Zone",
-                                 "facility_count" => 1,
-                                 "parent_name" => "Snnp Region",
-                               }])
+        expect(results.size).to eq(1)
+
+        results[0].tap do |r|
+          expect(r["id"]).to eq(4)
+          expect(r["name"]).to eq("Hadiya Zone")
+          expect(r["facility_count"]).to eq(1)
+          expect(r["parent_name"]).to eq("Snnp Region")
+        end
       end
     end
   end

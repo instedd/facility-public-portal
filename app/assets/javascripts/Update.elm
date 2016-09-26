@@ -29,7 +29,7 @@ update msg model =
         Search ->
             let
                 newRoute =
-                    Routing.SearchRoute { q = stringToQuery model.query, s = Nothing, latLng = model.userLocation }
+                    Routing.SearchRoute { q = stringToQuery model.query, s = Nothing, l = Nothing, latLng = model.userLocation }
             in
                 ( model, Routing.navigate newRoute )
 

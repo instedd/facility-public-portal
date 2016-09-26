@@ -94,7 +94,7 @@ facilityDetail facility =
             [ span [] [ text facility.name ]
             , i
                 [ class "material-icons right"
-                , onClick <| navSearch { q = Nothing, s = Nothing, latLng = Nothing }
+                , onClick <| navSearch { q = Nothing, s = Nothing, l = Nothing, latLng = Nothing }
                 ]
                 [ text "clear" ]
             ]
@@ -140,7 +140,7 @@ suggestion model s =
         S { id, name, facilityCount } ->
             a
                 [ class "collection-item avatar suggestion service"
-                , onClick <| navSearch { q = Nothing, s = Just id, latLng = model.userLocation }
+                , onClick <| navSearch { q = Nothing, s = Just id, l = Nothing, latLng = model.userLocation }
                 ]
                 [ icon "label"
                 , span [ class "title" ] [ text name ]
@@ -148,9 +148,11 @@ suggestion model s =
                     [ text <| toString facilityCount ++ " facilities" ]
                 ]
 
-        L { name, parentName } ->
+        L { id, name, parentName } ->
             a
-                [ class "collection-item avatar suggestion location" ]
+                [ class "collection-item avatar suggestion location"
+                , onClick <| navSearch { q = Nothing, s = Nothing, l = Just id, latLng = model.userLocation }
+                ]
                 [ icon "location_on"
                 , span [ class "title" ] [ text name ]
                 , p [ class "sub" ]

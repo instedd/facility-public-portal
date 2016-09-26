@@ -81,6 +81,10 @@ class ElasticsearchService
       search_body[:query][:bool][:must] << { match: { service_ids: params[:s] } }
     end
 
+    if params[:l]
+      search_body[:query][:bool][:must] << { match: { adm_ids: params[:l] } }
+    end
+
     if params[:lat] && params[:lng]
       search_body[:sort] = {
         _geo_distance: {
@@ -162,7 +166,7 @@ class ElasticsearchService
                              }})
 
     result["hits"]["hits"].map do |r|
-      r["_source"].slice("name", "facility_count", "parent_name")
+      r["_source"].slice("id", "name", "facility_count", "parent_name")
     end
   end
 
