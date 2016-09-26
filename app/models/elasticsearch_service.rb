@@ -38,30 +38,27 @@ class ElasticsearchService
   end
 
   def index_facility(facility)
-    client.index({
-      index: @index_name,
-      type: 'facility',
-      id: facility[:id],
-      body: facility,
-    })
+    index_document 'facility', facility
+  end
+
+  def index_facility_batch(facilities)
+    index_batch 'facility', facilities
   end
 
   def index_service(service)
-    client.index({
-      index: @index_name,
-      type: 'service',
-      id: service[:id],
-      body: service
-    })
+    index_document 'service', service
+  end
+
+  def index_service_batch(services)
+    index_batch 'service', services
   end
 
   def index_location(location)
-    client.index({
-      index: @index_name,
-      type: 'location',
-      id: location[:id],
-      body: location
-    })
+    index_document 'location', location
+  end
+
+  def index_location_batch(locations)
+    index_batch 'location', locations
   end
 
   def search_facilities(params, count: 50)
@@ -191,4 +188,19 @@ class ElasticsearchService
     document
   end
 
+  def index_document(type, doc)
+    client.index({
+      index: @index_name,
+      type: type,
+      id: doc[:id],
+      body: doc,
+    })
+  end
+
+  def index_batch(type, docs)
+    actions = docs.flat_map do |doc|
+      [{ index: { _index: @index_name, _type: type, _id: doc[:id] } }, doc]
+    end
+    client.bulk body: actions
+  end
 end

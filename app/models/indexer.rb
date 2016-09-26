@@ -8,6 +8,8 @@ class Indexer
     @imported_facilities = 0
     @imported_services = 0
     @imported_locations = 0
+
+    @batch_size = ENV['INDEXING_BATCH_SIZE'] || 100
   end
 
   def run
@@ -16,29 +18,36 @@ class Indexer
     locations_by_id = build_locations_by_id(@records)
     locations_by_path = locations_by_id.values.index_by { |l| l[:path_names] }
 
-    @records.each do |record|
-      facility = build_facility(record, services_by_code, locations_by_path)
+    @records.each_slice(@batch_size) do |group|
+      batch = []
 
-      @service.index_facility(facility)
-      @imported_facilities += 1
+      facilities = group.each do |record|
+        facility = build_facility(record, services_by_code, locations_by_path)
 
-      record[:service_codes].each do |code|
-        services_by_code[code][:facility_count] += 1
+        record[:service_codes].each do |code|
+          services_by_code[code][:facility_count] += 1
+        end
+
+        facility[:adm_ids].each do |id|
+          locations_by_id[id][:facility_count] += 1
+        end
+
+        @imported_facilities += 1
+
+        batch << facility
       end
 
-      facility[:adm_ids].each do |id|
-        locations_by_id[id][:facility_count] += 1
-      end
+      @service.index_facility_batch(batch)
     end
 
-    locations_by_id.values.each do |location|
-      @service.index_location location
-      @imported_locations += 1
+    locations_by_id.values.each_slice(@batch_size) do |locations|
+      @service.index_location_batch locations
+      @imported_locations += locations.size
     end
 
-    services_by_code.values.each do |service|
-      @service.index_service service
-      @imported_services += 1
+    services_by_code.values.each_slice(@batch_size) do |services|
+      @service.index_service_batch services
+      @imported_services += services.size
     end
 
     {imported_facilities: @imported_facilities, imported_services: @imported_services, imported_locations: @imported_locations}
