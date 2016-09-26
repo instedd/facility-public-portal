@@ -37,7 +37,7 @@ header =
     nav [ id "TopNav", class "z-depth-0" ]
         [ div [ class "nav-wrapper" ]
             [ a []
-                [ img [ src "/assets/logo.png" ] [] ]
+                [ img [ id "logo", src "/assets/logo.svg" ] [] ]
             , a [ class "right" ]
                 [ icon "menu" ]
             ]
