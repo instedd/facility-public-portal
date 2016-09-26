@@ -1,10 +1,11 @@
-module Routing exposing (Route(..), parser, navigate, searchPath, routeFromResult)
+module Routing exposing (Route(..), parser, navigate, routeFromResult)
 
 import Dict exposing (Dict)
 import Http
 import Maybe exposing (andThen)
-import Models exposing (SearchSpec)
+import Models
 import Navigation
+import Search exposing (SearchSpec)
 import String
 import UrlParser exposing (..)
 import Utils exposing (..)
@@ -27,7 +28,7 @@ navigate route =
         url =
             case route of
                 SearchRoute params ->
-                    searchPath "/" params
+                    Search.path "/" params
 
                 FacilityRoute id ->
                     "/facilities/" ++ (toString id)
@@ -36,28 +37,6 @@ navigate route =
                     "/not-found"
     in
         Navigation.newUrl url
-
-
-searchPath : String -> SearchSpec -> String
-searchPath base params =
-    let
-        queryParams =
-            List.concat
-                [ params.q
-                    |> Maybe.map (\q -> [ ( "q", q ) ])
-                    |> Maybe.withDefault []
-                , params.s
-                    |> Maybe.map (\s -> [ ( "s", toString s ) ])
-                    |> Maybe.withDefault []
-                , params.l
-                    |> Maybe.map (\l -> [ ( "l", toString l ) ])
-                    |> Maybe.withDefault []
-                , params.latLng
-                    |> Maybe.map (\( lat, lng ) -> [ ( "lat", toString lat ), ( "lng", toString lng ) ])
-                    |> Maybe.withDefault []
-                ]
-    in
-        buildPath base queryParams
 
 
 routeFromResult : Result String Route -> Route
@@ -77,18 +56,7 @@ matchers : Parser ((Dict String String -> Route) -> a) a
 matchers =
     let
         makeSearchRoute params =
-            SearchRoute
-                { q =
-                    Dict.get "q" params
-                        &> stringToQuery
-                , s =
-                    Dict.get "s" params
-                        &> (String.toInt >> Result.toMaybe)
-                , l =
-                    Dict.get "l" params
-                        &> (String.toInt >> Result.toMaybe)
-                , latLng = paramsLatLng params
-                }
+            SearchRoute (Search.specFromParams params)
 
         makeFacilityRoute id params =
             FacilityRoute id
@@ -97,28 +65,6 @@ matchers =
             [ format makeSearchRoute (s "")
             , format makeFacilityRoute (s "facilities" </> int)
             ]
-
-
-paramsLatLng : Dict String String -> Maybe Models.LatLng
-paramsLatLng params =
-    let
-        mlat =
-            floatParam "lat" params
-
-        mlng =
-            floatParam "lng" params
-    in
-        mlat `andThen` \lat -> Maybe.map ((,) lat) mlng
-
-
-floatParam : String -> Dict String String -> Maybe Float
-floatParam key params =
-    case Dict.get key params of
-        Nothing ->
-            Nothing
-
-        Just v ->
-            Result.toMaybe (String.toFloat v)
 
 
 parseQuery : String -> Dict String String
@@ -153,33 +99,13 @@ parseParam s =
 
 locationParser : Navigation.Location -> Result String Route
 locationParser location =
-    let
-        query =
-            parseQuery location.search
-    in
-        location.pathname
-            -- corresponds to document.location.pathname
-            |>
-                String.dropLeft 1
-            -- remove / at the beginning
-            |>
-                parse identity matchers
-            -- parse
-            |>
-                Result.map (\p -> p query)
-
-
-buildPath : String -> List ( String, String ) -> String
-buildPath base queryParams =
-    case queryParams of
-        [] ->
-            base
-
-        _ ->
-            String.concat
-                [ base
-                , "?"
-                , queryParams
-                    |> List.map (\( k, v ) -> k ++ "=" ++ Http.uriEncode v)
-                    |> String.join "&"
-                ]
+    location.pathname
+        -- corresponds to document.location.pathname
+        |>
+            String.dropLeft 1
+        -- remove / at the beginning
+        |>
+            parse identity matchers
+        -- parse
+        |>
+            Result.map (\p -> p (parseQuery location.search))

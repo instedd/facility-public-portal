@@ -1,6 +1,7 @@
 module Utils exposing (..)
 
-import Models exposing (..)
+import Http
+import String
 
 
 (&>) : Maybe a -> (a -> Maybe b) -> Maybe b
@@ -8,14 +9,17 @@ import Models exposing (..)
     Maybe.andThen
 
 
-stringToQuery : String -> Maybe String
-stringToQuery q =
-    if q == "" then
-        Nothing
-    else
-        Just q
+buildPath : String -> List ( String, String ) -> String
+buildPath base queryParams =
+    case queryParams of
+        [] ->
+            base
 
-
-isSearchEmpty : SearchSpec -> Bool
-isSearchEmpty spec =
-    spec.q == Nothing && spec.s == Nothing && spec.latLng == Nothing
+        _ ->
+            String.concat
+                [ base
+                , "?"
+                , queryParams
+                    |> List.map (\( k, v ) -> k ++ "=" ++ Http.uriEncode v)
+                    |> String.join "&"
+                ]

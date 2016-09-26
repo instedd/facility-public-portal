@@ -7,8 +7,7 @@ import Json.Encode exposing (..)
 import Messages exposing (..)
 import Models exposing (..)
 import Process
-import Routing
-import String
+import Search exposing (SearchSpec)
 import Task
 import Time
 
@@ -78,23 +77,20 @@ geolocateUser =
         |> Task.perform LocationFailed LocationDetected
 
 
-getSuggestions : Model -> Cmd Msg
-getSuggestions model =
+getSuggestions : Maybe LatLng -> String -> Cmd Msg
+getSuggestions latLng query =
     let
-        params =
-            { q = Just model.query, s = Nothing, l = Nothing, latLng = model.userLocation }
-
         url =
-            Routing.searchPath "/api/suggest" params
+            Search.suggestionsPath "/api/suggest" latLng query
     in
-        Task.perform SuggestionsFailed (SuggestionsSuccess model.query) (Http.get Decoders.suggestions url)
+        Task.perform SuggestionsFailed (SuggestionsSuccess query) (Http.get Decoders.suggestions url)
 
 
 search : SearchSpec -> Cmd Msg
 search params =
     let
         url =
-            Routing.searchPath "/api/search" params
+            Search.path "/api/search" params
     in
         Task.perform SearchFailed SearchSuccess (Http.get Decoders.search url)
 

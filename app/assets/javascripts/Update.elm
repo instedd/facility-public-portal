@@ -4,18 +4,17 @@ import Commands
 import Messages exposing (..)
 import Models exposing (..)
 import Routing exposing (..)
-import Utils exposing (..)
+import Search
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Input query ->
-            let
-                model' =
-                    { model | query = query }
-            in
-                ( model', Commands.getSuggestions model' )
+            if query == "" then
+                ( { model | query = query, suggestions = Nothing }, Cmd.none )
+            else
+                ( { model | query = query }, Commands.getSuggestions model.userLocation query )
 
         GeolocateUser ->
             let
@@ -29,7 +28,9 @@ update msg model =
         Search ->
             let
                 newRoute =
-                    Routing.SearchRoute { q = stringToQuery model.query, s = Nothing, l = Nothing, latLng = model.userLocation }
+                    Just model.query
+                        |> Search.byQuery model.userLocation
+                        |> Routing.SearchRoute
             in
                 ( model, Routing.navigate newRoute )
 
@@ -90,7 +91,7 @@ urlUpdate result model =
                     model =
                         { model
                             | query = Maybe.withDefault "" params.q
-                            , hideResults = isSearchEmpty params
+                            , hideResults = Search.isEmpty params
                         }
                 in
                     model ! [ Commands.search params ]

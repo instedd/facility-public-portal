@@ -7,6 +7,7 @@ import Json.Decode
 import Messages exposing (..)
 import Models exposing (..)
 import Routing
+import Search
 import String
 
 
@@ -94,7 +95,7 @@ facilityDetail facility =
             [ span [] [ text facility.name ]
             , i
                 [ class "material-icons right"
-                , onClick <| navSearch { q = Nothing, s = Nothing, l = Nothing, latLng = Nothing }
+                , onClick <| navSearch Search.empty
                 ]
                 [ text "clear" ]
             ]
@@ -140,7 +141,7 @@ suggestion model s =
         S { id, name, facilityCount } ->
             a
                 [ class "collection-item avatar suggestion service"
-                , onClick <| navSearch { q = Nothing, s = Just id, l = Nothing, latLng = model.userLocation }
+                , onClick <| navSearch (Search.byService model.userLocation id)
                 ]
                 [ icon "label"
                 , span [ class "title" ] [ text name ]
@@ -151,7 +152,7 @@ suggestion model s =
         L { id, name, parentName } ->
             a
                 [ class "collection-item avatar suggestion location"
-                , onClick <| navSearch { q = Nothing, s = Nothing, l = Just id, latLng = model.userLocation }
+                , onClick <| navSearch (Search.byLocation model.userLocation id)
                 ]
                 [ icon "location_on"
                 , span [ class "title" ] [ text name ]
@@ -211,7 +212,7 @@ navFacility id =
     Navigate (Routing.FacilityRoute id)
 
 
-navSearch : SearchSpec -> Msg
+navSearch : Search.SearchSpec -> Msg
 navSearch spec =
     Navigate (Routing.SearchRoute spec)
 

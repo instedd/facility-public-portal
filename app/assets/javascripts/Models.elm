@@ -5,14 +5,6 @@ type alias LatLng =
     ( Float, Float )
 
 
-type alias SearchSpec =
-    { q : Maybe String
-    , s : Maybe Int
-    , l : Maybe Int
-    , latLng : Maybe LatLng
-    }
-
-
 type alias Facility =
     { id : Int
     , name : String
