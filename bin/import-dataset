@@ -18,6 +18,6 @@ end
 result = Indexer.index_csv(filename)
 
 puts "Done! Imported:"
-puts "\t-#{result[:imported_facilities]} facilities"
-puts "\t-#{result[:imported_services]} services"
-puts "\t-#{result[:imported_locations]} locations"
+puts "  * #{result[:imported_facilities]} facilities"
+puts "  * #{result[:imported_services]} services"
+puts "  * #{result[:imported_locations]} locations"
