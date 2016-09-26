@@ -32,7 +32,7 @@ type alias SearchSpec =
 
 isEmpty : SearchSpec -> Bool
 isEmpty spec =
-    spec.q == Nothing && spec.s == Nothing && spec.latLng == Nothing
+    spec.q == Nothing && spec.s == Nothing && spec.l == Nothing && spec.latLng == Nothing
 
 
 empty : SearchSpec
