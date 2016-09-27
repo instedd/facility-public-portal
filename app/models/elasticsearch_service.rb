@@ -26,7 +26,10 @@ class ElasticsearchService
               index: 'analyzed',
               analyzer: "standard"
             },
-            position: {type: 'geo_point'}
+            position: {type: 'geo_point'},
+            last_updated: {
+              type: 'date'
+            }
           }
         }
       }

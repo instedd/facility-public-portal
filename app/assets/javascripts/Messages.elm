@@ -3,10 +3,12 @@ module Messages exposing (..)
 import Geolocation
 import Http
 import Models exposing (..)
+import Date exposing (Date)
 
 
 type Msg
     = Input String
+    | CurrentDate Date
     | GeolocateUser
     | Search
     | SearchSuccess SearchResult

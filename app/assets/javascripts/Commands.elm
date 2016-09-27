@@ -10,6 +10,7 @@ import Process
 import Search
 import Task
 import Time
+import Utils exposing (..)
 
 
 port jsCommand : Command -> Cmd msg
@@ -115,3 +116,12 @@ fetchFacility id =
             "/api/facilities/" ++ (toString id)
     in
         Task.perform FacilityFethFailed FacilityFecthSuccess (Http.get Decoders.facility url)
+
+
+currentDate : Cmd Msg
+currentDate =
+    let
+        notFailing x =
+            notFailing x
+    in
+        Task.perform notFailing (dateFromEpochMillis >> CurrentDate) Time.now

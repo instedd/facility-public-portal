@@ -1,7 +1,10 @@
 module Decoders exposing (..)
 
-import Models exposing (..)
+import Date exposing (Date)
 import Json.Decode exposing (..)
+import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded, nullable)
+import Models exposing (..)
+import Utils exposing (..)
 
 
 search : Decoder SearchResult
@@ -13,50 +16,51 @@ search =
 
 suggestions : Decoder (List Suggestion)
 suggestions =
-    object3 (\f s l -> f ++ s ++ l)
-        ("facilities" := list (map F facility))
-        ("services" := list (map S service))
-        ("locations" := list (map L location))
+    decode (\f s l -> f ++ s ++ l)
+        |> required "facilities" (list (map F facility))
+        |> required "services" (list (map S service))
+        |> required "locations" (list (map L location))
 
 
 facility : Decoder Facility
 facility =
-    object6
-        (\id name kind position services adm ->
-            { id = id
-            , name = name
-            , kind = kind
-            , position = position
-            , services = services
-            , adm = adm
-            }
-        )
-        ("id" := int)
-        ("name" := string)
-        ("kind" := string)
-        ("position" := latLng)
-        ("service_names" := list string)
-        ("adm" := list string)
+    decode Facility
+        |> required "id" int
+        |> required "name" string
+        |> required "position" latLng
+        |> required "kind" string
+        |> required "service_names" (list string)
+        |> required "adm" (list string)
+        |> required "contact_name" (nullable string)
+        |> required "contact_phone" (nullable string)
+        |> required "contact_email" (nullable string)
+        |> required "report_to" (nullable string)
+        |> required "last_updated" date
 
 
 service : Decoder Service
 service =
-    object3 (\id name facilityCount -> { id = id, name = name, facilityCount = facilityCount })
-        ("id" := int)
-        ("name" := string)
-        ("facility_count" := int)
+    decode Service
+        |> required "id" int
+        |> required "name" string
+        |> required "facility_count" int
 
 
 location : Decoder Location
 location =
-    object3 (\id name parentName -> { id = id, name = name, parentName = parentName })
-        ("id" := int)
-        ("name" := string)
-        ("parent_name" := string)
+    decode Location
+        |> required "id" int
+        |> required "name" string
+        |> required "parent_name" string
 
 
 latLng : Decoder LatLng
 latLng =
-    object2 (\lat lng -> ( lat, lng ))
-        ("lat" := float)
-        ("lng" := float)
+    decode (,)
+        |> required "lat" float
+        |> required "lng" float
+
+
+date : Decoder Date
+date =
+    Json.Decode.map dateFromEpochSeconds float

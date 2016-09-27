@@ -1,5 +1,7 @@
 module Models exposing (..)
 
+import Date exposing (Date)
+
 
 type Route
     = RootRoute
@@ -27,6 +29,11 @@ type alias Facility =
     , kind : String
     , services : List String
     , adm : List String
+    , contactName : Maybe String
+    , contactPhone : Maybe String
+    , contactEmail : Maybe String
+    , reportTo : Maybe String
+    , lastUpdated : Date
     }
 
 
@@ -79,6 +86,7 @@ type alias Model =
     , facility : Maybe Facility
     , hideResults : Bool
     , mapViewport : MapViewport
+    , now : Maybe Date
     }
 
 

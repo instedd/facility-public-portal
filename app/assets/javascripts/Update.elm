@@ -24,11 +24,13 @@ update msg appModel =
                             , facility = Nothing
                             , hideResults = False
                             , mapViewport = mapViewport
+                            , now = Nothing
                             }
                     in
-                        ( Initialized model
-                        , Routing.navigate (Routing.routeFromResult route)
-                        )
+                        Initialized model
+                            ! [ Routing.navigate (Routing.routeFromResult route)
+                              , Commands.currentDate
+                              ]
 
                 _ ->
                     Debug.crash "map is not initialized yet"
@@ -45,6 +47,9 @@ initializedUpdate msg model =
                 ( { model | query = query, suggestions = Nothing }, Cmd.none )
             else
                 ( { model | query = query }, Commands.getSuggestions (userLocation model) query )
+
+        CurrentDate date ->
+            ( { model | now = Just date }, Cmd.none )
 
         GeolocateUser ->
             let

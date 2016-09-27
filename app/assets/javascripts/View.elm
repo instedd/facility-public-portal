@@ -1,5 +1,6 @@
 module View exposing (view)
 
+import Date exposing (Date)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events
@@ -9,6 +10,7 @@ import Models exposing (..)
 import Routing
 import Search
 import String
+import Utils exposing (timeAgo)
 
 
 view : AppModel -> Html Msg
@@ -92,7 +94,7 @@ content model =
     let
         facilityView =
             model.facility
-                |> Maybe.map facilityDetail
+                |> Maybe.map (facilityDetail model.now)
                 |> Maybe.withDefault (div [] [])
 
         searchResultsView =
@@ -107,23 +109,53 @@ content model =
             |> Maybe.withDefault searchResultsView
 
 
-facilityDetail : Facility -> Html Msg
-facilityDetail facility =
-    div [ class "facilityDetail" ]
-        [ div [ class "title" ]
-            [ span [] [ text facility.name ]
-            , i
-                [ class "material-icons right"
-                , onClick NavigateBack
+facilityDetail : Maybe Date -> Facility -> Html Msg
+facilityDetail now facility =
+    let
+        lastUpdatedSub =
+            now
+                |> Maybe.map (\date -> String.concat [ "Last updated ", timeAgo date facility.lastUpdated, " ago" ])
+                |> Maybe.withDefault ""
+
+        entry icon value =
+            value |> Maybe.withDefault "Unavailable" |> (,) icon
+
+        contactInfo =
+            [ entry "local_post_office" facility.contactEmail
+            , entry "local_phone" facility.contactPhone
+              -- , entry "public" facility.url
+              -- , entry "directions" facility.address
+            ]
+    in
+        div [ class "facilityDetail" ]
+            [ div [ class "title" ]
+                [ span [ class "name" ]
+                    [ text facility.name
+                    , span [ class "sub" ] [ text lastUpdatedSub ]
+                    ]
+                , i [ class "material-icons right", onClick NavigateBack ] [ text "clear" ]
                 ]
-                [ text "clear" ]
+            , div [ class "detailSection pic" ] [ img [ src "/assets/facility.png" ] [] ]
+            , div [ class "detailSection contact" ] [ facilityContactDetails contactInfo ]
+            , div [ class "detailSection services" ]
+                [ span [] [ text "Services" ]
+                , if List.isEmpty facility.services then
+                    div [ class "noData" ] [ text "There is currently no information about services provided by this facility." ]
+                  else
+                    ul [] (List.map (\s -> li [] [ text s ]) facility.services)
+                ]
             ]
-        , div [ class "services" ]
-            [ span [] [ text "Services" ]
-            , ul []
-                (List.map (\s -> li [] [ text s ]) facility.services)
-            ]
-        ]
+
+
+facilityContactDetails : List ( String, String ) -> Html Msg
+facilityContactDetails attributes =
+    let
+        item ( iconName, information ) =
+            li [] [ icon iconName, span [] [ text information ] ]
+    in
+        attributes
+            |> List.map item
+            |> ul []
 
 
 suggestions : Model -> List Suggestion -> Html Msg

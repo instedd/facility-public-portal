@@ -160,12 +160,17 @@ class Indexer
       adm3: record["administrative_boundaries-3"],
       adm4: record["administrative_boundaries-4"],
       adm: adm,
-      adm_ids: locations_by_path[adm][:path_ids]
+      adm_ids: locations_by_path[adm][:path_ids],
+      report_to: record["report_to"],
+      contact_email: record["poc_email"],
+      contact_phone: record["poc_phonenumber"],
+      contact_name: record["pocname"],
+      last_updated: record["last updated"].try(:to_i)
     }
   end
 
   def self.valid_csv_row?(row)
-    ["name", "facility_type", "lat", "long"].none? { |field| row[field].blank? }
+    ["name", "facility_type", "lat", "long", "last updated"].none? { |field| row[field].blank? }
   end
 
   def self.index_csv(filename, service = ElasticsearchService.instance)
@@ -179,6 +184,7 @@ class Indexer
           record = row.to_h.with_indifferent_access
           services_str = record.delete(:services)
           record[:service_codes] = services_str ? services_str.split("|") : []
+          record[:'last updated'] = DateTime.parse(record[:'last updated'])
           out << record
         end
       end
