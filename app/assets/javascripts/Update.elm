@@ -14,7 +14,7 @@ update msg model =
             if query == "" then
                 ( { model | query = query, suggestions = Nothing }, Cmd.none )
             else
-                ( { model | query = query }, Commands.getSuggestions model.userLocation query )
+                ( { model | query = query }, Commands.getSuggestions (userLocation model) query )
 
         GeolocateUser ->
             let
@@ -23,13 +23,13 @@ update msg model =
                         |> Maybe.map Commands.fakeGeolocateUser
                         |> Maybe.withDefault Commands.geolocateUser
             in
-                ( model, cmd )
+                ( { model | userLocation = Detecting }, cmd )
 
         Search ->
             let
                 newRoute =
                     Just model.query
-                        |> Search.byQuery model.userLocation
+                        |> Search.byQuery (userLocation model)
                         |> Routing.SearchRoute
             in
                 ( model, Routing.navigate newRoute )
@@ -60,12 +60,12 @@ update msg model =
             ( model, Cmd.none )
 
         LocationDetected pos ->
-            { model | userLocation = Just pos }
+            { model | userLocation = Detected pos }
                 ! [ Commands.fitContent, Commands.addUserMarker pos ]
 
         LocationFailed e ->
             -- TODO
-            ( model, Cmd.none )
+            { model | userLocation = NoLocation } ! []
 
         FacilityFecthSuccess facility ->
             { model | query = facility.name, facility = Just facility }

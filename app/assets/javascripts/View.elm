@@ -54,8 +54,21 @@ searchBar model =
                 ]
             ]
         , div [ class "location" ]
-            [ a [ href "#", onClick GeolocateUser ]
-                [ icon "my_location" ]
+            [ case model.userLocation of
+                Detecting ->
+                    div [ id "location-spinner", class "preloader-wrapper small active" ]
+                        [ div [ class "spinner-layer spinner-blue-only" ]
+                            [ div [ class "circle-clipper left" ]
+                                [ div [ class "circle" ] [] ]
+                            , div [ class "gap-patch" ] []
+                            , div [ class "circle-clipper-right" ]
+                                [ div [ class "circle" ] [] ]
+                            ]
+                        ]
+
+                _ ->
+                    a [ href "#", onClick GeolocateUser ]
+                        [ icon "my_location" ]
             ]
         ]
 
@@ -141,7 +154,7 @@ suggestion model s =
         S { id, name, facilityCount } ->
             a
                 [ class "collection-item avatar suggestion service"
-                , onClick <| navSearch (Search.byService model.userLocation id)
+                , onClick <| navSearch (Search.byService (userLocation model) id)
                 ]
                 [ icon "label"
                 , span [ class "title" ] [ text name ]
@@ -152,7 +165,7 @@ suggestion model s =
         L { id, name, parentName } ->
             a
                 [ class "collection-item avatar suggestion location"
-                , onClick <| navSearch (Search.byLocation model.userLocation id)
+                , onClick <| navSearch (Search.byLocation (userLocation model) id)
                 ]
                 [ icon "location_on"
                 , span [ class "title" ] [ text name ]

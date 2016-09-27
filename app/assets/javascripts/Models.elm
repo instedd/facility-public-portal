@@ -35,12 +35,28 @@ type Suggestion
     | L Location
 
 
+type LocationState
+    = NoLocation
+    | Detecting
+    | Detected LatLng
+
+
 type alias Model =
     { query : String
-    , userLocation : Maybe LatLng
+    , userLocation : LocationState
     , fakeLocation : Maybe LatLng
     , suggestions : Maybe (List Suggestion)
     , results : Maybe (List Facility)
     , facility : Maybe Facility
     , hideResults : Bool
     }
+
+
+userLocation : Model -> Maybe LatLng
+userLocation model =
+    case model.userLocation of
+        Detected latLng ->
+            Just latLng
+
+        _ ->
+            Nothing

@@ -37,7 +37,7 @@ init flags route =
 
         model =
             { query = ""
-            , userLocation = Nothing
+            , userLocation = NoLocation
             , fakeLocation = fakeLocation
             , suggestions = Nothing
             , results = Nothing
