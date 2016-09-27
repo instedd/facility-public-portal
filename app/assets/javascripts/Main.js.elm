@@ -26,7 +26,7 @@ main =
         }
 
 
-init : Flags -> Result String Route -> ( Model, Cmd Msg )
+init : Flags -> Result String Route -> ( AppModel, Cmd Msg )
 init flags route =
     let
         fakeLocation =
@@ -36,24 +36,15 @@ init flags route =
                 Nothing
 
         model =
-            { query = ""
-            , userLocation = NoLocation
-            , fakeLocation = fakeLocation
-            , suggestions = Nothing
-            , results = Nothing
-            , facility = Nothing
-            , hideResults = False
-            }
+            Initializing route fakeLocation
 
         cmds =
-            [ Commands.initializeMap flags.initialPosition
-            , Routing.navigate (Routing.routeFromResult route)
-            ]
+            [ Commands.initializeMap flags.initialPosition ]
     in
         model ! cmds
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : AppModel -> Sub Msg
 subscriptions model =
     Sub.batch
         [ facilityMarkerClicked (\id -> Navigate (FacilityRoute id))

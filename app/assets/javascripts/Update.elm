@@ -7,8 +7,30 @@ import Routing exposing (..)
 import Search
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> AppModel -> ( AppModel, Cmd Msg )
 update msg model =
+    case model of
+        Initializing route fakeLocation ->
+            case Debug.log "msg Initializing" msg of
+                _ ->
+                    ( Initialized
+                        { query = ""
+                        , userLocation = NoLocation
+                        , fakeLocation = fakeLocation
+                        , suggestions = Nothing
+                        , results = Nothing
+                        , facility = Nothing
+                        , hideResults = False
+                        }
+                    , Routing.navigate (Routing.routeFromResult route)
+                    )
+
+        Initialized model ->
+            toAppModel (initializedUpdate msg) model
+
+
+initializedUpdate : Msg -> Model -> ( Model, Cmd Msg )
+initializedUpdate msg model =
     case msg of
         Input query ->
             if query == "" then
@@ -104,8 +126,18 @@ update msg model =
             ( model, Routing.navigate route )
 
 
-urlUpdate : Result String Route -> Model -> ( Model, Cmd Msg )
+urlUpdate : Result String Route -> AppModel -> ( AppModel, Cmd Msg )
 urlUpdate result model =
+    case model of
+        Initializing _ _ ->
+            ( model, Cmd.none )
+
+        Initialized model ->
+            toAppModel (initializedUrlUpdate result) model
+
+
+initializedUrlUpdate : Result String Route -> Model -> ( Model, Cmd Msg )
+initializedUrlUpdate result model =
     let
         route =
             Routing.routeFromResult result
@@ -130,3 +162,12 @@ urlUpdate result model =
 
             _ ->
                 ( model, Cmd.none )
+
+
+toAppModel : (Model -> ( Model, a )) -> Model -> ( AppModel, a )
+toAppModel f model =
+    let
+        ( newModel, a ) =
+            f model
+    in
+        ( Initialized newModel, a )

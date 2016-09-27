@@ -11,7 +11,7 @@ import Search
 import String
 
 
-view : Model -> Html Msg
+view : AppModel -> Html Msg
 view model =
     div [ id "container" ]
         [ mapCanvas
@@ -24,12 +24,18 @@ mapCanvas =
     div [ id "map" ] []
 
 
-mapControl : Model -> Html Msg
+mapControl : AppModel -> Html Msg
 mapControl model =
     div [ id "map-control", class "z-depth-1" ]
-        [ header
-        , content model
-        ]
+        ([ header ]
+            ++ (case model of
+                    Initializing _ _ ->
+                        []
+
+                    Initialized model ->
+                        [ content model ]
+               )
+        )
 
 
 header : Html Msg

@@ -7,7 +7,7 @@ $(document).ready(function() {
       var latLng = [o.lat, o.lng];
       FPP.map = L.map('map', {
         zoomControl: false
-      }).setView(latLng, 13);
+      });
 
       var tileUrl = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={accessToken}';
 
@@ -19,12 +19,11 @@ $(document).ready(function() {
 
       FPP.facilityLayerGroup = L.layerGroup().addTo(FPP.map);
 
-      // TODO mapViewportChanged should be called after map is initialized
-      //      so the search can use that information to show facilities.
-      //      right now, they are loaded using the expected center only.
       FPP.map.on('moveend', function(){
         elm.ports.mapViewportChanged.send(FPP.getMapViewport());
       });
+
+      FPP.map.setView(latLng, 13);
     },
 
     addUserMarker: function (o) {

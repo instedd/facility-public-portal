@@ -80,6 +80,11 @@ type alias Model =
     }
 
 
+type AppModel
+    = Initializing (Result String Route) (Maybe LatLng)
+    | Initialized Model
+
+
 type alias SearchResult =
     { items : List Facility
     , nextUrl : Maybe String
