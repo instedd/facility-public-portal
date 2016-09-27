@@ -1,0 +1,5 @@
+dependencies:
+  post:
+    - wget https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.4.0/elasticsearch-2.4.0.tar.gz
+    - tar -xzvf elasticsearch-2.4.0.tar.gz
+    - elasticsearch-2.4.0/bin/elasticsearch: {background: true}
