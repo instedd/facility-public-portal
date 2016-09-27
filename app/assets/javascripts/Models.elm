@@ -1,6 +1,20 @@
 module Models exposing (..)
 
 
+type Route
+    = SearchRoute SearchSpec
+    | FacilityRoute Int
+    | NotFoundRoute
+
+
+type alias SearchSpec =
+    { q : Maybe String
+    , s : Maybe Int
+    , l : Maybe Int
+    , latLng : Maybe LatLng
+    }
+
+
 type alias LatLng =
     ( Float, Float )
 

@@ -1,20 +1,14 @@
-module Routing exposing (Route(..), parser, navigate, routeFromResult)
+module Routing exposing (parser, navigate, routeFromResult)
 
 import Dict exposing (Dict)
 import Http
 import Maybe exposing (andThen)
-import Models
+import Models exposing (..)
 import Navigation
-import Search exposing (SearchSpec)
+import Search
 import String
 import UrlParser exposing (..)
 import Utils exposing (..)
-
-
-type Route
-    = SearchRoute SearchSpec
-    | FacilityRoute Int
-    | NotFoundRoute
 
 
 parser : Navigation.Parser (Result String Route)

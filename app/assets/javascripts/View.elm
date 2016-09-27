@@ -222,12 +222,12 @@ onClick message =
 
 navFacility : Int -> Msg
 navFacility id =
-    Navigate (Routing.FacilityRoute id)
+    Navigate (FacilityRoute id)
 
 
-navSearch : Search.SearchSpec -> Msg
+navSearch : SearchSpec -> Msg
 navSearch spec =
-    Navigate (Routing.SearchRoute spec)
+    Navigate (SearchRoute spec)
 
 
 icon : String -> Html Msg

@@ -8,7 +8,6 @@ module Search
         , path
         , suggestionsPath
         , specFromParams
-        , SearchSpec
         )
 
 import Dict exposing (Dict)
@@ -16,15 +15,6 @@ import Maybe exposing (andThen)
 import Models exposing (..)
 import String
 import Utils exposing (..)
-
-
-type alias SearchSpec =
-    { q : Maybe String
-    , s : Maybe Int
-    , l : Maybe Int
-    , latLng : Maybe LatLng
-    }
-
 
 
 -- Building seach specs

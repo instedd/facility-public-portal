@@ -30,7 +30,7 @@ update msg model =
                 newRoute =
                     Just model.query
                         |> Search.byQuery (userLocation model)
-                        |> Routing.SearchRoute
+                        |> SearchRoute
             in
                 ( model, Routing.navigate newRoute )
 

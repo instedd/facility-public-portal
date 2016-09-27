@@ -7,7 +7,7 @@ import Json.Encode exposing (..)
 import Messages exposing (..)
 import Models exposing (..)
 import Process
-import Search exposing (SearchSpec)
+import Search
 import Task
 import Time
 

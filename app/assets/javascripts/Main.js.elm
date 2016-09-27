@@ -26,7 +26,7 @@ main =
         }
 
 
-init : Flags -> Result String Routing.Route -> ( Model, Cmd Msg )
+init : Flags -> Result String Route -> ( Model, Cmd Msg )
 init flags route =
     let
         fakeLocation =
@@ -56,6 +56,6 @@ init flags route =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ facilityMarkerClicked (\id -> Navigate (Routing.FacilityRoute id))
+        [ facilityMarkerClicked (\id -> Navigate (FacilityRoute id))
         , mapViewportChanged (\viewPort -> MapViewportChanged viewPort)
         ]

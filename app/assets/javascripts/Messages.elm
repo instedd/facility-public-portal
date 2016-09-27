@@ -3,7 +3,6 @@ module Messages exposing (..)
 import Geolocation
 import Http
 import Models exposing (..)
-import Routing exposing (Route)
 
 
 type Msg
