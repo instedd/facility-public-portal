@@ -10,7 +10,7 @@ type Msg
     = Input String
     | GeolocateUser
     | Search
-    | SearchSuccess (List Facility)
+    | SearchSuccess SearchResult
     | SearchFailed Http.Error
     | SuggestionsSuccess String (List Suggestion)
     | SuggestionsFailed Http.Error

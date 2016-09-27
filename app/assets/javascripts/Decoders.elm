@@ -4,9 +4,11 @@ import Models exposing (..)
 import Json.Decode exposing (..)
 
 
-search : Decoder (List Facility)
+search : Decoder SearchResult
 search =
-    list <| facility
+    object2 (\items nextUrl -> { items = items, nextUrl = nextUrl })
+        ("items" := list facility)
+        (maybe ("nextUrl" := string))
 
 
 suggestions : Decoder (List Suggestion)

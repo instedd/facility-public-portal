@@ -61,11 +61,15 @@ class ElasticsearchService
     index_batch 'location', locations
   end
 
-  def search_facilities(params, count: 50)
+  def search_facilities(params)
     validate_search(params)
 
+    size = params[:size].to_i || 50
+    from = params[:from].to_i || 0
+
     search_body = {
-      size: count,
+      size: size,
+      from: from,
       query: { bool: { must: [] } },
       sort: {}
     }
@@ -96,17 +100,18 @@ class ElasticsearchService
       }
     end
 
-    if params[:count]
-      search_body[:size] = params[:count]
-    end
-
     result = client.search({
       index: @index_name,
       type: 'facility',
       body: search_body
     })
 
-    result["hits"]["hits"].map { |r| api_latlng r["_source"] }
+    { items: result["hits"]["hits"].map { |r| api_latlng r["_source"] },
+      from: from,
+      size: size
+    }.tap do |h|
+      h[:next_from] = h[:from] + h[:size] if result["hits"]["hits"].count == h[:size]
+    end
   end
 
   def get_facility(id)
@@ -146,7 +151,7 @@ class ElasticsearchService
     # trades scoring and analysis capabilities in favour of search speed.
     #
     # Also, we should consider returning a summary payload to reduce network traffic.
-    search_facilities(params, count: 5)
+    search_facilities(params.merge({size: 5}))[:items]
   end
 
   def suggest_locations(query)

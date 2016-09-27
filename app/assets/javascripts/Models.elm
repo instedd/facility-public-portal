@@ -66,6 +66,12 @@ type alias Model =
     }
 
 
+type alias SearchResult =
+    { items : List Facility
+    , nextUrl : Maybe String
+    }
+
+
 userLocation : Model -> Maybe LatLng
 userLocation model =
     case model.userLocation of

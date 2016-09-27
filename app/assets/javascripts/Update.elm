@@ -34,8 +34,11 @@ update msg model =
             in
                 ( model, Routing.navigate newRoute )
 
-        SearchSuccess facilities ->
+        SearchSuccess result ->
             let
+                facilities =
+                    result.items
+
                 addFacilities =
                     List.map Commands.addFacilityMarker facilities
 

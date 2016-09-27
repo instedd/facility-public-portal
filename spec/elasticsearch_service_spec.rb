@@ -110,7 +110,7 @@ RSpec.describe ElasticsearchService do
   end
 
   def search_assert(params, expected_ids:, order_matters: false)
-    results = @service.search_facilities(params)
+    results = @service.search_facilities(params)[:items]
     actual_ids = results.map { |r| r['id'] }
     if order_matters
       expect(actual_ids).to eq(expected_ids)
