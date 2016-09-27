@@ -41,6 +41,20 @@ type LocationState
     | Detected LatLng
 
 
+type alias MapViewportBounds =
+    { north : Float
+    , south : Float
+    , east : Float
+    , west : Float
+    }
+
+
+type alias MapViewport =
+    { center : LatLng
+    , bounds : MapViewportBounds
+    }
+
+
 type alias Model =
     { query : String
     , userLocation : LocationState

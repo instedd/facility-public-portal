@@ -55,4 +55,7 @@ init flags route =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    facilityMarkerClicked (\id -> Navigate (Routing.FacilityRoute id))
+    Sub.batch
+        [ facilityMarkerClicked (\id -> Navigate (Routing.FacilityRoute id))
+        , mapViewportChanged (\viewPort -> MapViewportChanged viewPort)
+        ]

@@ -75,6 +75,9 @@ update msg model =
             -- TODO
             ( model, Cmd.none )
 
+        MapViewportChanged value ->
+            ( model, Cmd.none )
+
         Navigate route ->
             ( model, Routing.navigate route )
 

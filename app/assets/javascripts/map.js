@@ -18,6 +18,13 @@ $(document).ready(function() {
       }).addTo(FPP.map);
 
       FPP.facilityLayerGroup = L.layerGroup().addTo(FPP.map);
+
+      // TODO mapViewportChanged should be called after map is initialized
+      //      so the search can use that information to show facilities.
+      //      right now, they are loaded using the expected center only.
+      FPP.map.on('moveend', function(){
+        elm.ports.mapViewportChanged.send(FPP.getMapViewport());
+      });
     },
 
     addUserMarker: function (o) {
@@ -85,6 +92,20 @@ $(document).ready(function() {
       }
     }
   };
+
+  FPP.getMapViewport = function() {
+    var bounds = FPP.map.getBounds();
+    var center = bounds.getCenter();
+    return {
+      center: [ center.lat, center.lng ], // LatLng is a ( Float, Float ).
+      bounds: {
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest()
+      }
+    };
+  }
 
   elm.ports.jsCommand.subscribe(function(msg) {
     FPP.commands[msg[0]](msg[1]);

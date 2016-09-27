@@ -18,6 +18,9 @@ port jsCommand : Command -> Cmd msg
 port facilityMarkerClicked : (Int -> msg) -> Sub msg
 
 
+port mapViewportChanged : (MapViewport -> msg) -> Sub msg
+
+
 type alias Command =
     ( String, Json.Encode.Value )
 

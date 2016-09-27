@@ -19,3 +19,4 @@ type Msg
     | FacilityFecthSuccess Facility
     | FacilityFethFailed Http.Error
     | Navigate Route
+    | MapViewportChanged MapViewport
