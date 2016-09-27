@@ -98,6 +98,16 @@ search params =
         Task.perform SearchFailed SearchSuccess (Http.get Decoders.search url)
 
 
+searchMore : SearchResult -> Cmd Msg
+searchMore result =
+    case result.nextUrl of
+        Nothing ->
+            Cmd.none
+
+        Just nextUrl ->
+            Task.perform SearchFailed SearchLoadMoreSuccess (Http.get Decoders.search nextUrl)
+
+
 fetchFacility : Int -> Cmd Msg
 fetchFacility id =
     let

@@ -11,6 +11,7 @@ type Msg
     | GeolocateUser
     | Search
     | SearchSuccess SearchResult
+    | SearchLoadMoreSuccess SearchResult
     | SearchFailed Http.Error
     | SuggestionsSuccess String (List Suggestion)
     | SuggestionsFailed Http.Error

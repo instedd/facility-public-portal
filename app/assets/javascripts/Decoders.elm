@@ -8,7 +8,7 @@ search : Decoder SearchResult
 search =
     object2 (\items nextUrl -> { items = items, nextUrl = nextUrl })
         ("items" := list facility)
-        (maybe ("nextUrl" := string))
+        (maybe ("next_url" := string))
 
 
 suggestions : Decoder (List Suggestion)

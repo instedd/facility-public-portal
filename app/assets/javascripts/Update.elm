@@ -42,10 +42,29 @@ update msg model =
                 addFacilities =
                     List.map Commands.addFacilityMarker facilities
 
+                loadMoreFacilities =
+                    Commands.searchMore result
+
                 commands =
-                    (Commands.fitContent :: addFacilities) ++ [ Commands.clearFacilityMarkers ]
+                    (loadMoreFacilities :: Commands.fitContent :: addFacilities) ++ [ Commands.clearFacilityMarkers ]
             in
                 { model | results = Just facilities, suggestions = Nothing } ! commands
+
+        SearchLoadMoreSuccess result ->
+            let
+                facilities =
+                    result.items
+
+                addFacilities =
+                    List.map Commands.addFacilityMarker facilities
+
+                loadMoreFacilities =
+                    Commands.searchMore result
+
+                commands =
+                    loadMoreFacilities :: addFacilities
+            in
+                model ! commands
 
         SearchFailed e ->
             -- TODO
