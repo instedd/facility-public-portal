@@ -1,5 +1,23 @@
+machine:
+  services:
+    - docker
+
 dependencies:
   post:
     - wget https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.4.0/elasticsearch-2.4.0.tar.gz
     - tar -xzvf elasticsearch-2.4.0.tar.gz
     - elasticsearch-2.4.0/bin/elasticsearch: {background: true}
+
+deployment:
+  docker-main:
+    branch:
+      - master
+      - stable
+    owner: instedd
+    commands:
+      - ./docker/deploy.sh ${CIRCLE_BRANCH/#master/latest}
+  docker-tag:
+    tag: /[0-9]+(\.[0-9]+)*(-pre\d+)?/
+    owner: instedd
+    commands:
+      - ./docker/deploy.sh ${CIRCLE_TAG}
