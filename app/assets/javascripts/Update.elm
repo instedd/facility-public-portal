@@ -99,8 +99,21 @@ initializedUpdate msg model =
                 loadMoreFacilities =
                     Commands.searchMore result
 
+                shouldLoadMore =
+                    case List.head <| List.reverse facilities of
+                        Nothing ->
+                            False
+
+                        Just furthest ->
+                            distance furthest.position model.mapViewport.center < (maxDistance model.mapViewport)
+
                 commands =
-                    loadMoreFacilities :: addFacilities
+                    (if shouldLoadMore then
+                        [ loadMoreFacilities ]
+                     else
+                        []
+                    )
+                        ++ addFacilities
             in
                 model ! commands
 
@@ -193,3 +206,28 @@ toAppModel f model =
             f model
     in
         ( Initialized newModel, a )
+
+
+maxDistance : MapViewport -> Float
+maxDistance mapViewport =
+    case
+        List.maximum <|
+            List.map
+                (distance mapViewport.center)
+                [ ( mapViewport.bounds.north, mapViewport.bounds.east )
+                , ( mapViewport.bounds.north, mapViewport.bounds.west )
+                , ( mapViewport.bounds.south, mapViewport.bounds.east )
+                , ( mapViewport.bounds.south, mapViewport.bounds.west )
+                ]
+    of
+        Just d ->
+            -- 20% more of the maximum distance
+            d * 1.2
+
+        _ ->
+            Debug.crash "unreachable"
+
+
+distance : LatLng -> LatLng -> Float
+distance ( x1, y1 ) ( x2, y2 ) =
+    sqrt ((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
