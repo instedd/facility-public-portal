@@ -2,6 +2,8 @@ module Search
     exposing
         ( isEmpty
         , empty
+        , orderedFrom
+        , withOrder
         , byQuery
         , byService
         , byLocation
@@ -28,6 +30,16 @@ isEmpty spec =
 empty : SearchSpec
 empty =
     { q = Nothing, s = Nothing, l = Nothing, latLng = Nothing }
+
+
+orderedFrom : LatLng -> SearchSpec
+orderedFrom latLng =
+    withOrder latLng empty
+
+
+withOrder : LatLng -> SearchSpec -> SearchSpec
+withOrder latLng spec =
+    { spec | latLng = (Just latLng) }
 
 
 byQuery : Maybe LatLng -> Maybe String -> SearchSpec

@@ -5,25 +5,33 @@ import Messages exposing (..)
 import Models exposing (..)
 import Routing exposing (..)
 import Search
+import Navigation
 
 
 update : Msg -> AppModel -> ( AppModel, Cmd Msg )
-update msg model =
-    case model of
+update msg appModel =
+    case appModel of
         Initializing route fakeLocation ->
-            case Debug.log "msg Initializing" msg of
+            case msg of
+                MapViewportChanged mapViewport ->
+                    let
+                        model =
+                            { query = ""
+                            , userLocation = NoLocation
+                            , fakeLocation = fakeLocation
+                            , suggestions = Nothing
+                            , results = Nothing
+                            , facility = Nothing
+                            , hideResults = False
+                            , mapViewport = mapViewport
+                            }
+                    in
+                        ( Initialized model
+                        , Routing.navigate (Routing.routeFromResult route)
+                        )
+
                 _ ->
-                    ( Initialized
-                        { query = ""
-                        , userLocation = NoLocation
-                        , fakeLocation = fakeLocation
-                        , suggestions = Nothing
-                        , results = Nothing
-                        , facility = Nothing
-                        , hideResults = False
-                        }
-                    , Routing.navigate (Routing.routeFromResult route)
-                    )
+                    Debug.crash "map is not initialized yet"
 
         Initialized model ->
             toAppModel (initializedUpdate msg) model
@@ -50,9 +58,12 @@ initializedUpdate msg model =
         Search ->
             let
                 newRoute =
-                    Just model.query
-                        |> Search.byQuery (userLocation model)
-                        |> SearchRoute
+                    if model.query == "" then
+                        RootRoute
+                    else
+                        Just model.query
+                            |> Search.byQuery (Just model.mapViewport.center)
+                            |> SearchRoute
             in
                 ( model, Routing.navigate newRoute )
 
@@ -119,11 +130,14 @@ initializedUpdate msg model =
             -- TODO
             ( model, Cmd.none )
 
-        MapViewportChanged value ->
-            ( model, Cmd.none )
+        MapViewportChanged mapViewport ->
+            ( { model | mapViewport = mapViewport }, Cmd.none )
 
         Navigate route ->
             ( model, Routing.navigate route )
+
+        NavigateBack ->
+            ( model, Navigation.back 1 )
 
 
 urlUpdate : Result String Route -> AppModel -> ( AppModel, Cmd Msg )
@@ -143,6 +157,9 @@ initializedUrlUpdate result model =
             Routing.routeFromResult result
     in
         case route of
+            RootRoute ->
+                ( { model | hideResults = True }, Commands.search <| Search.orderedFrom model.mapViewport.center )
+
             SearchRoute params ->
                 let
                     model =
@@ -151,7 +168,7 @@ initializedUrlUpdate result model =
                             , hideResults = Search.isEmpty params
                         }
                 in
-                    model ! [ Commands.search params ]
+                    model ! [ Commands.search (Search.withOrder model.mapViewport.center params) ]
 
             FacilityRoute id ->
                 let
@@ -160,7 +177,7 @@ initializedUrlUpdate result model =
                 in
                     model ! [ Commands.fetchFacility id, Commands.clearFacilityMarkers ]
 
-            _ ->
+            NotFoundRoute ->
                 ( model, Cmd.none )
 
 

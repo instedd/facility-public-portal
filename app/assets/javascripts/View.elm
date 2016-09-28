@@ -114,7 +114,7 @@ facilityDetail facility =
             [ span [] [ text facility.name ]
             , i
                 [ class "material-icons right"
-                , onClick <| navSearch Search.empty
+                , onClick NavigateBack
                 ]
                 [ text "clear" ]
             ]

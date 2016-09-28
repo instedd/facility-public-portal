@@ -21,8 +21,11 @@ navigate route =
     let
         url =
             case route of
+                RootRoute ->
+                    "/"
+
                 SearchRoute params ->
-                    Search.path "/" params
+                    Search.path "/search" params
 
                 FacilityRoute id ->
                     "/facilities/" ++ (toString id)
@@ -49,6 +52,9 @@ routeFromResult =
 matchers : Parser ((Dict String String -> Route) -> a) a
 matchers =
     let
+        makeRootRoute params =
+            RootRoute
+
         makeSearchRoute params =
             SearchRoute (Search.specFromParams params)
 
@@ -56,7 +62,8 @@ matchers =
             FacilityRoute id
     in
         oneOf
-            [ format makeSearchRoute (s "")
+            [ format makeRootRoute (s "")
+            , format makeSearchRoute (s "search")
             , format makeFacilityRoute (s "facilities" </> int)
             ]
 

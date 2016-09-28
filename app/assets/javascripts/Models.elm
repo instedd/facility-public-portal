@@ -2,7 +2,8 @@ module Models exposing (..)
 
 
 type Route
-    = SearchRoute SearchSpec
+    = RootRoute
+    | SearchRoute SearchSpec
     | FacilityRoute Int
     | NotFoundRoute
 
@@ -77,6 +78,7 @@ type alias Model =
     , results : Maybe (List Facility)
     , facility : Maybe Facility
     , hideResults : Bool
+    , mapViewport : MapViewport
     }
 
 
@@ -98,4 +100,4 @@ userLocation model =
             Just latLng
 
         _ ->
-            Nothing
+            Just model.mapViewport.center
