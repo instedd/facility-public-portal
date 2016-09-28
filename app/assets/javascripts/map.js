@@ -88,7 +88,7 @@ $(document).ready(function() {
 
       // bounds are invalid when there are no elements
       if (group.getBounds().isValid()) {
-        FPP.map.fitBounds(group.getBounds(), { paddingTopLeft: [controlWidth, 0] });
+        FPP.map.fitBounds(group.getBounds());
       }
     }
   };
