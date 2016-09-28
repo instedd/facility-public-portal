@@ -1,0 +1,38 @@
+version: '2'
+
+services:
+  web:
+    build: .
+    environment:
+      SECRET_KEY_BASE: fpp
+      DATABASE_HOST: postgres
+      DATABASE_USER: fpp
+      DATABASE_PASSWORD: fpp
+      DATABASE_NAME: fpp
+      ELASTICSEARCH_URL: elasticsearch
+    ports:
+      - "3000:80"
+
+  elasticsearch:
+    image: elasticsearch:2.4
+    environment:
+      ES_HEAP_SIZE: 512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - elastic:/usr/share/elasticsearch/data
+
+  postgres:
+    image: postgres:9.5
+    environment:
+      POSTGRES_PASSWORD: fpp
+      POSTGRES_USER: fpp
+      POSTGRES_DB: fpp
+    ports:
+      - "5432:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+
+volumes:
+  db:
+  elastic:
