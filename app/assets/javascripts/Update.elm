@@ -106,7 +106,7 @@ initializedUpdate msg model =
 
         SearchFailed e ->
             -- TODO
-            ( model, Cmd.none )
+            Debug.crash "Invalid SearchResult"
 
         SuggestionsSuccess query suggestions ->
             if (query == model.query) then
