@@ -87,6 +87,7 @@ type alias Model =
     , hideResults : Bool
     , mapViewport : MapViewport
     , now : Maybe Date
+    , currentSearch : Maybe SearchSpec
     }
 
 

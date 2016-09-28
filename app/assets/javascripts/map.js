@@ -58,6 +58,7 @@ $(document).ready(function() {
       var latLng = [o.position.lat, o.position.lng];
       var id = o.id;
 
+      // TODO should avoid adding multiple markers (when user is panning this might happen)
       var facilityMarker =
         L.circleMarker(latLng, {
           radius: 8,

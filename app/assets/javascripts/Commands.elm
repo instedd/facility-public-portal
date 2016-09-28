@@ -99,6 +99,15 @@ search params =
         Task.perform SearchFailed SearchSuccess (Http.get Decoders.search url)
 
 
+appendSearch : SearchSpec -> Cmd Msg
+appendSearch params =
+    let
+        url =
+            Search.path "/api/search" params
+    in
+        Task.perform SearchFailed SearchLoadMoreSuccess (Http.get Decoders.search url)
+
+
 searchMore : SearchResult -> Cmd Msg
 searchMore result =
     case result.nextUrl of

@@ -25,6 +25,7 @@ update msg appModel =
                             , hideResults = False
                             , mapViewport = mapViewport
                             , now = Nothing
+                            , currentSearch = Nothing
                             }
                     in
                         Initialized model
@@ -149,7 +150,16 @@ initializedUpdate msg model =
             ( model, Cmd.none )
 
         MapViewportChanged mapViewport ->
-            ( { model | mapViewport = mapViewport }, Cmd.none )
+            let
+                command =
+                    case model.currentSearch of
+                        Nothing ->
+                            Cmd.none
+
+                        Just searchSpec ->
+                            Commands.appendSearch (Search.withOrder model.mapViewport.center searchSpec)
+            in
+                ( { model | mapViewport = mapViewport }, command )
 
         Navigate route ->
             ( model, Routing.navigate route )
@@ -176,7 +186,7 @@ initializedUrlUpdate result model =
     in
         case route of
             RootRoute ->
-                ( { model | hideResults = True }, Commands.search <| Search.orderedFrom model.mapViewport.center )
+                ( { model | hideResults = True, currentSearch = Just Search.empty }, Commands.search <| Search.orderedFrom model.mapViewport.center )
 
             SearchRoute params ->
                 let
@@ -184,6 +194,7 @@ initializedUrlUpdate result model =
                         { model
                             | query = Maybe.withDefault "" params.q
                             , hideResults = Search.isEmpty params
+                            , currentSearch = Just params
                         }
                 in
                     model ! [ Commands.search (Search.withOrder model.mapViewport.center params) ]
@@ -191,7 +202,7 @@ initializedUrlUpdate result model =
             FacilityRoute id ->
                 let
                     model =
-                        { model | suggestions = Nothing, results = Nothing }
+                        { model | suggestions = Nothing, results = Nothing, currentSearch = Nothing }
                 in
                     model ! [ Commands.fetchFacility id, Commands.clearFacilityMarkers ]
 
