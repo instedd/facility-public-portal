@@ -1,4 +1,4 @@
-module Api exposing (SuggestionsMsg(..), getSuggestions, FetchFacilityMsg(..), fetchFacility)
+module Api exposing (SuggestionsMsg(..), getSuggestions, FetchFacilityMsg(..), fetchFacility, SearchMsg(..), search)
 
 import Decoders exposing (..)
 import Http
@@ -34,6 +34,20 @@ fetchFacility wmsg id =
             "/api/facilities/" ++ (toString id)
     in
         Task.perform (wmsg << FetchFacilityFailed) (wmsg << FetchFacilitySuccess) (Http.get Decoders.facility url)
+
+
+type SearchMsg
+    = SearchSuccess SearchResult
+    | SearchFailed Http.Error
+
+
+search : (SearchMsg -> msg) -> SearchSpec -> Cmd msg
+search wmsg params =
+    let
+        url =
+            path "/api/search" params
+    in
+        Task.perform (wmsg << SearchFailed) (wmsg << SearchSuccess) (Http.get Decoders.search url)
 
 
 path : String -> SearchSpec -> String

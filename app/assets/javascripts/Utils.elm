@@ -80,3 +80,12 @@ timeAgo d1 d2 =
             (toString daysPassed) ++ " days"
         else
             (toString hoursPassed) ++ " hours"
+
+
+
+--unreachable : a
+--unreachable =
+--    (\_ -> Debug.crash "This failure cannot happen.")
+--performMessage : msg -> Cmd msg
+--performMessage msg =
+--    Task.perform unreachable identity (Task.succeed msg)

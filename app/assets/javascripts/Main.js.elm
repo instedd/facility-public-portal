@@ -221,6 +221,8 @@ hostAppSearch : AppSearch.Host MainModel MainMsg
 hostAppSearch =
     { model = SearchModel
     , msg = SearchMsg
+    , facilityClicked = Navigate << FacilityRoute
+    , search = Navigate << SearchRoute
     }
 
 
