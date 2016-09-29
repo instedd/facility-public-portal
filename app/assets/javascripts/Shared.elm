@@ -68,23 +68,30 @@ searchBar userInput submitMsg inputMsg =
         ]
 
 
-suggestionsView : String -> Suggestions -> a -> (String -> a) -> Html a
-suggestionsView userInput items submitMsg inputMsg =
+type alias SuggestionHost msg =
+    { facilityClicked : Int -> msg
+    , submit : msg
+    , input : String -> msg
+    }
+
+
+suggestionsView : SuggestionHost a -> String -> Suggestions -> Html a
+suggestionsView h userInput items =
     div []
-        ([ searchBar userInput submitMsg inputMsg
+        ([ searchBar userInput h.submit h.input
          ]
             ++ (case items of
                     Nothing ->
                         []
 
                     Just s ->
-                        [ suggestionsContent s ]
+                        [ suggestionsContent h s ]
                )
         )
 
 
-suggestionsContent : List Models.Suggestion -> Html a
-suggestionsContent s =
+suggestionsContent : SuggestionHost a -> List Models.Suggestion -> Html a
+suggestionsContent h s =
     let
         entries =
             case s of
@@ -92,18 +99,18 @@ suggestionsContent s =
                     [ text "Nothing found..." ]
 
                 _ ->
-                    List.map suggestion s
+                    List.map (suggestion h) s
     in
         div [ class "collection results" ] entries
 
 
-suggestion : Models.Suggestion -> Html a
-suggestion s =
+suggestion : SuggestionHost a -> Models.Suggestion -> Html a
+suggestion h s =
     case s of
         Models.F { id, name, kind, services, adm } ->
             a
                 [ class "collection-item avatar suggestion facility"
-                  --, onClick <| navFacility id
+                , Events.onClick <| h.facilityClicked id
                 ]
                 [ icon "local_hospital"
                 , span [ class "title" ] [ text name ]

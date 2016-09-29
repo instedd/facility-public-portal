@@ -1,4 +1,4 @@
-module AppHome exposing (Host, Model, Msg, init, view, update, subscriptions)
+module AppHome exposing (Host, Model, Msg, init, view, update, subscriptions, mapViewport)
 
 import Shared
 import Api
@@ -21,6 +21,7 @@ type Msg
 type alias Host model msg =
     { model : Model -> model
     , msg : Msg -> msg
+    , facilityClicked : Int -> msg
     }
 
 
@@ -64,7 +65,13 @@ view : Host model msg -> Model -> Html msg
 view h model =
     Shared.mapWithControl <|
         Just <|
-            Shared.suggestionsView model.query model.suggestions (h.msg Search) (\x -> h.msg <| Input x)
+            Shared.suggestionsView
+                { facilityClicked = h.facilityClicked
+                , submit = h.msg Search
+                , input = h.msg << Input
+                }
+                model.query
+                model.suggestions
 
 
 subscriptions : Host model msg -> Model -> Sub msg
@@ -77,6 +84,11 @@ hostContext h =
     { setMapViewport = \mapViewport model -> { model | mapViewport = mapViewport }
     , msg = h.msg << ContextMsg
     }
+
+
+mapViewport : Model -> MapViewport
+mapViewport model =
+    model.mapViewport
 
 
 lift : Host model msg -> ( Model, Cmd msg ) -> ( model, Cmd msg )
