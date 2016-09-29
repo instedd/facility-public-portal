@@ -6,7 +6,15 @@ import Models exposing (..)
 import Navigation
 import Routing
 import Update
-import View
+
+
+--
+
+import Shared
+import AppHome
+import AppSearch
+import AppFacilityDetails
+import Html exposing (Html)
 
 
 type alias Flags =
@@ -19,24 +27,31 @@ main : Program Flags
 main =
     Navigation.programWithFlags Routing.parser
         { init = init
-        , view = View.view
-        , update = Update.update
+        , view = mainView
+        , update = mainUpdate
         , subscriptions = subscriptions
-        , urlUpdate = Update.urlUpdate
+        , urlUpdate = mainUrlUpdate
         }
 
 
-init : Flags -> Result String Route -> ( AppModel, Cmd Msg )
+type MainModel
+    = -- pending map to be initialized from flag
+      InitializingVR (Result String Route) LatLng
+      -- map initialized pending to determine which view/route to load
+    | InitializedVR MapViewport
+    | HomeModel AppHome.Model
+
+
+type MainMsg
+    = MapViewportChangedVR MapViewport
+    | HomeMsg AppHome.Msg
+
+
+init : Flags -> Result String Route -> ( MainModel, Cmd MainMsg )
 init flags route =
     let
-        fakeLocation =
-            if flags.fakeUserPosition then
-                Just flags.initialPosition
-            else
-                Nothing
-
         model =
-            Initializing route fakeLocation
+            InitializingVR route flags.initialPosition
 
         cmds =
             [ Commands.initializeMap flags.initialPosition ]
@@ -44,9 +59,56 @@ init flags route =
         model ! cmds
 
 
-subscriptions : AppModel -> Sub Msg
+subscriptions : MainModel -> Sub MainMsg
 subscriptions model =
     Sub.batch
-        [ facilityMarkerClicked (\id -> Navigate (FacilityRoute id))
-        , mapViewportChanged (\viewPort -> MapViewportChanged viewPort)
+        [ -- facilityMarkerClicked (\id -> Navigate (FacilityRoute id))
+          -- ,
+          mapViewportChanged (\viewPort -> MapViewportChangedVR viewPort)
         ]
+
+
+mainUpdate : MainMsg -> MainModel -> ( MainModel, Cmd MainMsg )
+mainUpdate msg mainModel =
+    case Debug.log "mainUpdate" mainModel of
+        InitializingVR route _ ->
+            case msg of
+                MapViewportChangedVR mapViewport ->
+                    (InitializedVR mapViewport)
+                        ! [ Routing.navigate (Routing.routeFromResult route)
+                            -- , Commands.currentDate
+                          ]
+
+                _ ->
+                    Debug.crash "map is not initialized yet"
+
+        HomeModel model ->
+            case msg of
+                HomeMsg msg ->
+                    AppHome.update HomeModel HomeMsg msg model
+
+                _ ->
+                    ( mainModel, Cmd.none )
+
+        _ ->
+            ( mainModel, Cmd.none )
+
+
+mainUrlUpdate : Result String Route -> MainModel -> ( MainModel, Cmd MainMsg )
+mainUrlUpdate result mainModel =
+    case Debug.log "mainUrlUpdate" (Routing.routeFromResult result) of
+        RootRoute ->
+            AppHome.init HomeModel HomeMsg
+
+        _ ->
+            Debug.crash "TODO"
+
+
+mainView : MainModel -> Html MainMsg
+mainView mainModel =
+    case Debug.log "mainView" mainModel of
+        HomeModel model ->
+            AppHome.view HomeMsg model
+
+        _ ->
+            Shared.mapWithControl Nothing
