@@ -6,6 +6,7 @@ import Commands
 
 type alias Host model msg =
     { setMapViewport : MapViewport -> model -> model
+    , facilityMarkerClicked : Int -> msg
     , msg : Msg -> msg
     }
 
@@ -25,4 +26,5 @@ subscriptions : Host model msg -> Sub msg
 subscriptions h =
     Sub.batch
         [ Commands.mapViewportChanged (h.msg << MapViewportChanged)
+        , Commands.facilityMarkerClicked h.facilityMarkerClicked
         ]

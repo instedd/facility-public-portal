@@ -81,6 +81,7 @@ subscriptions h model =
 hostContext : Host model msg -> Context.Host Model msg
 hostContext h =
     { setMapViewport = \mapViewport model -> { model | mapViewport = mapViewport }
+    , facilityMarkerClicked = h.facilityClicked
     , msg = h.msg << ContextMsg
     }
 

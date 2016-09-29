@@ -8,6 +8,7 @@ import Html.Events as Events
 import Models exposing (MapViewport, SearchSpec, SearchResult, Facility)
 import Shared exposing (icon)
 import Utils exposing (mapFst)
+import Commands
 
 
 type alias Model =
@@ -45,9 +46,15 @@ update h msg model =
                 Context.update (hostContext h) msg model
 
             ApiSearch (Api.SearchSuccess results) ->
-                -- TODO keep loading more results until map bounds exceeded
-                -- TODO add markers to map
-                ( { model | results = Just results }, Cmd.none )
+                let
+                    addFacilities =
+                        List.map Commands.addFacilityMarker results.items
+
+                    commands =
+                        (Commands.fitContent :: addFacilities) ++ [ Commands.clearFacilityMarkers ]
+                in
+                    -- TODO keep loading more results until map bounds exceeded
+                    { model | results = Just results } ! commands
 
             Input query ->
                 ( { model | input = query }, Cmd.none )
@@ -66,12 +73,13 @@ view h model =
 
 subscriptions : Host model msg -> Model -> Sub msg
 subscriptions h model =
-    Context.subscriptions <| hostContext h
+    (Context.subscriptions <| hostContext h)
 
 
 hostContext : Host model msg -> Context.Host Model msg
 hostContext h =
     { setMapViewport = \mapViewport model -> { model | mapViewport = mapViewport }
+    , facilityMarkerClicked = h.facilityClicked
     , msg = h.msg << ContextMsg
     }
 
