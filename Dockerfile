@@ -1,7 +1,16 @@
 FROM instedd/nginx-rails:2.3
 
 RUN apt-get update && apt-get -y install npm && rm -rf /var/lib/apt/lists/*
-RUN ln -s /usr/bin/nodejs /usr/local/bin/node && npm install -g elm
+
+WORKDIR /opt
+RUN wget https://nodejs.org/dist/v4.6.0/node-v4.6.0-linux-x64.tar.xz \
+    && tar -xvf node-v4.6.0-linux-x64.tar.xz \
+    && ln -s /opt/node-v4.6.0-linux-x64/bin/node /usr/local/bin/node \
+    && ln -s /opt/node-v4.6.0-linux-x64/bin/npm /usr/local/bin/npm \
+    && npm install -g elm \
+    && ln -s /opt/node-v4.6.0-linux-x64/lib/node_modules/elm/binwrappers/* /usr/local/bin/
+
+WORKDIR /app
 
 # Install gem bundle
 ADD Gemfile /app/
