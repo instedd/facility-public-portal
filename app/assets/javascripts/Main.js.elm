@@ -46,6 +46,7 @@ type MainModel
 type MainMsg
     = MapViewportChangedVR MapViewport
     | Navigate Route
+    | NavigateBack
     | HomeMsg AppHome.Msg
     | FacilityDetailsMsg AppFacilityDetails.Msg
 
@@ -89,6 +90,9 @@ mainUpdate msg mainModel =
     case Debug.log "mainUpdate" msg of
         Navigate route ->
             ( mainModel, Routing.navigate route )
+
+        NavigateBack ->
+            ( mainModel, Navigation.back 1 )
 
         _ ->
             case mainModel of
@@ -181,7 +185,7 @@ hostAppHome =
 
 hostAppFacilityDetails : AppFacilityDetails.Host MainModel MainMsg
 hostAppFacilityDetails =
-    { model = FacilityDetailsModel, msg = FacilityDetailsMsg }
+    { model = FacilityDetailsModel, msg = FacilityDetailsMsg, navigateBack = NavigateBack }
 
 
 
