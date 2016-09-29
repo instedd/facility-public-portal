@@ -15,9 +15,11 @@ deployment:
       - stable
     owner: instedd
     commands:
-      - ./docker/deploy.sh ${CIRCLE_BRANCH/#master/latest}
+      - ./docker/deploy.sh ${CIRCLE_BRANCH/#master/latest}:
+        timeout: 1200
   docker-tag:
     tag: /[0-9]+(\.[0-9]+)*(-pre\d+)?/
     owner: instedd
     commands:
-      - ./docker/deploy.sh ${CIRCLE_TAG}
+      - ./docker/deploy.sh ${CIRCLE_TAG}:
+        timeout: 1200
