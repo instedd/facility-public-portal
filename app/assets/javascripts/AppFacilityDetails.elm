@@ -7,7 +7,7 @@ import Html.Events as Events
 import Shared
 import Api
 import Date exposing (Date)
-import Utils
+import Utils exposing (mapFst)
 import Time
 import String
 import Task
@@ -32,14 +32,14 @@ type alias Host model msg =
 
 init : Host model msg -> MapViewport -> Int -> ( model, Cmd msg )
 init h mapViewport facilityId =
-    lift h <|
+    mapFst h.model <|
         Loading mapViewport facilityId Nothing
             ! [ Api.fetchFacility (h.msg << ApiFetch) facilityId, currentDate h ]
 
 
 update : Host model msg -> Msg -> Model -> ( model, Cmd msg )
 update h msg model =
-    lift h <|
+    mapFst h.model <|
         case msg of
             CurrentDate date ->
                 ( setDate date model, Cmd.none )
@@ -97,11 +97,6 @@ setDate date model =
 
         Loaded a b _ ->
             Loaded a b (Just date)
-
-
-lift : Host model msg -> ( Model, Cmd msg ) -> ( model, Cmd msg )
-lift h ( m, c ) =
-    ( h.model m, c )
 
 
 currentDate : Host model msg -> Cmd msg

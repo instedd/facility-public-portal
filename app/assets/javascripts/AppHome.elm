@@ -5,6 +5,7 @@ import Api
 import Html exposing (..)
 import Context
 import Models exposing (MapViewport)
+import Utils exposing (mapFst)
 
 
 type alias Model =
@@ -32,30 +33,31 @@ init h mapViewport =
 
 update : Host model msg -> Msg -> Model -> ( model, Cmd msg )
 update h msg model =
-    case msg of
-        Input query ->
-            if query == "" then
-                ( h.model { model | query = query, suggestions = Nothing }, Cmd.none )
-            else
-                -- TODO change Nothing for mapViewport.center
-                ( h.model { model | query = query }, Api.getSuggestions (h.msg << Sug) Nothing query )
+    mapFst h.model <|
+        case msg of
+            Input query ->
+                if query == "" then
+                    ( { model | query = query, suggestions = Nothing }, Cmd.none )
+                else
+                    -- TODO change Nothing for mapViewport.center
+                    ( { model | query = query }, Api.getSuggestions (h.msg << Sug) Nothing query )
 
-        Sug msg ->
-            case msg of
-                Api.SuggestionsSuccess query suggestions ->
-                    if (query == model.query) then
-                        h.model { model | suggestions = Just suggestions } ! [ Cmd.none ]
-                    else
-                        -- ignore old requests
-                        h.model model ! [ Cmd.none ]
+            Sug msg ->
+                case msg of
+                    Api.SuggestionsSuccess query suggestions ->
+                        if (query == model.query) then
+                            ( { model | suggestions = Just suggestions }, Cmd.none )
+                        else
+                            -- ignore old requests
+                            ( model, Cmd.none )
 
-                -- Ignore out of order results
-                Api.SuggestionsFailed e ->
-                    -- TODO
-                    ( h.model model, Cmd.none )
+                    -- Ignore out of order results
+                    Api.SuggestionsFailed e ->
+                        -- TODO
+                        ( model, Cmd.none )
 
-        ContextMsg msg ->
-            lift h <| Context.update (hostContext h) msg model
+            ContextMsg msg ->
+                Context.update (hostContext h) msg model
 
 
 view : Host model msg -> Model -> Html msg
@@ -86,8 +88,3 @@ hostContext h =
 mapViewport : Model -> MapViewport
 mapViewport model =
     model.mapViewport
-
-
-lift : Host model msg -> ( Model, Cmd msg ) -> ( model, Cmd msg )
-lift h ( m, c ) =
-    ( h.model m, c )

@@ -11,6 +11,11 @@ import Time
     Maybe.andThen
 
 
+mapFst : (a -> b) -> ( a, c ) -> ( b, c )
+mapFst f ( a, c ) =
+    ( f a, c )
+
+
 buildPath : String -> List ( String, String ) -> String
 buildPath base queryParams =
     case queryParams of

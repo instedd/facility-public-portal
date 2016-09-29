@@ -5,6 +5,7 @@ import Api
 import Html exposing (..)
 import Context
 import Models exposing (MapViewport, SearchSpec)
+import Utils exposing (mapFst)
 
 
 type alias Model =
@@ -23,13 +24,13 @@ type alias Host model msg =
 
 init : Host model msg -> SearchSpec -> MapViewport -> ( model, Cmd msg )
 init h query mapViewport =
-    lift h <|
+    mapFst h.model <|
         ( { query = query, mapViewport = mapViewport }, Cmd.none )
 
 
 update : Host model msg -> Msg -> Model -> ( model, Cmd msg )
 update h msg model =
-    lift h <|
+    mapFst h.model <|
         case msg of
             ContextMsg msg ->
                 -- TODO update search when viewport changes
@@ -58,8 +59,3 @@ hostContext h =
 mapViewport : Model -> MapViewport
 mapViewport model =
     model.mapViewport
-
-
-lift : Host model msg -> ( Model, Cmd msg ) -> ( model, Cmd msg )
-lift h ( m, c ) =
-    ( h.model m, c )
