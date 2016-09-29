@@ -61,11 +61,21 @@ init flags route =
 
 subscriptions : MainModel -> Sub MainMsg
 subscriptions model =
-    Sub.batch
-        [ -- facilityMarkerClicked (\id -> Navigate (FacilityRoute id))
-          -- ,
-          mapViewportChanged (\viewPort -> MapViewportChangedVR viewPort)
-        ]
+    case Debug.log "sdf" model of
+        InitializingVR _ _ ->
+            mapViewportChanged MapViewportChangedVR
+
+        InitializedVR _ ->
+            Sub.none
+
+        --Sub.batch
+        --[ -- facilityMarkerClicked (\id -> Navigate (FacilityRoute id))
+        -- ,
+        --mapViewportChanged
+        --(\viewPort -> MapViewportChangedVR viewPort)
+        --]
+        HomeModel model ->
+            AppHome.subscriptions HomeMsg model
 
 
 mainUpdate : MainMsg -> MainModel -> ( MainModel, Cmd MainMsg )
@@ -83,7 +93,7 @@ mainUpdate msg mainModel =
                     Debug.crash "map is not initialized yet"
 
         HomeModel model ->
-            case msg of
+            case Debug.log "msg" msg of
                 HomeMsg msg ->
                     AppHome.update HomeModel HomeMsg msg model
 
@@ -96,12 +106,17 @@ mainUpdate msg mainModel =
 
 mainUrlUpdate : Result String Route -> MainModel -> ( MainModel, Cmd MainMsg )
 mainUrlUpdate result mainModel =
-    case Debug.log "mainUrlUpdate" (Routing.routeFromResult result) of
-        RootRoute ->
-            AppHome.init HomeModel HomeMsg
+    case mainModel of
+        InitializedVR mapViewport ->
+            case Debug.log "mainUrlUpdate" (Routing.routeFromResult result) of
+                RootRoute ->
+                    AppHome.init HomeModel HomeMsg mapViewport
+
+                _ ->
+                    Debug.crash "TODO"
 
         _ ->
-            Debug.crash "TODO"
+            Debug.crash "urlUpdates should be handled after map is initialized"
 
 
 mainView : MainModel -> Html MainMsg
