@@ -7,15 +7,20 @@ import Html.Events as Events
 import Shared
 import Api
 import Date exposing (Date)
+import Utils
+import Time
+import String
+import Task
 
 
 type Model
-    = Loading MapViewport Int
-    | Loaded MapViewport Facility
+    = Loading MapViewport Int (Maybe Date)
+    | Loaded MapViewport Facility (Maybe Date)
 
 
 type Msg
     = ApiFetch Api.FetchFacilityMsg
+    | CurrentDate Date
 
 
 type alias Host model msg =
@@ -28,17 +33,19 @@ type alias Host model msg =
 init : Host model msg -> MapViewport -> Int -> ( model, Cmd msg )
 init h mapViewport facilityId =
     lift h <|
-        ( Loading mapViewport facilityId
-        , Api.fetchFacility (h.msg << ApiFetch) facilityId
-        )
+        Loading mapViewport facilityId Nothing
+            ! [ Api.fetchFacility (h.msg << ApiFetch) facilityId, currentDate h ]
 
 
 update : Host model msg -> Msg -> Model -> ( model, Cmd msg )
 update h msg model =
     lift h <|
         case msg of
+            CurrentDate date ->
+                ( setDate date model, Cmd.none )
+
             ApiFetch (Api.FetchFacilitySuccess facility) ->
-                ( Loaded (mapViewport model) facility, Cmd.none )
+                ( Loaded (mapViewport model) facility (date model), Cmd.none )
 
             _ ->
                 -- TODO handle error
@@ -50,11 +57,11 @@ view h model =
     Shared.mapWithControl <|
         Just <|
             case model of
-                Loading _ _ ->
+                Loading _ _ _ ->
                     Html.h3 [] [ text "Loading... " ]
 
-                Loaded _ facility ->
-                    facilityDetail h Nothing facility
+                Loaded _ facility date ->
+                    facilityDetail h date facility
 
 
 subscriptions : Host model msg -> Model -> Sub msg
@@ -65,11 +72,31 @@ subscriptions h model =
 mapViewport : Model -> MapViewport
 mapViewport model =
     case model of
-        Loading mapViewport _ ->
+        Loading mapViewport _ _ ->
             mapViewport
 
-        Loaded mapViewport _ ->
+        Loaded mapViewport _ _ ->
             mapViewport
+
+
+date : Model -> Maybe Date
+date model =
+    case model of
+        Loading _ _ date ->
+            date
+
+        Loaded _ _ date ->
+            date
+
+
+setDate : Date -> Model -> Model
+setDate date model =
+    case model of
+        Loading a b _ ->
+            Loading a b (Just date)
+
+        Loaded a b _ ->
+            Loaded a b (Just date)
 
 
 lift : Host model msg -> ( Model, Cmd msg ) -> ( model, Cmd msg )
@@ -77,15 +104,23 @@ lift h ( m, c ) =
     ( h.model m, c )
 
 
+currentDate : Host model msg -> Cmd msg
+currentDate h =
+    let
+        notFailing x =
+            notFailing x
+    in
+        Task.perform notFailing (Utils.dateFromEpochMillis >> CurrentDate >> h.msg) Time.now
+
+
 facilityDetail : Host model msg -> Maybe Date -> Facility -> Html msg
 facilityDetail h now facility =
     let
         lastUpdatedSub =
-            "XXX ago"
+            now
+                |> Maybe.map (\date -> String.concat [ "Last updated ", Utils.timeAgo date facility.lastUpdated, " ago" ])
+                |> Maybe.withDefault ""
 
-        --now
-        --    |> Maybe.map (\date -> String.concat [ "Last updated ", timeAgo date facility.lastUpdated, " ago" ])
-        --    |> Maybe.withDefault ""
         entry icon value =
             value |> Maybe.withDefault "Unavailable" |> (,) icon
 
