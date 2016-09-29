@@ -75,7 +75,7 @@ subscriptions model =
         --(\viewPort -> MapViewportChangedVR viewPort)
         --]
         HomeModel model ->
-            AppHome.subscriptions HomeMsg model
+            AppHome.subscriptions hostAppHome model
 
 
 mainUpdate : MainMsg -> MainModel -> ( MainModel, Cmd MainMsg )
@@ -95,7 +95,7 @@ mainUpdate msg mainModel =
         HomeModel model ->
             case Debug.log "msg" msg of
                 HomeMsg msg ->
-                    AppHome.update HomeModel HomeMsg msg model
+                    AppHome.update hostAppHome msg model
 
                 _ ->
                     ( mainModel, Cmd.none )
@@ -110,7 +110,7 @@ mainUrlUpdate result mainModel =
         InitializedVR mapViewport ->
             case Debug.log "mainUrlUpdate" (Routing.routeFromResult result) of
                 RootRoute ->
-                    AppHome.init HomeModel HomeMsg mapViewport
+                    AppHome.init hostAppHome mapViewport
 
                 _ ->
                     Debug.crash "TODO"
@@ -123,7 +123,12 @@ mainView : MainModel -> Html MainMsg
 mainView mainModel =
     case Debug.log "mainView" mainModel of
         HomeModel model ->
-            AppHome.view HomeMsg model
+            AppHome.view hostAppHome model
 
         _ ->
             Shared.mapWithControl Nothing
+
+
+hostAppHome : AppHome.Host MainModel MainMsg
+hostAppHome =
+    { model = HomeModel, msg = HomeMsg }

@@ -1,12 +1,12 @@
-module Context exposing (Context, Msg, update, subscriptions)
+module Context exposing (Host, Msg, update, subscriptions)
 
 import Models exposing (MapViewport)
 import Commands
 
 
-type alias Context model msg =
+type alias Host model msg =
     { setMapViewport : MapViewport -> model -> model
-    , wrapMessage : Msg -> msg
+    , msg : Msg -> msg
     }
 
 
@@ -14,15 +14,15 @@ type Msg
     = MapViewportChanged MapViewport
 
 
-update : Context model msg -> Msg -> model -> ( model, Cmd msg )
-update context msg model =
+update : Host model msg -> Msg -> model -> ( model, Cmd msg )
+update h msg model =
     case msg of
         MapViewportChanged mapViewport ->
-            ( context.setMapViewport mapViewport model, Cmd.none )
+            ( h.setMapViewport mapViewport model, Cmd.none )
 
 
-subscriptions : Context model msg -> Sub msg
-subscriptions context =
+subscriptions : Host model msg -> Sub msg
+subscriptions h =
     Sub.batch
-        [ Commands.mapViewportChanged (context.wrapMessage << MapViewportChanged)
+        [ Commands.mapViewportChanged (h.msg << MapViewportChanged)
         ]
