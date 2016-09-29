@@ -12,8 +12,7 @@ type alias Model =
 
 
 type Msg
-    = Search
-    | Input String
+    = Input String
     | Sug Api.SuggestionsMsg
     | ContextMsg Context.Msg
 
@@ -22,6 +21,7 @@ type alias Host model msg =
     { model : Model -> model
     , msg : Msg -> msg
     , facilityClicked : Int -> msg
+    , search : String -> msg
     }
 
 
@@ -33,9 +33,6 @@ init h mapViewport =
 update : Host model msg -> Msg -> Model -> ( model, Cmd msg )
 update h msg model =
     case msg of
-        Search ->
-            ( h.model model, Cmd.none )
-
         Input query ->
             if query == "" then
                 ( h.model { model | query = query, suggestions = Nothing }, Cmd.none )
@@ -67,7 +64,7 @@ view h model =
         Just <|
             Shared.suggestionsView
                 { facilityClicked = h.facilityClicked
-                , submit = h.msg Search
+                , submit = h.search model.query
                 , input = h.msg << Input
                 }
                 model.query

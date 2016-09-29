@@ -41,6 +41,7 @@ type MainModel
     | InitializedVR MapViewport
     | HomeModel AppHome.Model
     | FacilityDetailsModel AppFacilityDetails.Model
+    | SearchModel AppSearch.Model
 
 
 type MainMsg
@@ -49,6 +50,7 @@ type MainMsg
     | NavigateBack
     | HomeMsg AppHome.Msg
     | FacilityDetailsMsg AppFacilityDetails.Msg
+    | SearchMsg AppSearch.Msg
 
 
 init : Flags -> Result String Route -> ( MainModel, Cmd MainMsg )
@@ -83,6 +85,9 @@ subscriptions model =
 
         FacilityDetailsModel model ->
             AppFacilityDetails.subscriptions hostAppFacilityDetails model
+
+        SearchModel model ->
+            AppSearch.subscriptions hostAppSearch model
 
 
 mainUpdate : MainMsg -> MainModel -> ( MainModel, Cmd MainMsg )
@@ -123,6 +128,14 @@ mainUpdate msg mainModel =
                         _ ->
                             Debug.crash "unexpected message"
 
+                SearchModel model ->
+                    case msg of
+                        SearchMsg msg ->
+                            AppSearch.update hostAppSearch msg model
+
+                        _ ->
+                            Debug.crash "unexpected message"
+
                 _ ->
                     ( mainModel, Cmd.none )
 
@@ -145,6 +158,9 @@ mainUrlUpdate result mainModel =
                     FacilityRoute facilityId ->
                         AppFacilityDetails.init hostAppFacilityDetails viewport facilityId
 
+                    SearchRoute searchSpec ->
+                        AppSearch.init hostAppSearch searchSpec viewport
+
                     _ ->
                         Debug.crash "route not handled"
 
@@ -152,6 +168,9 @@ mainUrlUpdate result mainModel =
 mapViewport : MainModel -> MapViewport
 mapViewport mainModel =
     case mainModel of
+        InitializingVR _ _ ->
+            Debug.crash "mapViewport should not be called before map is initialized"
+
         InitializedVR mapViewport ->
             mapViewport
 
@@ -161,8 +180,8 @@ mapViewport mainModel =
         FacilityDetailsModel model ->
             AppFacilityDetails.mapViewport model
 
-        _ ->
-            Debug.crash "not implemented"
+        SearchModel model ->
+            AppSearch.mapViewport model
 
 
 mainView : MainModel -> Html MainMsg
@@ -174,18 +193,35 @@ mainView mainModel =
         FacilityDetailsModel model ->
             AppFacilityDetails.view hostAppFacilityDetails model
 
-        _ ->
+        SearchModel model ->
+            AppSearch.view hostAppSearch model
+
+        InitializingVR _ _ ->
+            Shared.mapWithControl Nothing
+
+        InitializedVR _ ->
             Shared.mapWithControl Nothing
 
 
 hostAppHome : AppHome.Host MainModel MainMsg
 hostAppHome =
-    { model = HomeModel, msg = HomeMsg, facilityClicked = Navigate << FacilityRoute }
+    { model = HomeModel
+    , msg = HomeMsg
+    , facilityClicked = Navigate << FacilityRoute
+    , search = Navigate << (\q -> SearchRoute { q = Just q, l = Nothing, latLng = Nothing, s = Nothing })
+    }
 
 
 hostAppFacilityDetails : AppFacilityDetails.Host MainModel MainMsg
 hostAppFacilityDetails =
     { model = FacilityDetailsModel, msg = FacilityDetailsMsg, navigateBack = NavigateBack }
+
+
+hostAppSearch : AppSearch.Host MainModel MainMsg
+hostAppSearch =
+    { model = SearchModel
+    , msg = SearchMsg
+    }
 
 
 
