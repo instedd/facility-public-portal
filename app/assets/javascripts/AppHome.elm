@@ -1,4 +1,4 @@
-module AppHome exposing (Host, Model, Msg, init, view, update, subscriptions, mapViewport)
+module AppHome exposing (Host, Model, Msg, init, view, update, subscriptions, mapViewport, userLocation)
 
 import Api exposing (emptySearch)
 import Commands
@@ -33,10 +33,10 @@ type alias Host model msg =
     }
 
 
-init : Host model msg -> MapViewport -> ( model, Cmd msg )
-init h mapViewport =
+init : Host model msg -> MapViewport -> UserLocation.Model -> ( model, Cmd msg )
+init h mapViewport userLocation =
     mapFst h.model <|
-        ( { query = "", suggestions = Nothing, mapViewport = mapViewport, userLocation = UserLocation.init (hostUserLocation h) }
+        ( { query = "", suggestions = Nothing, mapViewport = mapViewport, userLocation = userLocation }
         , searchAllFacilitiesStartingFrom h mapViewport.center
         )
 
@@ -120,6 +120,11 @@ hostMap h =
 mapViewport : Model -> MapViewport
 mapViewport model =
     model.mapViewport
+
+
+userLocation : Model -> UserLocation.Model
+userLocation model =
+    model.userLocation
 
 
 searchAllFacilitiesStartingFrom : Host model msg -> Models.LatLng -> Cmd msg

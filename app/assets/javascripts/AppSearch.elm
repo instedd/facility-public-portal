@@ -1,18 +1,19 @@
-module AppSearch exposing (Host, Model, Msg, init, view, update, subscriptions, mapViewport)
+module AppSearch exposing (Host, Model, Msg, init, view, update, subscriptions, mapViewport, userLocation)
 
 import Api
 import Map
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events
-import Models exposing (MapViewport, SearchSpec, SearchResult, Facility, shouldLoadMore)
+import Models exposing (MapViewport, SearchSpec, SearchResult, Facility, LatLng, shouldLoadMore)
 import Shared exposing (icon)
 import Utils exposing (mapFst)
 import Commands
+import UserLocation
 
 
 type alias Model =
-    { input : String, query : SearchSpec, mapViewport : MapViewport, results : Maybe SearchResult }
+    { input : String, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult }
 
 
 type Msg
@@ -21,6 +22,7 @@ type Msg
     | ApiSearchMore Api.SearchMsg
     | Input String
     | MapViewportChanged MapViewport
+    | UserLocationMsg UserLocation.Msg
 
 
 type alias Host model msg =
@@ -28,13 +30,14 @@ type alias Host model msg =
     , msg : Msg -> msg
     , search : SearchSpec -> msg
     , facilityClicked : Int -> msg
+    , fakeLocation : Maybe LatLng
     }
 
 
-init : Host model msg -> SearchSpec -> MapViewport -> ( model, Cmd msg )
-init h query mapViewport =
+init : Host model msg -> SearchSpec -> MapViewport -> UserLocation.Model -> ( model, Cmd msg )
+init h query mapViewport userLocation =
     mapFst h.model <|
-        ( { input = queryText query, query = query, mapViewport = mapViewport, results = Nothing }
+        ( { input = queryText query, query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing }
         , Api.search (h.msg << ApiSearch) { query | latLng = Just mapViewport.center }
         )
 
@@ -92,6 +95,9 @@ update h msg model =
             Input query ->
                 ( { model | input = query }, Cmd.none )
 
+            UserLocationMsg msg ->
+                UserLocation.update (hostUserLocation h) msg model
+
 
 view : Host model msg -> Model -> Html msg
 view h model =
@@ -117,6 +123,11 @@ mapViewport model =
     model.mapViewport
 
 
+userLocation : Model -> UserLocation.Model
+userLocation model =
+    model.userLocation
+
+
 searchView : Host model msg -> Model -> Html msg
 searchView h model =
     div []
@@ -135,7 +146,11 @@ queryBar h model =
         newQuery =
             { query | q = Just model.input }
     in
-        [ Shared.searchBar model.input [] (h.search newQuery) (h.msg << Input) ]
+        [ Shared.searchBar model.input
+            [ UserLocation.view (hostUserLocation h) model.userLocation ]
+            (h.search newQuery)
+            (h.msg << Input)
+        ]
 
 
 queryText : SearchSpec -> String
@@ -168,3 +183,11 @@ facilityRow h f =
         , span [ class "title" ] [ text f.name ]
         , p [ class "sub" ] [ text f.kind ]
         ]
+
+
+hostUserLocation : Host model msg -> UserLocation.Host Model msg
+hostUserLocation h =
+    { setModel = \model userLocation -> { model | userLocation = userLocation }
+    , msg = h.msg << UserLocationMsg
+    , fakeLocation = h.fakeLocation
+    }

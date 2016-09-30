@@ -32,8 +32,8 @@ type alias Host model msg =
     }
 
 
-init : Host model msg -> Model
-init h =
+init : Model
+init =
     NoLocation
 
 

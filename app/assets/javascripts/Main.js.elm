@@ -14,6 +14,7 @@ import Shared
 import AppHome
 import AppSearch
 import AppFacilityDetails
+import UserLocation
 import Html exposing (Html)
 
 
@@ -158,16 +159,19 @@ mainUrlUpdate result mainModel =
 
                 settings =
                     (getSettings mainModel)
+
+                userLocation =
+                    (getUserLocation mainModel)
             in
                 case Routing.routeFromResult result of
                     RootRoute ->
-                        AppHome.init (hostAppHome settings) viewport
+                        AppHome.init (hostAppHome settings) viewport userLocation
 
                     FacilityRoute facilityId ->
-                        AppFacilityDetails.init (hostAppFacilityDetails settings) viewport facilityId
+                        AppFacilityDetails.init (hostAppFacilityDetails settings) viewport userLocation facilityId
 
                     SearchRoute searchSpec ->
-                        AppSearch.init (hostAppSearch settings) searchSpec viewport
+                        AppSearch.init (hostAppSearch settings) searchSpec viewport userLocation
 
                     _ ->
                         Debug.crash "route not handled"
@@ -209,6 +213,22 @@ getSettings mainModel =
 
         SearchModel model settings ->
             settings
+
+
+getUserLocation : MainModel -> UserLocation.Model
+getUserLocation mainModel =
+    case mainModel of
+        HomeModel model _ ->
+            AppHome.userLocation model
+
+        FacilityDetailsModel model _ ->
+            AppFacilityDetails.userLocation model
+
+        SearchModel model _ ->
+            AppSearch.userLocation model
+
+        _ ->
+            UserLocation.init
 
 
 mainView : MainModel -> Html MainMsg
@@ -256,6 +276,7 @@ hostAppSearch settings =
     , msg = SearchMsg
     , facilityClicked = Navigate << FacilityRoute
     , search = Navigate << SearchRoute
+    , fakeLocation = settings.fakeLocation
     }
 
 
