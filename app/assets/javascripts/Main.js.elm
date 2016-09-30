@@ -1,15 +1,9 @@
 module Main exposing (..)
 
 import Commands exposing (..)
-import Messages exposing (..)
 import Models exposing (..)
 import Navigation
 import Routing
-import Update
-
-
---
-
 import Shared
 import AppHome
 import AppSearch

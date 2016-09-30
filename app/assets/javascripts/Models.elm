@@ -1,7 +1,9 @@
 module Models exposing (..)
 
 import Date exposing (Date)
-import Utils
+import Utils exposing ((&>), discardEmpty)
+import Dict exposing (Dict)
+import String
 
 
 type Route
@@ -78,39 +80,10 @@ type alias MapViewport =
     }
 
 
-type alias Model =
-    { query : String
-    , userLocation : LocationState
-    , fakeLocation : Maybe LatLng
-    , suggestions : Maybe (List Suggestion)
-    , results : Maybe (List Facility)
-    , facility : Maybe Facility
-    , hideResults : Bool
-    , mapViewport : MapViewport
-    , now : Maybe Date
-    , currentSearch : Maybe SearchSpec
-    }
-
-
-type AppModel
-    = Initializing (Result String Route) (Maybe LatLng)
-    | Initialized Model
-
-
 type alias SearchResult =
     { items : List Facility
     , nextUrl : Maybe String
     }
-
-
-userLocation : Model -> Maybe LatLng
-userLocation model =
-    case model.userLocation of
-        Detected latLng ->
-            Just latLng
-
-        _ ->
-            Just model.mapViewport.center
 
 
 maxDistance : MapViewport -> Float
@@ -146,3 +119,66 @@ shouldLoadMore results mapViewport =
 
         Just furthest ->
             distance furthest.position mapViewport.center < (maxDistance mapViewport)
+
+
+path : String -> SearchSpec -> String
+path base params =
+    let
+        queryParams =
+            List.concat
+                [ params.q
+                    |> Maybe.map (\q -> [ ( "q", q ) ])
+                    |> Maybe.withDefault []
+                , params.s
+                    |> Maybe.map (\s -> [ ( "s", toString s ) ])
+                    |> Maybe.withDefault []
+                , params.l
+                    |> Maybe.map (\l -> [ ( "l", toString l ) ])
+                    |> Maybe.withDefault []
+                , params.latLng
+                    |> Maybe.map (\( lat, lng ) -> [ ( "lat", toString lat ), ( "lng", toString lng ) ])
+                    |> Maybe.withDefault []
+                ]
+    in
+        Utils.buildPath base queryParams
+
+
+specFromParams : Dict String String -> SearchSpec
+specFromParams params =
+    { q =
+        Dict.get "q" params
+            &> discardEmpty
+    , s =
+        Dict.get "s" params
+            &> (String.toInt >> Result.toMaybe)
+    , l =
+        Dict.get "l" params
+            &> (String.toInt >> Result.toMaybe)
+    , latLng = paramsLatLng params
+    }
+
+
+
+-- Private
+
+
+paramsLatLng : Dict String String -> Maybe LatLng
+paramsLatLng params =
+    let
+        mlat =
+            floatParam "lat" params
+
+        mlng =
+            floatParam "lng" params
+    in
+        mlat &> \lat -> Maybe.map ((,) lat) mlng
+
+
+floatParam : String -> Dict String String -> Maybe Float
+floatParam key params =
+    case Dict.get key params of
+        Nothing ->
+            Nothing
+
+        Just v ->
+            Result.toMaybe (String.toFloat v)

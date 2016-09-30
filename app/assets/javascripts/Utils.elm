@@ -97,6 +97,14 @@ last l =
     List.head <| List.reverse l
 
 
+discardEmpty : String -> Maybe String
+discardEmpty q =
+    if q == "" then
+        Nothing
+    else
+        Just q
+
+
 
 --unreachable : a
 --unreachable =

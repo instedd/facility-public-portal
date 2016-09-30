@@ -4,10 +4,8 @@ import Decoders exposing (..)
 import Geolocation
 import Http
 import Json.Encode exposing (..)
-import Messages exposing (..)
 import Models exposing (..)
 import Process
-import Search
 import Task
 import Time
 import Utils exposing (..)
@@ -65,12 +63,3 @@ encodeFacility facility =
         [ ( "id", int facility.id )
         , ( "position", encodeLatLng facility.position )
         ]
-
-
-getSuggestions : Maybe LatLng -> String -> Cmd Msg
-getSuggestions latLng query =
-    let
-        url =
-            Search.suggestionsPath "/api/suggest" latLng query
-    in
-        Task.perform SuggestionsFailed (SuggestionsSuccess query) (Http.get Decoders.suggestions url)

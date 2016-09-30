@@ -60,28 +60,6 @@ searchMore wmsg result =
             Task.perform (wmsg << SearchFailed) (wmsg << SearchSuccess) (Http.get Decoders.search nextUrl)
 
 
-path : String -> SearchSpec -> String
-path base params =
-    let
-        queryParams =
-            List.concat
-                [ params.q
-                    |> Maybe.map (\q -> [ ( "q", q ) ])
-                    |> Maybe.withDefault []
-                , params.s
-                    |> Maybe.map (\s -> [ ( "s", toString s ) ])
-                    |> Maybe.withDefault []
-                , params.l
-                    |> Maybe.map (\l -> [ ( "l", toString l ) ])
-                    |> Maybe.withDefault []
-                , params.latLng
-                    |> Maybe.map (\( lat, lng ) -> [ ( "lat", toString lat ), ( "lng", toString lng ) ])
-                    |> Maybe.withDefault []
-                ]
-    in
-        buildPath base queryParams
-
-
 emptySearch : SearchSpec
 emptySearch =
     { q = Nothing, s = Nothing, l = Nothing, latLng = Nothing }
