@@ -11,6 +11,7 @@ import Utils exposing (mapFst)
 import Time
 import String
 import Task
+import Commands
 
 
 type Model
@@ -34,7 +35,11 @@ init : Host model msg -> MapViewport -> Int -> ( model, Cmd msg )
 init h mapViewport facilityId =
     mapFst h.model <|
         Loading mapViewport facilityId Nothing
-            ! [ Api.fetchFacility (h.msg << ApiFetch) facilityId, currentDate h ]
+            ! [ -- TODO should make them grey instead of removing
+                Commands.clearFacilityMarkers
+              , Api.fetchFacility (h.msg << ApiFetch) facilityId
+              , currentDate h
+              ]
 
 
 update : Host model msg -> Msg -> Model -> ( model, Cmd msg )
@@ -45,7 +50,7 @@ update h msg model =
                 ( setDate date model, Cmd.none )
 
             ApiFetch (Api.FetchFacilitySuccess facility) ->
-                ( Loaded (mapViewport model) facility (date model), Cmd.none )
+                ( Loaded (mapViewport model) facility (date model), Commands.addFacilityMarker facility )
 
             _ ->
                 -- TODO handle error

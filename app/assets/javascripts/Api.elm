@@ -1,4 +1,4 @@
-module Api exposing (SuggestionsMsg(..), getSuggestions, FetchFacilityMsg(..), fetchFacility, SearchMsg(..), search)
+module Api exposing (SuggestionsMsg(..), getSuggestions, FetchFacilityMsg(..), fetchFacility, SearchMsg(..), search, emptySearch)
 
 import Decoders exposing (..)
 import Http
@@ -72,14 +72,14 @@ path base params =
         buildPath base queryParams
 
 
-empty : SearchSpec
-empty =
+emptySearch : SearchSpec
+emptySearch =
     { q = Nothing, s = Nothing, l = Nothing, latLng = Nothing }
 
 
 byQuery : Maybe LatLng -> Maybe String -> SearchSpec
 byQuery latLng q =
-    { empty | latLng = latLng, q = (q `andThen` discardEmpty) }
+    { emptySearch | latLng = latLng, q = (q `andThen` discardEmpty) }
 
 
 suggestionsPath : String -> Maybe LatLng -> String -> String

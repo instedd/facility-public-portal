@@ -1,10 +1,11 @@
 module AppHome exposing (Host, Model, Msg, init, view, update, subscriptions, mapViewport)
 
-import Shared
-import Api
+import Api exposing (emptySearch)
+import Commands
 import Html exposing (..)
 import Map
 import Models exposing (MapViewport)
+import Shared
 import Utils exposing (mapFst)
 
 
@@ -16,6 +17,7 @@ type Msg
     = Input String
     | Sug Api.SuggestionsMsg
     | MapViewportChanged MapViewport
+    | ApiSearch Api.SearchMsg
 
 
 type alias Host model msg =
@@ -30,7 +32,10 @@ type alias Host model msg =
 
 init : Host model msg -> MapViewport -> ( model, Cmd msg )
 init h mapViewport =
-    ( h.model <| { query = "", suggestions = Nothing, mapViewport = mapViewport }, Cmd.none )
+    mapFst h.model <|
+        ( { query = "", suggestions = Nothing, mapViewport = mapViewport }
+        , Api.search (h.msg << ApiSearch) { emptySearch | latLng = Just mapViewport.center }
+        )
 
 
 update : Host model msg -> Msg -> Model -> ( model, Cmd msg )
@@ -41,8 +46,7 @@ update h msg model =
                 if query == "" then
                     ( { model | query = query, suggestions = Nothing }, Cmd.none )
                 else
-                    -- TODO change Nothing for mapViewport.center
-                    ( { model | query = query }, Api.getSuggestions (h.msg << Sug) Nothing query )
+                    ( { model | query = query }, Api.getSuggestions (h.msg << Sug) (Just model.mapViewport.center) query )
 
             Sug msg ->
                 case msg of
@@ -57,6 +61,18 @@ update h msg model =
                     Api.SuggestionsFailed e ->
                         -- TODO
                         ( model, Cmd.none )
+
+            ApiSearch (Api.SearchSuccess results) ->
+                let
+                    addFacilities =
+                        List.map Commands.addFacilityMarker results.items
+                in
+                    -- TODO keep loading more results until map bounds exceeded
+                    model ! addFacilities
+
+            ApiSearch _ ->
+                -- TODO handle error
+                ( model, Cmd.none )
 
             MapViewportChanged mapViewport ->
                 ( { model | mapViewport = mapViewport }, Cmd.none )
