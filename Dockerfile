@@ -1,5 +1,7 @@
 FROM instedd/nginx-rails:2.3
 
+ARG SKIP_ASSETS_COMPILATION
+
 RUN apt-get update && apt-get -y install npm && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt
@@ -23,9 +25,10 @@ ENV PUMA_OPTIONS "--preload -w 4"
 # Install the application
 ADD . /app
 
-# Precompile assets
-RUN bundle exec rake assets:precompile RAILS_ENV=production SECRET_KEY_BASE=secret
-
 # Add config files
+ADD docker/precompile-assets.sh /app/
 ADD docker/runit-web-run /etc/service/web/run
 ADD docker/database.yml /app/config/database.yml
+
+# Precompile assets
+RUN /bin/bash /app/precompile-assets.sh
