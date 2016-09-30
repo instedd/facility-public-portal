@@ -1,7 +1,7 @@
 module AppSearch exposing (Host, Model, Msg, init, view, update, subscriptions, mapViewport)
 
 import Api
-import Context
+import Map
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events
@@ -16,9 +16,9 @@ type alias Model =
 
 
 type Msg
-    = ContextMsg Context.Msg
-    | ApiSearch Api.SearchMsg
+    = ApiSearch Api.SearchMsg
     | Input String
+    | MapViewportChanged MapViewport
 
 
 type alias Host model msg =
@@ -41,9 +41,9 @@ update : Host model msg -> Msg -> Model -> ( model, Cmd msg )
 update h msg model =
     mapFst h.model <|
         case msg of
-            ContextMsg msg ->
+            MapViewportChanged mapViewport ->
                 -- TODO update search when viewport changes
-                Context.update (hostContext h) msg model
+                ( { model | mapViewport = mapViewport }, Cmd.none )
 
             ApiSearch (Api.SearchSuccess results) ->
                 let
@@ -73,14 +73,13 @@ view h model =
 
 subscriptions : Host model msg -> Model -> Sub msg
 subscriptions h model =
-    (Context.subscriptions <| hostContext h)
+    (Map.subscriptions <| hostMap h)
 
 
-hostContext : Host model msg -> Context.Host Model msg
-hostContext h =
-    { setMapViewport = \mapViewport model -> { model | mapViewport = mapViewport }
+hostMap : Host model msg -> Map.Host msg
+hostMap h =
+    { mapViewportChanged = h.msg << MapViewportChanged
     , facilityMarkerClicked = h.facilityClicked
-    , msg = h.msg << ContextMsg
     }
 
 

@@ -3,7 +3,7 @@ module AppHome exposing (Host, Model, Msg, init, view, update, subscriptions, ma
 import Shared
 import Api
 import Html exposing (..)
-import Context
+import Map
 import Models exposing (MapViewport)
 import Utils exposing (mapFst)
 
@@ -15,7 +15,7 @@ type alias Model =
 type Msg
     = Input String
     | Sug Api.SuggestionsMsg
-    | ContextMsg Context.Msg
+    | MapViewportChanged MapViewport
 
 
 type alias Host model msg =
@@ -58,8 +58,8 @@ update h msg model =
                         -- TODO
                         ( model, Cmd.none )
 
-            ContextMsg msg ->
-                Context.update (hostContext h) msg model
+            MapViewportChanged mapViewport ->
+                ( { model | mapViewport = mapViewport }, Cmd.none )
 
 
 view : Host model msg -> Model -> Html msg
@@ -79,14 +79,13 @@ view h model =
 
 subscriptions : Host model msg -> Model -> Sub msg
 subscriptions h model =
-    Context.subscriptions <| hostContext h
+    Map.subscriptions <| hostMap h
 
 
-hostContext : Host model msg -> Context.Host Model msg
-hostContext h =
-    { setMapViewport = \mapViewport model -> { model | mapViewport = mapViewport }
+hostMap : Host model msg -> Map.Host msg
+hostMap h =
+    { mapViewportChanged = h.msg << MapViewportChanged
     , facilityMarkerClicked = h.facilityClicked
-    , msg = h.msg << ContextMsg
     }
 
 
