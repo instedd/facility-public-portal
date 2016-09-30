@@ -11,7 +11,7 @@ import Utils exposing (mapFst)
 import Time
 import String
 import Task
-import Commands
+import Map
 import UserLocation
 
 
@@ -37,7 +37,7 @@ init h mapViewport userLocation facilityId =
     mapFst h.model <|
         Loading mapViewport facilityId Nothing userLocation
             ! [ -- TODO should make them grey instead of removing
-                Commands.clearFacilityMarkers
+                Map.clearFacilityMarkers
               , Api.fetchFacility (h.msg << ApiFetch) facilityId
               , currentDate h
               ]
@@ -51,7 +51,7 @@ update h msg model =
                 ( setDate date model, Cmd.none )
 
             ApiFetch (Api.FetchFacilitySuccess facility) ->
-                ( Loaded (mapViewport model) facility (date model) (userLocation model), Commands.addFacilityMarker facility )
+                ( Loaded (mapViewport model) facility (date model) (userLocation model), Map.addFacilityMarker facility )
 
             _ ->
                 -- TODO handle error

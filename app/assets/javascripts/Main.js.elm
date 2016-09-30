@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Commands exposing (..)
+import Map
 import Models exposing (..)
 import Navigation
 import Routing
@@ -68,7 +68,7 @@ init flags route =
             InitializingVR route flags.initialPosition settings
 
         cmds =
-            [ Commands.initializeMap flags.initialPosition ]
+            [ Map.initializeMap flags.initialPosition ]
     in
         model ! cmds
 
@@ -77,7 +77,7 @@ subscriptions : MainModel -> Sub MainMsg
 subscriptions model =
     case model of
         InitializingVR _ _ _ ->
-            mapViewportChanged MapViewportChangedVR
+            Map.mapViewportChanged MapViewportChangedVR
 
         InitializedVR _ _ ->
             Sub.none

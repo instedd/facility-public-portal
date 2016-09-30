@@ -1,7 +1,6 @@
 module AppHome exposing (Host, Model, Msg, init, view, update, subscriptions, mapViewport, userLocation)
 
 import Api exposing (emptySearch)
-import Commands
 import Html exposing (..)
 import Map
 import Models exposing (MapViewport, LatLng, SearchResult, shouldLoadMore)
@@ -68,7 +67,7 @@ update h msg model =
             ApiSearch (Api.SearchSuccess results) ->
                 let
                     addFacilities =
-                        List.map Commands.addFacilityMarker results.items
+                        List.map Map.addFacilityMarker results.items
 
                     loadMore =
                         if shouldLoadMore results model.mapViewport then

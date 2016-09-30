@@ -8,7 +8,6 @@ import Html.Events as Events
 import Models exposing (MapViewport, SearchSpec, SearchResult, Facility, LatLng, shouldLoadMore)
 import Shared exposing (icon)
 import Utils exposing (mapFst)
-import Commands
 import UserLocation
 
 
@@ -59,7 +58,7 @@ update h msg model =
             ApiSearch (Api.SearchSuccess results) ->
                 let
                     addFacilities =
-                        List.map Commands.addFacilityMarker results.items
+                        List.map Map.addFacilityMarker results.items
 
                     loadMore =
                         if shouldLoadMore results model.mapViewport then
@@ -68,7 +67,7 @@ update h msg model =
                             Cmd.none
                 in
                     { model | results = Just results }
-                        ! (loadMore :: Commands.fitContent :: addFacilities ++ [ Commands.clearFacilityMarkers ])
+                        ! (loadMore :: Map.fitContent :: addFacilities ++ [ Map.clearFacilityMarkers ])
 
             ApiSearch _ ->
                 -- TODO handle error
@@ -77,7 +76,7 @@ update h msg model =
             ApiSearchMore (Api.SearchSuccess results) ->
                 let
                     addFacilities =
-                        List.map Commands.addFacilityMarker results.items
+                        List.map Map.addFacilityMarker results.items
 
                     loadMore =
                         if shouldLoadMore results model.mapViewport then

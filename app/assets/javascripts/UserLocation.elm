@@ -3,7 +3,7 @@ module UserLocation exposing (Host, Model, Msg, init, update, view)
 import Models exposing (LatLng)
 import Utils exposing (mapFst)
 import Geolocation
-import Commands
+import Map
 import Process
 import Time
 import Task
@@ -53,7 +53,7 @@ update h msg model =
             LocationDetected pos ->
                 -- TODO remove old user marker in case he/she moved (?)
                 Detected pos
-                    ! [ Commands.fitContent, Commands.addUserMarker pos ]
+                    ! [ Map.fitContent, Map.addUserMarker pos ]
 
             LocationFailed e ->
                 -- TODO
