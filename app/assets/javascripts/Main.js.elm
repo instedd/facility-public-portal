@@ -208,6 +208,8 @@ hostAppHome =
     { model = HomeModel
     , msg = HomeMsg
     , facilityClicked = Navigate << FacilityRoute
+    , serviceClicked = Navigate << (\id -> SearchRoute { q = Nothing, l = Nothing, latLng = Nothing, s = Just id })
+    , locationClicked = Navigate << (\id -> SearchRoute { q = Nothing, l = Just id, latLng = Nothing, s = Nothing })
     , search = Navigate << (\q -> SearchRoute { q = Just q, l = Nothing, latLng = Nothing, s = Nothing })
     }
 

@@ -22,6 +22,8 @@ type alias Host model msg =
     { model : Model -> model
     , msg : Msg -> msg
     , facilityClicked : Int -> msg
+    , serviceClicked : Int -> msg
+    , locationClicked : Int -> msg
     , search : String -> msg
     }
 
@@ -66,6 +68,8 @@ view h model =
         Just <|
             Shared.suggestionsView
                 { facilityClicked = h.facilityClicked
+                , serviceClicked = h.serviceClicked
+                , locationClicked = h.locationClicked
                 , submit = h.search model.query
                 , input = h.msg << Input
                 }

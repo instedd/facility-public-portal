@@ -70,6 +70,8 @@ searchBar userInput submitMsg inputMsg =
 
 type alias SuggestionHost msg =
     { facilityClicked : Int -> msg
+    , serviceClicked : Int -> msg
+    , locationClicked : Int -> msg
     , submit : msg
     , input : String -> msg
     }
@@ -121,7 +123,7 @@ suggestion h s =
         Models.S { id, name, facilityCount } ->
             a
                 [ class "collection-item avatar suggestion service"
-                  --, onClick <| navSearch (Search.byService (userLocation model) id)
+                , Events.onClick <| h.serviceClicked id
                 ]
                 [ icon "label"
                 , span [ class "title" ] [ text name ]
@@ -132,7 +134,7 @@ suggestion h s =
         Models.L { id, name, parentName } ->
             a
                 [ class "collection-item avatar suggestion location"
-                  -- , onClick <| navSearch (Search.byLocation (userLocation model) id)
+                , Events.onClick <| h.locationClicked id
                 ]
                 [ icon "location_on"
                 , span [ class "title" ] [ text name ]
