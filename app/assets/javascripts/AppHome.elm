@@ -4,7 +4,7 @@ import Api exposing (emptySearch)
 import Commands
 import Html exposing (..)
 import Map
-import Models exposing (MapViewport, SearchResult, distance, maxDistance)
+import Models exposing (MapViewport, SearchResult, shouldLoadMore)
 import Shared
 import Utils exposing (mapFst)
 
@@ -113,16 +113,6 @@ hostMap h =
 mapViewport : Model -> MapViewport
 mapViewport model =
     model.mapViewport
-
-
-shouldLoadMore : SearchResult -> MapViewport -> Bool
-shouldLoadMore results mapViewport =
-    case Utils.last results.items of
-        Nothing ->
-            False
-
-        Just furthest ->
-            distance furthest.position mapViewport.center < (maxDistance mapViewport)
 
 
 searchAllFacilitiesStartingFrom : Host model msg -> Models.LatLng -> Cmd msg

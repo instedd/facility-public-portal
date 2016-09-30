@@ -5,7 +5,7 @@ import Map
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events
-import Models exposing (MapViewport, SearchSpec, SearchResult, Facility)
+import Models exposing (MapViewport, SearchSpec, SearchResult, Facility, shouldLoadMore)
 import Shared exposing (icon)
 import Utils exposing (mapFst)
 import Commands
@@ -17,6 +17,8 @@ type alias Model =
 
 type Msg
     = ApiSearch Api.SearchMsg
+      -- ApiSearchMore will keep markers of map. Used for load more and for map panning
+    | ApiSearchMore Api.SearchMsg
     | Input String
     | MapViewportChanged MapViewport
 
@@ -33,7 +35,7 @@ init : Host model msg -> SearchSpec -> MapViewport -> ( model, Cmd msg )
 init h query mapViewport =
     mapFst h.model <|
         ( { input = queryText query, query = query, mapViewport = mapViewport, results = Nothing }
-        , Api.search (h.msg << ApiSearch) query
+        , Api.search (h.msg << ApiSearch) { query | latLng = Just mapViewport.center }
         )
 
 
@@ -42,26 +44,53 @@ update h msg model =
     mapFst h.model <|
         case msg of
             MapViewportChanged mapViewport ->
-                -- TODO update search when viewport changes
-                ( { model | mapViewport = mapViewport }, Cmd.none )
+                let
+                    query =
+                        model.query
+
+                    loadMore =
+                        Api.search (h.msg << ApiSearchMore) { query | latLng = Just mapViewport.center }
+                in
+                    ( { model | mapViewport = mapViewport }, loadMore )
 
             ApiSearch (Api.SearchSuccess results) ->
                 let
                     addFacilities =
                         List.map Commands.addFacilityMarker results.items
 
-                    commands =
-                        (Commands.fitContent :: addFacilities) ++ [ Commands.clearFacilityMarkers ]
+                    loadMore =
+                        if shouldLoadMore results model.mapViewport then
+                            Api.searchMore (h.msg << ApiSearchMore) results
+                        else
+                            Cmd.none
                 in
-                    -- TODO keep loading more results until map bounds exceeded
-                    { model | results = Just results } ! commands
+                    { model | results = Just results }
+                        ! (loadMore :: Commands.fitContent :: addFacilities ++ [ Commands.clearFacilityMarkers ])
+
+            ApiSearch _ ->
+                -- TODO handle error
+                ( model, Cmd.none )
+
+            ApiSearchMore (Api.SearchSuccess results) ->
+                let
+                    addFacilities =
+                        List.map Commands.addFacilityMarker results.items
+
+                    loadMore =
+                        if shouldLoadMore results model.mapViewport then
+                            Api.searchMore (h.msg << ApiSearchMore) results
+                        else
+                            Cmd.none
+                in
+                    -- TODO append/merge or replace results items to current results. The order might not be trivial
+                    model ! (loadMore :: addFacilities)
+
+            ApiSearchMore _ ->
+                -- TODO handle error
+                ( model, Cmd.none )
 
             Input query ->
                 ( { model | input = query }, Cmd.none )
-
-            _ ->
-                -- TODO handle error
-                ( model, Cmd.none )
 
 
 view : Host model msg -> Model -> Html msg

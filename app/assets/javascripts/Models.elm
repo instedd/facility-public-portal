@@ -1,6 +1,7 @@
 module Models exposing (..)
 
 import Date exposing (Date)
+import Utils
 
 
 type Route
@@ -135,3 +136,13 @@ maxDistance mapViewport =
 distance : LatLng -> LatLng -> Float
 distance ( x1, y1 ) ( x2, y2 ) =
     sqrt ((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+
+
+shouldLoadMore : SearchResult -> MapViewport -> Bool
+shouldLoadMore results mapViewport =
+    case Utils.last results.items of
+        Nothing ->
+            False
+
+        Just furthest ->
+            distance furthest.position mapViewport.center < (maxDistance mapViewport)
