@@ -4,7 +4,7 @@ import Api exposing (emptySearch)
 import Commands
 import Html exposing (..)
 import Map
-import Models exposing (MapViewport)
+import Models exposing (MapViewport, SearchResult, distance, maxDistance)
 import Shared
 import Utils exposing (mapFst)
 
@@ -34,7 +34,7 @@ init : Host model msg -> MapViewport -> ( model, Cmd msg )
 init h mapViewport =
     mapFst h.model <|
         ( { query = "", suggestions = Nothing, mapViewport = mapViewport }
-        , Api.search (h.msg << ApiSearch) { emptySearch | latLng = Just mapViewport.center }
+        , searchAllFacilitiesStartingFrom h mapViewport.center
         )
 
 
@@ -66,16 +66,21 @@ update h msg model =
                 let
                     addFacilities =
                         List.map Commands.addFacilityMarker results.items
+
+                    loadMore =
+                        if shouldLoadMore results model.mapViewport then
+                            Api.searchMore (h.msg << ApiSearch) results
+                        else
+                            Cmd.none
                 in
-                    -- TODO keep loading more results until map bounds exceeded
-                    model ! addFacilities
+                    model ! (loadMore :: addFacilities)
 
             ApiSearch _ ->
                 -- TODO handle error
                 ( model, Cmd.none )
 
             MapViewportChanged mapViewport ->
-                ( { model | mapViewport = mapViewport }, Cmd.none )
+                ( { model | mapViewport = mapViewport }, searchAllFacilitiesStartingFrom h mapViewport.center )
 
 
 view : Host model msg -> Model -> Html msg
@@ -108,3 +113,18 @@ hostMap h =
 mapViewport : Model -> MapViewport
 mapViewport model =
     model.mapViewport
+
+
+shouldLoadMore : SearchResult -> MapViewport -> Bool
+shouldLoadMore results mapViewport =
+    case Utils.last results.items of
+        Nothing ->
+            False
+
+        Just furthest ->
+            distance furthest.position mapViewport.center < (maxDistance mapViewport)
+
+
+searchAllFacilitiesStartingFrom : Host model msg -> Models.LatLng -> Cmd msg
+searchAllFacilitiesStartingFrom h latLng =
+    Api.search (h.msg << ApiSearch) { emptySearch | latLng = Just latLng }

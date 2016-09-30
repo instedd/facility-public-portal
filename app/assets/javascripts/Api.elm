@@ -1,4 +1,4 @@
-module Api exposing (SuggestionsMsg(..), getSuggestions, FetchFacilityMsg(..), fetchFacility, SearchMsg(..), search, emptySearch)
+module Api exposing (SuggestionsMsg(..), getSuggestions, FetchFacilityMsg(..), fetchFacility, SearchMsg(..), search, searchMore, emptySearch)
 
 import Decoders exposing (..)
 import Http
@@ -48,6 +48,16 @@ search wmsg params =
             path "/api/search" params
     in
         Task.perform (wmsg << SearchFailed) (wmsg << SearchSuccess) (Http.get Decoders.search url)
+
+
+searchMore : (SearchMsg -> msg) -> SearchResult -> Cmd msg
+searchMore wmsg result =
+    case result.nextUrl of
+        Nothing ->
+            Cmd.none
+
+        Just nextUrl ->
+            Task.perform (wmsg << SearchFailed) (wmsg << SearchSuccess) (Http.get Decoders.search nextUrl)
 
 
 path : String -> SearchSpec -> String

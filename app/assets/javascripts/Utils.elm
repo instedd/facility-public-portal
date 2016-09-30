@@ -82,6 +82,21 @@ timeAgo d1 d2 =
             (toString hoursPassed) ++ " hours"
 
 
+isJust : Maybe a -> Bool
+isJust m =
+    case m of
+        Nothing ->
+            False
+
+        Just _ ->
+            True
+
+
+last : List a -> Maybe a
+last l =
+    List.head <| List.reverse l
+
+
 
 --unreachable : a
 --unreachable =

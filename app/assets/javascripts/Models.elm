@@ -110,3 +110,28 @@ userLocation model =
 
         _ ->
             Just model.mapViewport.center
+
+
+maxDistance : MapViewport -> Float
+maxDistance mapViewport =
+    case
+        List.maximum <|
+            List.map
+                (distance mapViewport.center)
+                [ ( mapViewport.bounds.north, mapViewport.bounds.east )
+                , ( mapViewport.bounds.north, mapViewport.bounds.west )
+                , ( mapViewport.bounds.south, mapViewport.bounds.east )
+                , ( mapViewport.bounds.south, mapViewport.bounds.west )
+                ]
+    of
+        Just d ->
+            -- 20% more of the maximum distance
+            d * 1.2
+
+        _ ->
+            Debug.crash "unreachable"
+
+
+distance : LatLng -> LatLng -> Float
+distance ( x1, y1 ) ( x2, y2 ) =
+    sqrt ((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
