@@ -11,6 +11,11 @@ import Time
     Maybe.andThen
 
 
+mapFst : (a -> b) -> ( a, c ) -> ( b, c )
+mapFst f ( a, c ) =
+    ( f a, c )
+
+
 buildPath : String -> List ( String, String ) -> String
 buildPath base queryParams =
     case queryParams of
@@ -75,3 +80,35 @@ timeAgo d1 d2 =
             (toString daysPassed) ++ " days"
         else
             (toString hoursPassed) ++ " hours"
+
+
+isJust : Maybe a -> Bool
+isJust m =
+    case m of
+        Nothing ->
+            False
+
+        Just _ ->
+            True
+
+
+last : List a -> Maybe a
+last l =
+    List.head <| List.reverse l
+
+
+discardEmpty : String -> Maybe String
+discardEmpty q =
+    if q == "" then
+        Nothing
+    else
+        Just q
+
+
+
+--unreachable : a
+--unreachable =
+--    (\_ -> Debug.crash "This failure cannot happen.")
+--performMessage : msg -> Cmd msg
+--performMessage msg =
+--    Task.perform unreachable identity (Task.succeed msg)

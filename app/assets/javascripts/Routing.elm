@@ -5,7 +5,6 @@ import Http
 import Maybe exposing (andThen)
 import Models exposing (..)
 import Navigation
-import Search
 import String
 import UrlParser exposing (..)
 import Utils exposing (..)
@@ -25,7 +24,7 @@ navigate route =
                     "/"
 
                 SearchRoute params ->
-                    Search.path "/search" params
+                    path "/search" params
 
                 FacilityRoute id ->
                     "/facilities/" ++ (toString id)
@@ -56,7 +55,7 @@ matchers =
             RootRoute
 
         makeSearchRoute params =
-            SearchRoute (Search.specFromParams params)
+            SearchRoute (Models.specFromParams params)
 
         makeFacilityRoute id params =
             FacilityRoute id
