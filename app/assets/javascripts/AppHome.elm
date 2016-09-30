@@ -4,13 +4,14 @@ import Api exposing (emptySearch)
 import Commands
 import Html exposing (..)
 import Map
-import Models exposing (MapViewport, SearchResult, shouldLoadMore)
+import Models exposing (MapViewport, LatLng, SearchResult, shouldLoadMore)
 import Shared
 import Utils exposing (mapFst)
+import UserLocation
 
 
 type alias Model =
-    { query : String, suggestions : Shared.Suggestions, mapViewport : MapViewport }
+    { query : String, suggestions : Shared.Suggestions, mapViewport : MapViewport, userLocation : UserLocation.Model }
 
 
 type Msg
@@ -18,6 +19,7 @@ type Msg
     | Sug Api.SuggestionsMsg
     | MapViewportChanged MapViewport
     | ApiSearch Api.SearchMsg
+    | UserLocationMsg UserLocation.Msg
 
 
 type alias Host model msg =
@@ -27,13 +29,14 @@ type alias Host model msg =
     , serviceClicked : Int -> msg
     , locationClicked : Int -> msg
     , search : String -> msg
+    , fakeLocation : Maybe LatLng
     }
 
 
 init : Host model msg -> MapViewport -> ( model, Cmd msg )
 init h mapViewport =
     mapFst h.model <|
-        ( { query = "", suggestions = Nothing, mapViewport = mapViewport }
+        ( { query = "", suggestions = Nothing, mapViewport = mapViewport, userLocation = UserLocation.init (hostUserLocation h) }
         , searchAllFacilitiesStartingFrom h mapViewport.center
         )
 
@@ -82,6 +85,9 @@ update h msg model =
             MapViewportChanged mapViewport ->
                 ( { model | mapViewport = mapViewport }, searchAllFacilitiesStartingFrom h mapViewport.center )
 
+            UserLocationMsg msg ->
+                UserLocation.update (hostUserLocation h) msg model
+
 
 view : Host model msg -> Model -> Html msg
 view h model =
@@ -94,6 +100,7 @@ view h model =
                 , submit = h.search model.query
                 , input = h.msg << Input
                 }
+                [ UserLocation.view (hostUserLocation h) model.userLocation ]
                 model.query
                 model.suggestions
 
@@ -118,3 +125,11 @@ mapViewport model =
 searchAllFacilitiesStartingFrom : Host model msg -> Models.LatLng -> Cmd msg
 searchAllFacilitiesStartingFrom h latLng =
     Api.search (h.msg << ApiSearch) { emptySearch | latLng = Just latLng }
+
+
+hostUserLocation : Host model msg -> UserLocation.Host Model msg
+hostUserLocation h =
+    { setModel = \model userLocation -> { model | userLocation = userLocation }
+    , msg = h.msg << UserLocationMsg
+    , fakeLocation = h.fakeLocation
+    }

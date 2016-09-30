@@ -135,7 +135,7 @@ queryBar h model =
         newQuery =
             { query | q = Just model.input }
     in
-        [ Shared.searchBar model.input (h.search newQuery) (h.msg << Input) ]
+        [ Shared.searchBar model.input [] (h.search newQuery) (h.msg << Input) ]
 
 
 queryText : SearchSpec -> String

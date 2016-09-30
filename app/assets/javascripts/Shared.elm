@@ -3,6 +3,7 @@ module Shared exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events
+import Json.Decode
 import Models
 import String
 
@@ -50,10 +51,10 @@ header =
         ]
 
 
-searchBar : String -> a -> (String -> a) -> Html a
-searchBar userInput submitMsg inputMsg =
+searchBar : String -> List (Html a) -> a -> (String -> a) -> Html a
+searchBar userInput trailing submitMsg inputMsg =
     div [ class "search-box" ]
-        [ div [ class "search" ]
+        ([ div [ class "search" ]
             [ Html.form [ Events.onSubmit submitMsg ]
                 [ input
                     [ type' "text"
@@ -65,7 +66,9 @@ searchBar userInput submitMsg inputMsg =
                 , icon "search"
                 ]
             ]
-        ]
+         ]
+            `List.append` trailing
+        )
 
 
 type alias SuggestionHost msg =
@@ -77,10 +80,10 @@ type alias SuggestionHost msg =
     }
 
 
-suggestionsView : SuggestionHost a -> String -> Suggestions -> Html a
-suggestionsView h userInput items =
+suggestionsView : SuggestionHost a -> List (Html a) -> String -> Suggestions -> Html a
+suggestionsView h trailing userInput items =
     div []
-        ([ searchBar userInput h.submit h.input
+        ([ searchBar userInput trailing h.submit h.input
          ]
             ++ (case items of
                     Nothing ->
@@ -112,7 +115,7 @@ suggestion h s =
         Models.F { id, name, kind, services, adm } ->
             a
                 [ class "collection-item avatar suggestion facility"
-                , Events.onClick <| h.facilityClicked id
+                , onClick <| h.facilityClicked id
                 ]
                 [ icon "local_hospital"
                 , span [ class "title" ] [ text name ]
@@ -123,7 +126,7 @@ suggestion h s =
         Models.S { id, name, facilityCount } ->
             a
                 [ class "collection-item avatar suggestion service"
-                , Events.onClick <| h.serviceClicked id
+                , onClick <| h.serviceClicked id
                 ]
                 [ icon "label"
                 , span [ class "title" ] [ text name ]
@@ -134,7 +137,7 @@ suggestion h s =
         Models.L { id, name, parentName } ->
             a
                 [ class "collection-item avatar suggestion location"
-                , Events.onClick <| h.locationClicked id
+                , onClick <| h.locationClicked id
                 ]
                 [ icon "location_on"
                 , span [ class "title" ] [ text name ]
@@ -146,3 +149,12 @@ suggestion h s =
 icon : String -> Html a
 icon name =
     i [ class "material-icons" ] [ text name ]
+
+
+onClick : msg -> Attribute msg
+onClick message =
+    Events.onWithOptions "click"
+        { preventDefault = True
+        , stopPropagation = True
+        }
+        (Json.Decode.succeed message)

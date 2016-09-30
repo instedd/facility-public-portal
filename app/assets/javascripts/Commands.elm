@@ -67,20 +67,6 @@ encodeFacility facility =
         ]
 
 
-fakeGeolocateUser : LatLng -> Cmd Msg
-fakeGeolocateUser pos =
-    Process.sleep (1.5 * Time.second)
-        |> Task.map (always pos)
-        |> Task.perform LocationFailed LocationDetected
-
-
-geolocateUser : Cmd Msg
-geolocateUser =
-    Geolocation.now
-        |> Task.map (\location -> ( location.latitude, location.longitude ))
-        |> Task.perform LocationFailed LocationDetected
-
-
 getSuggestions : Maybe LatLng -> String -> Cmd Msg
 getSuggestions latLng query =
     let
