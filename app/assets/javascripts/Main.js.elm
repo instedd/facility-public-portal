@@ -11,7 +11,7 @@ import AppFacilityDetails
 import UserLocation
 import Html exposing (Html)
 import Html.App
-import Utils exposing (mapFst, mapSnd)
+import Utils exposing (mapFst, mapSnd, mapTCmd)
 
 
 type alias Flags =
@@ -84,7 +84,7 @@ subscriptions model =
             Sub.map HomeMsg <| AppHome.subscriptions model
 
         FacilityDetailsModel model settings ->
-            AppFacilityDetails.subscriptions (hostAppFacilityDetails settings) model
+            Sub.map FacilityDetailsMsg <| AppFacilityDetails.subscriptions model
 
         SearchModel model settings ->
             AppSearch.subscriptions (hostAppSearch settings) model
@@ -97,6 +97,7 @@ mainUpdate msg mainModel =
             ( mainModel, Routing.navigate route )
 
         NavigateBack ->
+            -- remove
             ( mainModel, Navigation.back 1 )
 
         _ ->
@@ -135,7 +136,12 @@ mainUpdate msg mainModel =
                 FacilityDetailsModel model settings ->
                     case msg of
                         FacilityDetailsMsg msg ->
-                            AppFacilityDetails.update (hostAppFacilityDetails settings) msg model
+                            case msg of
+                                AppFacilityDetails.Close ->
+                                    ( mainModel, navigateBack )
+
+                                _ ->
+                                    wrapFacilityDetails settings (AppFacilityDetails.update msg model)
 
                         _ ->
                             Debug.crash "unexpected message"
@@ -174,7 +180,7 @@ mainUrlUpdate result mainModel =
                         wrapHome settings (AppHome.init settings viewport userLocation)
 
                     FacilityRoute facilityId ->
-                        AppFacilityDetails.init (hostAppFacilityDetails settings) viewport userLocation facilityId
+                        wrapFacilityDetails settings (AppFacilityDetails.init viewport userLocation facilityId)
 
                     SearchRoute searchSpec ->
                         AppSearch.init (hostAppSearch settings) searchSpec viewport userLocation
@@ -184,8 +190,13 @@ mainUrlUpdate result mainModel =
 
 
 wrapHome : Settings -> ( AppHome.Model, Cmd AppHome.Msg ) -> ( MainModel, Cmd MainMsg )
-wrapHome settings t =
-    mapFst (\m -> HomeModel m settings) (mapSnd (Cmd.map HomeMsg) t)
+wrapHome settings =
+    mapTCmd (\m -> HomeModel m settings) HomeMsg
+
+
+wrapFacilityDetails : Settings -> ( AppFacilityDetails.Model, Cmd AppFacilityDetails.Msg ) -> ( MainModel, Cmd MainMsg )
+wrapFacilityDetails settings =
+    mapTCmd (\m -> FacilityDetailsModel m settings) FacilityDetailsMsg
 
 
 mapViewport : MainModel -> MapViewport
@@ -249,7 +260,7 @@ mainView mainModel =
             Shared.layout <| Html.App.map HomeMsg <| AppHome.view settings model
 
         FacilityDetailsModel model settings ->
-            AppFacilityDetails.view (hostAppFacilityDetails settings) model
+            Shared.layout <| Html.App.map FacilityDetailsMsg <| AppFacilityDetails.view model
 
         SearchModel model settings ->
             AppSearch.view (hostAppSearch settings) model
@@ -294,12 +305,17 @@ navigateSearch =
     Utils.performMessage << Navigate << (\q -> SearchRoute { q = Just q, l = Nothing, latLng = Nothing, s = Nothing })
 
 
-hostAppFacilityDetails : Settings -> AppFacilityDetails.Host MainModel MainMsg
-hostAppFacilityDetails settings =
-    { model = \m -> FacilityDetailsModel m settings
-    , msg = FacilityDetailsMsg
-    , navigateBack = NavigateBack
-    }
+navigateBack =
+    Navigation.back 1
+
+
+
+--hostAppFacilityDetails : Settings -> AppFacilityDetails.Host MainModel MainMsg
+--hostAppFacilityDetails settings =
+--    { model = \m -> FacilityDetailsModel m settings
+--    , msg = FacilityDetailsMsg
+--    , navigateBack = NavigateBack
+--    }
 
 
 hostAppSearch : Settings -> AppSearch.Host MainModel MainMsg
