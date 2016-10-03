@@ -46,8 +46,7 @@ header =
         [ div [ class "nav-wrapper" ]
             [ a [ href "/" ]
                 [ img [ id "logo", src "/logo.svg" ] [] ]
-            , a [ class "right" ]
-                [ icon "menu" ]
+              --, a [ class "right" ] [ icon "menu" ]
             ]
         ]
 
