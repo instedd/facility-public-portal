@@ -87,7 +87,7 @@ update s msg model =
 
                 UserLocationMsg msg ->
                     mapTCmd (\m -> { model | userLocation = m }) (Private << UserLocationMsg) <|
-                        UserLocation.update2 s msg model.userLocation
+                        UserLocation.update s msg model.userLocation
 
         _ ->
             -- public events
@@ -104,7 +104,7 @@ view model =
             , submit = Search model.query
             , input = Private << Input
             }
-            [ Html.App.map (Private << UserLocationMsg) (UserLocation.view2 model.userLocation) ]
+            [ Html.App.map (Private << UserLocationMsg) (UserLocation.view model.userLocation) ]
             model.query
             model.suggestions
         ]
@@ -113,7 +113,7 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Sub.map (Private << MapMsg) Map.subscriptions2
+        [ Sub.map (Private << MapMsg) Map.subscriptions
         , Map.facilityMarkerClicked FacilityClicked
         ]
 

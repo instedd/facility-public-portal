@@ -1,4 +1,4 @@
-module UserLocation exposing (Host, Model, Msg, init, update, view, view2, update2)
+module UserLocation exposing (Model, Msg, init, update, view)
 
 import Models exposing (LatLng, Settings)
 import Utils exposing (mapFst)
@@ -25,27 +25,20 @@ type Msg
     | LocationFailed Geolocation.Error
 
 
-type alias Host model msg =
-    { setModel : model -> Model -> model
-    , msg : Msg -> msg
-    , fakeLocation : Maybe LatLng
-    }
-
-
 init : Model
 init =
     NoLocation
 
 
-update2 : Settings -> Msg -> Model -> ( Model, Cmd Msg )
-update2 s msg model =
+update : Settings -> Msg -> Model -> ( Model, Cmd Msg )
+update s msg model =
     case msg of
         Geolocate ->
             let
                 cmd =
                     s.fakeLocation
-                        |> Maybe.map fakeGeolocateUser2
-                        |> Maybe.withDefault geolocateUser2
+                        |> Maybe.map fakeGeolocateUser
+                        |> Maybe.withDefault geolocateUser
             in
                 ( Detecting, cmd )
 
@@ -59,59 +52,22 @@ update2 s msg model =
             NoLocation ! []
 
 
-update : Host model msg -> Msg -> model -> ( model, Cmd msg )
-update h msg model =
-    mapFst (h.setModel model) <|
-        case msg of
-            Geolocate ->
-                let
-                    cmd =
-                        h.fakeLocation
-                            |> Maybe.map (fakeGeolocateUser h)
-                            |> Maybe.withDefault (geolocateUser h)
-                in
-                    ( Detecting, cmd )
-
-            LocationDetected pos ->
-                -- TODO remove old user marker in case he/she moved (?)
-                Detected pos
-                    ! [ Map.fitContent, Map.addUserMarker pos ]
-
-            LocationFailed e ->
-                -- TODO
-                NoLocation ! []
-
-
-fakeGeolocateUser2 : LatLng -> Cmd Msg
-fakeGeolocateUser2 pos =
+fakeGeolocateUser : LatLng -> Cmd Msg
+fakeGeolocateUser pos =
     Process.sleep (1.5 * Time.second)
         |> Task.map (always pos)
         |> Task.perform LocationFailed LocationDetected
 
 
-fakeGeolocateUser : Host model msg -> LatLng -> Cmd msg
-fakeGeolocateUser h pos =
-    Process.sleep (1.5 * Time.second)
-        |> Task.map (always pos)
-        |> Task.perform (h.msg << LocationFailed) (h.msg << LocationDetected)
-
-
-geolocateUser2 : Cmd Msg
-geolocateUser2 =
+geolocateUser : Cmd Msg
+geolocateUser =
     Geolocation.now
         |> Task.map (\location -> ( location.latitude, location.longitude ))
         |> Task.perform LocationFailed LocationDetected
 
 
-geolocateUser : Host model msg -> Cmd msg
-geolocateUser h =
-    Geolocation.now
-        |> Task.map (\location -> ( location.latitude, location.longitude ))
-        |> Task.perform (h.msg << LocationFailed) (h.msg << LocationDetected)
-
-
-view2 : Model -> Html Msg
-view2 model =
+view : Model -> Html Msg
+view model =
     div [ class "location" ]
         [ case model of
             Detecting ->
@@ -127,26 +83,5 @@ view2 model =
 
             _ ->
                 a [ href "#", onClick Geolocate ]
-                    [ icon "my_location" ]
-        ]
-
-
-view : Host model msg -> Model -> Html msg
-view h model =
-    div [ class "location" ]
-        [ case model of
-            Detecting ->
-                div [ id "location-spinner", class "preloader-wrapper small active" ]
-                    [ div [ class "spinner-layer spinner-blue-only" ]
-                        [ div [ class "circle-clipper left" ]
-                            [ div [ class "circle" ] [] ]
-                        , div [ class "gap-patch" ] []
-                        , div [ class "circle-clipper-right" ]
-                            [ div [ class "circle" ] [] ]
-                        ]
-                    ]
-
-            _ ->
-                a [ href "#", onClick (h.msg Geolocate) ]
                     [ icon "my_location" ]
         ]
