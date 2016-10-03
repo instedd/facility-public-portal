@@ -1,4 +1,4 @@
-module Suggest exposing (Config, Model, Msg(..), PrivateMsg, empty, update, hasSuggestionsToShow, viewInput, viewSuggestions)
+module Suggest exposing (Config, Model, Msg(..), PrivateMsg, init, empty, update, hasSuggestionsToShow, viewInput, viewSuggestions)
 
 import Shared exposing (icon)
 import Api
@@ -37,7 +37,12 @@ hasSuggestionsToShow model =
 
 empty : Model
 empty =
-    { query = "", suggestions = Nothing }
+    init ""
+
+
+init : String -> Model
+init query =
+    { query = query, suggestions = Nothing }
 
 
 searchSuggestions : Config -> String -> ( Model, Cmd Msg )

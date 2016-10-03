@@ -8,32 +8,35 @@ import Html.Attributes exposing (..)
 import Html.Events as Events
 import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, shouldLoadMore)
 import Shared exposing (icon)
-import Utils exposing (mapFst, mapTCmd)
+import Utils exposing (mapTCmd)
 import UserLocation
+import Suggest
 
 
 type alias Model =
-    { input : String, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult }
+    { suggest : Suggest.Model, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult }
 
 
 type PrivateMsg
     = ApiSearch Api.SearchMsg
       -- ApiSearchMore will keep markers of map. Used for load more and for map panning
     | ApiSearchMore Api.SearchMsg
-    | Input String
     | UserLocationMsg UserLocation.Msg
     | MapMsg Map.Msg
+    | SuggestMsg Suggest.Msg
 
 
 type Msg
     = FacilityClicked Int
+    | ServiceClicked Int
+    | LocationClicked Int
     | Search SearchSpec
     | Private PrivateMsg
 
 
 init : Settings -> SearchSpec -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init s query mapViewport userLocation =
-    ( { input = queryText query, query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing }
+    ( { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing }
     , Api.search (Private << ApiSearch) { query | latLng = Just mapViewport.center }
     )
 
@@ -92,21 +95,55 @@ update s msg model =
                     -- TODO handle error
                     ( model, Cmd.none )
 
-                Input query ->
-                    ( { model | input = query }, Cmd.none )
-
                 UserLocationMsg msg ->
                     mapTCmd (\m -> { model | userLocation = m }) (Private << UserLocationMsg) <|
                         UserLocation.update s msg model.userLocation
+
+                SuggestMsg msg ->
+                    case msg of
+                        Suggest.FacilityClicked facilityId ->
+                            ( model, Utils.performMessage (FacilityClicked facilityId) )
+
+                        Suggest.ServiceClicked serviceId ->
+                            ( model, Utils.performMessage (ServiceClicked serviceId) )
+
+                        Suggest.LocationClicked locationId ->
+                            ( model, Utils.performMessage (LocationClicked locationId) )
+
+                        Suggest.Search q ->
+                            ( model, Utils.performMessage (Search <| { q = Just q, s = Nothing, l = Nothing, latLng = Nothing }) )
+
+                        _ ->
+                            wrapSuggest model <| Suggest.update { mapViewport = model.mapViewport } msg model.suggest
 
         _ ->
             -- public events
             ( model, Cmd.none )
 
 
+wrapSuggest : Model -> ( Suggest.Model, Cmd Suggest.Msg ) -> ( Model, Cmd Msg )
+wrapSuggest model =
+    mapTCmd (\s -> { model | suggest = s }) (Private << SuggestMsg)
+
+
 view : Model -> Html Msg
 view model =
-    Shared.headerWithContent [ searchView model ]
+    Shared.headerWithContent
+        ((Suggest.viewInput (Private << SuggestMsg)
+            model.suggest
+            [ (Html.App.map (Private << UserLocationMsg) (UserLocation.view model.userLocation)) ]
+         )
+            :: (if Suggest.hasSuggestionsToShow model.suggest then
+                    []
+                else
+                    [ searchResults model ]
+               )
+            ++ (suggestionItems model)
+        )
+
+
+suggestionItems model =
+    (List.map (Html.App.map (Private << SuggestMsg)) (Suggest.viewSuggestions model.suggest))
 
 
 subscriptions : Model -> Sub Msg
@@ -125,31 +162,6 @@ mapViewport model =
 userLocation : Model -> UserLocation.Model
 userLocation model =
     model.userLocation
-
-
-searchView : Model -> Html Msg
-searchView model =
-    div []
-        ((queryBar model)
-            ++ [ searchResults model ]
-        )
-
-
-queryBar : Model -> List (Html Msg)
-queryBar model =
-    -- TODO define how searches with services or locations should appear
-    let
-        query =
-            model.query
-
-        newQuery =
-            { query | q = Just model.input }
-    in
-        [ Shared.searchBar model.input
-            [ Html.App.map (Private << UserLocationMsg) (UserLocation.view model.userLocation) ]
-            (Search newQuery)
-            (Private << Input)
-        ]
 
 
 queryText : SearchSpec -> String

@@ -103,8 +103,12 @@ view model =
             model.suggest
             [ (Html.App.map (Private << UserLocationMsg) (UserLocation.view model.userLocation)) ]
          )
-            :: (List.map (Html.App.map (Private << SuggestMsg)) (Suggest.viewSuggestions model.suggest))
+            :: (suggestionItems model)
         )
+
+
+suggestionItems model =
+    (List.map (Html.App.map (Private << SuggestMsg)) (Suggest.viewSuggestions model.suggest))
 
 
 subscriptions : Model -> Sub Msg

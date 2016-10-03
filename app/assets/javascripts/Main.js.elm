@@ -156,6 +156,12 @@ mainUpdate msg mainModel =
                                 AppSearch.FacilityClicked facilityId ->
                                     ( SearchModel model settings, navigateFacility facilityId )
 
+                                AppSearch.ServiceClicked serviceId ->
+                                    ( SearchModel model settings, navigateSearchService serviceId )
+
+                                AppSearch.LocationClicked locationId ->
+                                    ( SearchModel model settings, navigateSearchLocation locationId )
+
                                 _ ->
                                     wrapSearch settings (AppSearch.update settings msg model)
 
