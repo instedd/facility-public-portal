@@ -128,22 +128,30 @@ wrapSuggest model =
 
 view : Model -> Html Msg
 view model =
-    Shared.headerWithContent
-        ((Suggest.viewInput (Private << SuggestMsg)
-            model.suggest
-            [ (Html.App.map (Private << UserLocationMsg) (UserLocation.view model.userLocation)) ]
-         )
-            :: (if Suggest.hasSuggestionsToShow model.suggest then
-                    []
-                else
-                    [ searchResults model ]
-               )
-            ++ (suggestionItems model)
-        )
+    div []
+        [ Shared.headerWithContent
+            ((suggestionInput model)
+                :: (if Suggest.hasSuggestionsToShow model.suggest then
+                        []
+                    else
+                        [ searchResults model ]
+                   )
+                ++ (suggestionItems model)
+            )
+        , userLocationView model
+        ]
+
+
+suggestionInput model =
+    Html.App.map (Private << SuggestMsg) (Suggest.viewInput model.suggest)
 
 
 suggestionItems model =
     (List.map (Html.App.map (Private << SuggestMsg)) (Suggest.viewSuggestions model.suggest))
+
+
+userLocationView model =
+    Html.App.map (Private << UserLocationMsg) (UserLocation.viewMapControl model.userLocation)
 
 
 subscriptions : Model -> Sub Msg

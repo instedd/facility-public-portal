@@ -79,9 +79,9 @@ update config msg model =
             ( model, Cmd.none )
 
 
-viewInput : (Msg -> a) -> Model -> List (Html a) -> Html a
-viewInput wmsg model trailing =
-    Shared.searchBar model.query trailing (wmsg (Search model.query)) (wmsg << Private << Input)
+viewInput : Model -> Html Msg
+viewInput model =
+    Shared.searchBar model.query (Search model.query) (Private << Input)
 
 
 viewSuggestions : Model -> List (Html Msg)

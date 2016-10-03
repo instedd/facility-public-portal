@@ -1,4 +1,4 @@
-module UserLocation exposing (Model, Msg, init, update, view)
+module UserLocation exposing (Model, Msg, init, update, view, viewMapControl)
 
 import Models exposing (LatLng, Settings)
 import Utils exposing (mapFst)
@@ -85,3 +85,8 @@ view model =
                 a [ href "#", onClick Geolocate ]
                     [ icon "my_location" ]
         ]
+
+
+viewMapControl : Model -> Html Msg
+viewMapControl model =
+    div [ id "map-toolbar", class "z-depth-1" ] [ view model ]

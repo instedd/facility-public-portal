@@ -52,10 +52,10 @@ header =
         ]
 
 
-searchBar : String -> List (Html a) -> a -> (String -> a) -> Html a
-searchBar userInput trailing submitMsg inputMsg =
+searchBar : String -> a -> (String -> a) -> Html a
+searchBar userInput submitMsg inputMsg =
     div [ class "search-box" ]
-        ([ div [ class "search" ]
+        [ div [ class "search" ]
             [ Html.form [ Events.onSubmit submitMsg ]
                 [ input
                     [ type' "text"
@@ -67,9 +67,7 @@ searchBar userInput trailing submitMsg inputMsg =
                 , icon "search"
                 ]
             ]
-         ]
-            `List.append` trailing
-        )
+        ]
 
 
 icon : String -> Html a
