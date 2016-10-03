@@ -40,7 +40,7 @@ type alias Facility =
     , contactPhone : Maybe String
     , contactEmail : Maybe String
     , reportTo : Maybe String
-    , lastUpdated : Date
+    , lastUpdated : Maybe Date
     }
 
 

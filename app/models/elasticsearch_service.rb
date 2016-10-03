@@ -26,6 +26,7 @@ class ElasticsearchService
               index: 'analyzed',
               analyzer: "standard"
             },
+            contact_phone: {type: 'string'},
             position: {type: 'geo_point'},
             last_updated: {
               type: 'date'
@@ -171,9 +172,7 @@ class ElasticsearchService
                                },
                              }})
 
-    result["hits"]["hits"].map do |r|
-      r["_source"].slice("id", "name", "facility_count", "parent_name")
-    end
+    result["hits"]["hits"].map { |r| r["_source"] }
   end
 
   def self.instance
@@ -210,6 +209,7 @@ class ElasticsearchService
     actions = docs.flat_map do |doc|
       [{ index: { _index: @index_name, _type: type, _id: doc[:id] } }, doc]
     end
-    client.bulk body: actions
+
+    result = client.bulk body: actions
   end
 end

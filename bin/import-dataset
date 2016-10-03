@@ -2,22 +2,18 @@
 APP_PATH = File.expand_path('../../config/application',  __dir__)
 require_relative '../config/boot'
 require_relative '../config/environment'
+require "benchmark"
 
 unless ARGV.size == 1
-  puts "Usage: #{__FILE__} dataset.csv"
+  puts "Usage: #{__FILE__} path/to/csvs/directory"
   exit 1
 end
 
-filename = ARGV[0]
+csv_files_path = ARGV[0]
 
-unless File.exists? filename
-  puts "Could not open file #{filename}"
+unless Dir.exists? csv_files_path
+  puts "The directory #{csv_files_path} does not exist"
   exit 1
 end
 
-result = Indexer.index_csv(filename)
-
-puts "Done! Imported:"
-puts "  * #{result[:imported_facilities]} facilities"
-puts "  * #{result[:imported_services]} services"
-puts "  * #{result[:imported_locations]} locations"
+Indexing.index_csv_tables(csv_files_path)

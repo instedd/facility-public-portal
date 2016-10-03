@@ -28,14 +28,14 @@ facility =
         |> required "id" int
         |> required "name" string
         |> required "position" latLng
-        |> required "kind" string
+        |> required "facility_type" string
         |> required "service_names" (list string)
         |> required "adm" (list string)
         |> required "contact_name" (nullable string)
         |> required "contact_phone" (nullable string)
         |> required "contact_email" (nullable string)
         |> required "report_to" (nullable string)
-        |> required "last_updated" date
+        |> required "last_updated" (nullable date)
 
 
 service : Decoder Service

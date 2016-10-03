@@ -43,7 +43,7 @@ class SpaNormalization
       result[:locations] = @locations.map do |l|
         {
           id: l["Id"] || l["ï»¿Id"],
-          name: l["OfficialName"],
+          name: l["OfficialName"] || l["OffcialName"],
           parent_id: l["ParentId"],
         }
       end

@@ -153,9 +153,14 @@ facilityDetail : Maybe Date -> Facility -> Html Msg
 facilityDetail now facility =
     let
         lastUpdatedSub =
-            now
-                |> Maybe.map (\date -> String.concat [ "Last updated ", Utils.timeAgo date facility.lastUpdated, " ago" ])
-                |> Maybe.withDefault ""
+            case facility.lastUpdated of
+                Nothing ->
+                    ""
+
+                Just date ->
+                    now
+                        |> Maybe.map (\date -> String.concat [ "Last updated ", Utils.timeAgo date date, " ago" ])
+                        |> Maybe.withDefault ""
 
         entry icon value =
             value |> Maybe.withDefault "Unavailable" |> (,) icon
