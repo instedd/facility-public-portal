@@ -1,13 +1,14 @@
 module AppFacilityDetails exposing (Model, Msg(..), PrivateMsg, init, view, update, subscriptions, mapViewport, userLocation)
 
-import Models exposing (MapViewport, Facility)
+import Models exposing (Settings, MapViewport, Facility)
 import Html exposing (..)
+import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
 import Shared
 import Api
 import Date exposing (Date)
-import Utils
+import Utils exposing (mapTCmd)
 import Time
 import String
 import Task
@@ -23,6 +24,7 @@ type Model
 type PrivateMsg
     = ApiFetch Api.FetchFacilityMsg
     | CurrentDate Date
+    | UserLocationMsg UserLocation.Msg
 
 
 type Msg
@@ -40,8 +42,8 @@ init mapViewport userLocation facilityId =
           ]
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Settings -> Msg -> Model -> ( Model, Cmd Msg )
+update s msg model =
     case msg of
         Private msg ->
             case msg of
@@ -50,6 +52,10 @@ update msg model =
 
                 ApiFetch (Api.FetchFacilitySuccess facility) ->
                     ( Loaded (mapViewport model) facility (date model) (userLocation model), Map.addFacilityMarker facility )
+
+                UserLocationMsg msg ->
+                    mapTCmd (\l -> setUserLocation l model) (Private << UserLocationMsg) <|
+                        UserLocation.update s msg (userLocation model)
 
                 _ ->
                     -- TODO handle error
@@ -62,14 +68,21 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    Shared.headerWithContent
-        [ case model of
-            Loading _ _ _ _ ->
-                Html.h3 [] [ text "Loading... " ]
+    div []
+        [ Shared.headerWithContent
+            [ case model of
+                Loading _ _ _ _ ->
+                    Html.h3 [] [ text "Loading... " ]
 
-            Loaded _ facility date _ ->
-                facilityDetail date facility
+                Loaded _ facility date _ ->
+                    facilityDetail date facility
+            ]
+        , userLocationView model
         ]
+
+
+userLocationView model =
+    Html.App.map (Private << UserLocationMsg) (UserLocation.viewMapControl (userLocation model))
 
 
 subscriptions : Model -> Sub Msg
@@ -115,6 +128,16 @@ userLocation model =
 
         Loaded _ _ _ userLocation ->
             userLocation
+
+
+setUserLocation : UserLocation.Model -> Model -> Model
+setUserLocation userLocation model =
+    case model of
+        Loading a b c _ ->
+            Loading a b c userLocation
+
+        Loaded a b c _ ->
+            Loaded a b c userLocation
 
 
 currentDate : Cmd Msg

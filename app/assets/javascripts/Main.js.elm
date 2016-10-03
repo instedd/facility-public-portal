@@ -141,7 +141,7 @@ mainUpdate msg mainModel =
                                     ( mainModel, navigateBack )
 
                                 _ ->
-                                    wrapFacilityDetails settings (AppFacilityDetails.update msg model)
+                                    wrapFacilityDetails settings (AppFacilityDetails.update settings msg model)
 
                         _ ->
                             Debug.crash "unexpected message"
