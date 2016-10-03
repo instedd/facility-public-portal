@@ -94,8 +94,8 @@ update s msg model =
             ( model, Cmd.none )
 
 
-view : Settings -> Model -> Html Msg
-view s model =
+view : Model -> Html Msg
+view model =
     Shared.headerWithContent
         [ Shared.suggestionsView
             { facilityClicked = FacilityClicked
@@ -131,11 +131,3 @@ userLocation model =
 searchAllFacilitiesStartingFrom : Models.LatLng -> Cmd Msg
 searchAllFacilitiesStartingFrom latLng =
     Api.search (Private << ApiSearch) { emptySearch | latLng = Just latLng }
-
-
-hostUserLocation : Settings -> UserLocation.Host Model Msg
-hostUserLocation s =
-    { setModel = \model userLocation -> { model | userLocation = userLocation }
-    , msg = Private << UserLocationMsg
-    , fakeLocation = s.fakeLocation
-    }

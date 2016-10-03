@@ -83,11 +83,11 @@ subscriptions model =
         HomeModel model _ ->
             Sub.map HomeMsg <| AppHome.subscriptions model
 
-        FacilityDetailsModel model settings ->
+        FacilityDetailsModel model _ ->
             Sub.map FacilityDetailsMsg <| AppFacilityDetails.subscriptions model
 
-        SearchModel model settings ->
-            AppSearch.subscriptions (hostAppSearch settings) model
+        SearchModel model _ ->
+            Sub.map SearchMsg <| AppSearch.subscriptions model
 
 
 mainUpdate : MainMsg -> MainModel -> ( MainModel, Cmd MainMsg )
@@ -125,7 +125,7 @@ mainUpdate msg mainModel =
                                     ( HomeModel model settings, navigateSearchLocation locationId )
 
                                 AppHome.Search q ->
-                                    ( HomeModel model settings, navigateSearch q )
+                                    ( HomeModel model settings, navigateSearchQuery q )
 
                                 AppHome.Private _ ->
                                     wrapHome settings (AppHome.update settings msg model)
@@ -149,7 +149,15 @@ mainUpdate msg mainModel =
                 SearchModel model settings ->
                     case msg of
                         SearchMsg msg ->
-                            AppSearch.update (hostAppSearch settings) msg model
+                            case msg of
+                                AppSearch.Search s ->
+                                    ( SearchModel model settings, navigateSearch s )
+
+                                AppSearch.FacilityClicked facilityId ->
+                                    ( SearchModel model settings, navigateFacility facilityId )
+
+                                _ ->
+                                    wrapSearch settings (AppSearch.update settings msg model)
 
                         _ ->
                             Debug.crash "unexpected message"
@@ -183,7 +191,7 @@ mainUrlUpdate result mainModel =
                         wrapFacilityDetails settings (AppFacilityDetails.init viewport userLocation facilityId)
 
                     SearchRoute searchSpec ->
-                        AppSearch.init (hostAppSearch settings) searchSpec viewport userLocation
+                        wrapSearch settings (AppSearch.init settings searchSpec viewport userLocation)
 
                     _ ->
                         Debug.crash "route not handled"
@@ -197,6 +205,11 @@ wrapHome settings =
 wrapFacilityDetails : Settings -> ( AppFacilityDetails.Model, Cmd AppFacilityDetails.Msg ) -> ( MainModel, Cmd MainMsg )
 wrapFacilityDetails settings =
     mapTCmd (\m -> FacilityDetailsModel m settings) FacilityDetailsMsg
+
+
+wrapSearch : Settings -> ( AppSearch.Model, Cmd AppSearch.Msg ) -> ( MainModel, Cmd MainMsg )
+wrapSearch settings =
+    mapTCmd (\m -> SearchModel m settings) SearchMsg
 
 
 mapViewport : MainModel -> MapViewport
@@ -257,32 +270,19 @@ mainView : MainModel -> Html MainMsg
 mainView mainModel =
     case mainModel of
         HomeModel model settings ->
-            Shared.layout <| Html.App.map HomeMsg <| AppHome.view settings model
+            Shared.layout <| Html.App.map HomeMsg <| AppHome.view model
 
         FacilityDetailsModel model settings ->
             Shared.layout <| Html.App.map FacilityDetailsMsg <| AppFacilityDetails.view model
 
         SearchModel model settings ->
-            AppSearch.view (hostAppSearch settings) model
+            Shared.layout <| Html.App.map SearchMsg <| AppSearch.view model
 
         InitializingVR _ _ _ ->
             Shared.mapWithControl Nothing
 
         InitializedVR _ _ ->
             Shared.mapWithControl Nothing
-
-
-
---hostAppHome : Settings -> AppHome.Host MainModel MainMsg
---hostAppHome settings =
---    { model = \m -> HomeModel m settings
---    , msg = HomeMsg
---    , facilityClicked = Navigate << FacilityRoute
---    , serviceClicked = Navigate << (\id -> SearchRoute { q = Nothing, l = Nothing, latLng = Nothing, s = Just id })
---    , locationClicked = Navigate << (\id -> SearchRoute { q = Nothing, l = Just id, latLng = Nothing, s = Nothing })
---    , search = Navigate << (\q -> SearchRoute { q = Just q, l = Nothing, latLng = Nothing, s = Nothing })
---    , fakeLocation = settings.fakeLocation
---    }
 
 
 navigateFacility : Int -> Cmd MainMsg
@@ -300,35 +300,15 @@ navigateSearchLocation =
     Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Just id, latLng = Nothing, s = Nothing })
 
 
-navigateSearch : String -> Cmd MainMsg
-navigateSearch =
+navigateSearchQuery : String -> Cmd MainMsg
+navigateSearchQuery =
     Utils.performMessage << Navigate << (\q -> SearchRoute { q = Just q, l = Nothing, latLng = Nothing, s = Nothing })
+
+
+navigateSearch : SearchSpec -> Cmd MainMsg
+navigateSearch =
+    Utils.performMessage << Navigate << SearchRoute
 
 
 navigateBack =
     Navigation.back 1
-
-
-
---hostAppFacilityDetails : Settings -> AppFacilityDetails.Host MainModel MainMsg
---hostAppFacilityDetails settings =
---    { model = \m -> FacilityDetailsModel m settings
---    , msg = FacilityDetailsMsg
---    , navigateBack = NavigateBack
---    }
-
-
-hostAppSearch : Settings -> AppSearch.Host MainModel MainMsg
-hostAppSearch settings =
-    { model = \m -> SearchModel m settings
-    , msg = SearchMsg
-    , facilityClicked = Navigate << FacilityRoute
-    , search = Navigate << SearchRoute
-    , fakeLocation = settings.fakeLocation
-    }
-
-
-
---andCmd : ( MainModel, Cmd MainMsg ) -> Cmd MainMsg -> ( MainModel, Cmd MainMsg )
---andCmd ( m, cmd1 ) cmd2 =
---    ( m, Cmd.batch [ cmd2, cmd1 ] )
