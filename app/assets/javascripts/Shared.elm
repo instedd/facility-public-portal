@@ -44,7 +44,7 @@ header : Html a
 header =
     nav [ id "TopNav", class "z-depth-0" ]
         [ div [ class "nav-wrapper" ]
-            [ a []
+            [ a [ href "/" ]
                 [ img [ id "logo", src "/logo.svg" ] [] ]
             , a [ class "right" ]
                 [ icon "menu" ]
