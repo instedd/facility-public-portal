@@ -4,6 +4,7 @@ import Http
 import String
 import Date exposing (Date)
 import Time
+import Task
 
 
 (&>) : Maybe a -> (a -> Maybe b) -> Maybe b
@@ -14,6 +15,16 @@ import Time
 mapFst : (a -> b) -> ( a, c ) -> ( b, c )
 mapFst f ( a, c ) =
     ( f a, c )
+
+
+mapSnd : (b -> c) -> ( a, b ) -> ( a, c )
+mapSnd f ( a, b ) =
+    ( a, f b )
+
+
+mapTCmd : (a -> c) -> (b -> d) -> ( a, Cmd b ) -> ( c, Cmd d )
+mapTCmd f g ( a, b ) =
+    ( f a, Cmd.map g b )
 
 
 buildPath : String -> List ( String, String ) -> String
@@ -105,10 +116,11 @@ discardEmpty q =
         Just q
 
 
+unreachable : a -> b
+unreachable =
+    (\_ -> Debug.crash "This failure cannot happen.")
 
---unreachable : a
---unreachable =
---    (\_ -> Debug.crash "This failure cannot happen.")
---performMessage : msg -> Cmd msg
---performMessage msg =
---    Task.perform unreachable identity (Task.succeed msg)
+
+performMessage : msg -> Cmd msg
+performMessage msg =
+    Task.perform unreachable identity (Task.succeed msg)

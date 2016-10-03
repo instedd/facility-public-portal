@@ -1,4 +1,4 @@
-module AppFacilityDetails exposing (Host, Model, Msg, init, view, update, subscriptions, mapViewport, userLocation)
+module AppFacilityDetails exposing (Model, Msg(..), PrivateMsg, init, view, update, subscriptions, mapViewport, userLocation)
 
 import Models exposing (MapViewport, Facility)
 import Html exposing (..)
@@ -7,7 +7,7 @@ import Html.Events as Events
 import Shared
 import Api
 import Date exposing (Date)
-import Utils exposing (mapFst)
+import Utils
 import Time
 import String
 import Task
@@ -20,58 +20,60 @@ type Model
     | Loaded MapViewport Facility (Maybe Date) UserLocation.Model
 
 
-type Msg
+type PrivateMsg
     = ApiFetch Api.FetchFacilityMsg
     | CurrentDate Date
 
 
-type alias Host model msg =
-    { model : Model -> model
-    , msg : Msg -> msg
-    , navigateBack : msg
-    }
+type Msg
+    = Close
+    | Private PrivateMsg
 
 
-init : Host model msg -> MapViewport -> UserLocation.Model -> Int -> ( model, Cmd msg )
-init h mapViewport userLocation facilityId =
-    mapFst h.model <|
-        Loading mapViewport facilityId Nothing userLocation
-            ! [ -- TODO should make them grey instead of removing
-                Map.clearFacilityMarkers
-              , Api.fetchFacility (h.msg << ApiFetch) facilityId
-              , currentDate h
-              ]
+init : MapViewport -> UserLocation.Model -> Int -> ( Model, Cmd Msg )
+init mapViewport userLocation facilityId =
+    Loading mapViewport facilityId Nothing userLocation
+        ! [ -- TODO should make them grey instead of removing
+            Map.clearFacilityMarkers
+          , Api.fetchFacility (Private << ApiFetch) facilityId
+          , currentDate
+          ]
 
 
-update : Host model msg -> Msg -> Model -> ( model, Cmd msg )
-update h msg model =
-    mapFst h.model <|
-        case msg of
-            CurrentDate date ->
-                ( setDate date model, Cmd.none )
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        Private msg ->
+            case msg of
+                CurrentDate date ->
+                    ( setDate date model, Cmd.none )
 
-            ApiFetch (Api.FetchFacilitySuccess facility) ->
-                ( Loaded (mapViewport model) facility (date model) (userLocation model), Map.addFacilityMarker facility )
+                ApiFetch (Api.FetchFacilitySuccess facility) ->
+                    ( Loaded (mapViewport model) facility (date model) (userLocation model), Map.addFacilityMarker facility )
 
-            _ ->
-                -- TODO handle error
-                ( model, Cmd.none )
+                _ ->
+                    -- TODO handle error
+                    ( model, Cmd.none )
 
-
-view : Host model msg -> Model -> Html msg
-view h model =
-    Shared.mapWithControl <|
-        Just <|
-            case model of
-                Loading _ _ _ _ ->
-                    Html.h3 [] [ text "Loading... " ]
-
-                Loaded _ facility date _ ->
-                    facilityDetail h date facility
+        _ ->
+            -- public events
+            ( model, Cmd.none )
 
 
-subscriptions : Host model msg -> Model -> Sub msg
-subscriptions h model =
+view : Model -> Html Msg
+view model =
+    Shared.headerWithContent
+        [ case model of
+            Loading _ _ _ _ ->
+                Html.h3 [] [ text "Loading... " ]
+
+            Loaded _ facility date _ ->
+                facilityDetail date facility
+        ]
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
     Sub.none
 
 
@@ -115,17 +117,17 @@ userLocation model =
             userLocation
 
 
-currentDate : Host model msg -> Cmd msg
-currentDate h =
+currentDate : Cmd Msg
+currentDate =
     let
         notFailing x =
             notFailing x
     in
-        Task.perform notFailing (Utils.dateFromEpochMillis >> CurrentDate >> h.msg) Time.now
+        Task.perform notFailing (Utils.dateFromEpochMillis >> CurrentDate >> Private) Time.now
 
 
-facilityDetail : Host model msg -> Maybe Date -> Facility -> Html msg
-facilityDetail h now facility =
+facilityDetail : Maybe Date -> Facility -> Html Msg
+facilityDetail now facility =
     let
         lastUpdatedSub =
             now
@@ -149,7 +151,7 @@ facilityDetail h now facility =
                     , span [ class "sub" ] [ text lastUpdatedSub ]
                     ]
                 , i
-                    [ class "material-icons right", Events.onClick h.navigateBack ]
+                    [ class "material-icons right", Events.onClick Close ]
                     [ text "clear" ]
                 ]
             , div [ class "detailSection pic" ] [ img [ src "/facility.png" ] [] ]

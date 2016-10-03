@@ -1,20 +1,19 @@
-port module Map exposing (Host, mapViewportChanged, subscriptions, initializeMap, addUserMarker, clearFacilityMarkers, addFacilityMarker, fitContent)
+port module Map exposing (Msg(..), mapViewportChanged, subscriptions, initializeMap, addUserMarker, clearFacilityMarkers, addFacilityMarker, fitContent, facilityMarkerClicked)
 
 import Json.Encode exposing (..)
 import Models exposing (..)
 
 
-type alias Host msg =
-    { mapViewportChanged : MapViewport -> msg
-    , facilityMarkerClicked : Int -> msg
-    }
+type Msg
+    = MapViewportChanged MapViewport
+    | FacilityMarkerClicked Int
 
 
-subscriptions : Host msg -> Sub msg
-subscriptions h =
+subscriptions : Sub Msg
+subscriptions =
     Sub.batch
-        [ mapViewportChanged h.mapViewportChanged
-        , facilityMarkerClicked h.facilityMarkerClicked
+        [ mapViewportChanged MapViewportChanged
+        , facilityMarkerClicked FacilityMarkerClicked
         ]
 
 
