@@ -8,15 +8,15 @@ import Models exposing (Settings, MapViewport, LatLng, SearchResult, shouldLoadM
 import Shared
 import Utils exposing (mapFst, mapTCmd)
 import UserLocation
+import Suggest
 
 
 type alias Model =
-    { query : String, suggestions : Shared.Suggestions, mapViewport : MapViewport, userLocation : UserLocation.Model }
+    { suggest : Suggest.Model, mapViewport : MapViewport, userLocation : UserLocation.Model }
 
 
 type PrivateMsg
-    = Input String
-    | Sug Api.SuggestionsMsg
+    = SuggestMsg Suggest.Msg
     | MapMsg Map.Msg
     | ApiSearch Api.SearchMsg
     | UserLocationMsg UserLocation.Msg
@@ -32,7 +32,7 @@ type Msg
 
 init : Settings -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init _ mapViewport userLocation =
-    ( { query = "", suggestions = Nothing, mapViewport = mapViewport, userLocation = userLocation }
+    ( { suggest = Suggest.empty, mapViewport = mapViewport, userLocation = userLocation }
     , searchAllFacilitiesStartingFrom mapViewport.center
     )
 
@@ -42,25 +42,22 @@ update s msg model =
     case msg of
         Private msg ->
             case msg of
-                Input query ->
-                    if query == "" then
-                        ( { model | query = query, suggestions = Nothing }, Cmd.none )
-                    else
-                        ( { model | query = query }, Api.getSuggestions (Private << Sug) (Just model.mapViewport.center) query )
-
-                Sug msg ->
+                SuggestMsg msg ->
                     case msg of
-                        Api.SuggestionsSuccess query suggestions ->
-                            if (query == model.query) then
-                                ( { model | suggestions = Just suggestions }, Cmd.none )
-                            else
-                                -- ignore old requests
-                                ( model, Cmd.none )
+                        Suggest.FacilityClicked facilityId ->
+                            ( model, Utils.performMessage (FacilityClicked facilityId) )
 
-                        -- Ignore out of order results
-                        Api.SuggestionsFailed e ->
-                            -- TODO
-                            ( model, Cmd.none )
+                        Suggest.ServiceClicked serviceId ->
+                            ( model, Utils.performMessage (ServiceClicked serviceId) )
+
+                        Suggest.LocationClicked locationId ->
+                            ( model, Utils.performMessage (LocationClicked locationId) )
+
+                        Suggest.Search q ->
+                            ( model, Utils.performMessage (Search q) )
+
+                        _ ->
+                            wrapSuggest model <| Suggest.update { mapViewport = model.mapViewport } msg model.suggest
 
                 ApiSearch (Api.SearchSuccess results) ->
                     let
@@ -94,20 +91,20 @@ update s msg model =
             ( model, Cmd.none )
 
 
+wrapSuggest : Model -> ( Suggest.Model, Cmd Suggest.Msg ) -> ( Model, Cmd Msg )
+wrapSuggest model =
+    mapTCmd (\s -> { model | suggest = s }) (Private << SuggestMsg)
+
+
 view : Model -> Html Msg
 view model =
     Shared.headerWithContent
-        [ Shared.suggestionsView
-            { facilityClicked = FacilityClicked
-            , serviceClicked = ServiceClicked
-            , locationClicked = LocationClicked
-            , submit = Search model.query
-            , input = Private << Input
-            }
-            [ Html.App.map (Private << UserLocationMsg) (UserLocation.view model.userLocation) ]
-            model.query
-            model.suggestions
-        ]
+        ((Suggest.viewInput (Private << SuggestMsg)
+            model.suggest
+            [ (Html.App.map (Private << UserLocationMsg) (UserLocation.view model.userLocation)) ]
+         )
+            :: (List.map (Html.App.map (Private << SuggestMsg)) (Suggest.viewSuggestions model.suggest))
+        )
 
 
 subscriptions : Model -> Sub Msg

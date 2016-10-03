@@ -8,10 +8,6 @@ import Models
 import String
 
 
-type alias Suggestions =
-    Maybe (List Models.Suggestion)
-
-
 mapWithControl : Maybe (Html a) -> Html a
 mapWithControl content =
     layout (mapControl content)
@@ -74,81 +70,6 @@ searchBar userInput trailing submitMsg inputMsg =
          ]
             `List.append` trailing
         )
-
-
-type alias SuggestionHost msg =
-    { facilityClicked : Int -> msg
-    , serviceClicked : Int -> msg
-    , locationClicked : Int -> msg
-    , submit : msg
-    , input : String -> msg
-    }
-
-
-suggestionsView : SuggestionHost a -> List (Html a) -> String -> Suggestions -> Html a
-suggestionsView h trailing userInput items =
-    div []
-        ([ searchBar userInput trailing h.submit h.input
-         ]
-            ++ (case items of
-                    Nothing ->
-                        []
-
-                    Just s ->
-                        [ suggestionsContent h s ]
-               )
-        )
-
-
-suggestionsContent : SuggestionHost a -> List Models.Suggestion -> Html a
-suggestionsContent h s =
-    let
-        entries =
-            case s of
-                [] ->
-                    [ text "Nothing found..." ]
-
-                _ ->
-                    List.map (suggestion h) s
-    in
-        div [ class "collection results" ] entries
-
-
-suggestion : SuggestionHost a -> Models.Suggestion -> Html a
-suggestion h s =
-    case s of
-        Models.F { id, name, kind, services, adm } ->
-            a
-                [ class "collection-item avatar suggestion facility"
-                , onClick <| h.facilityClicked id
-                ]
-                [ icon "local_hospital"
-                , span [ class "title" ] [ text name ]
-                , p [ class "sub" ]
-                    [ text (adm |> List.drop 1 |> List.reverse |> String.join ", ") ]
-                ]
-
-        Models.S { id, name, facilityCount } ->
-            a
-                [ class "collection-item avatar suggestion service"
-                , onClick <| h.serviceClicked id
-                ]
-                [ icon "label"
-                , span [ class "title" ] [ text name ]
-                , p [ class "sub" ]
-                    [ text <| toString facilityCount ++ " facilities" ]
-                ]
-
-        Models.L { id, name, parentName } ->
-            a
-                [ class "collection-item avatar suggestion location"
-                , onClick <| h.locationClicked id
-                ]
-                [ icon "location_on"
-                , span [ class "title" ] [ text name ]
-                , p [ class "sub" ]
-                    [ text parentName ]
-                ]
 
 
 icon : String -> Html a
