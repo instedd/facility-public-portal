@@ -6,6 +6,10 @@ import Dict exposing (Dict)
 import String
 
 
+type alias Settings =
+    { fakeLocation : Maybe LatLng }
+
+
 type Route
     = RootRoute
     | SearchRoute SearchSpec

@@ -10,16 +10,14 @@ import AppSearch
 import AppFacilityDetails
 import UserLocation
 import Html exposing (Html)
+import Html.App
+import Utils exposing (mapFst, mapSnd)
 
 
 type alias Flags =
     { fakeUserPosition : Bool
     , initialPosition : LatLng
     }
-
-
-type alias Settings =
-    { fakeLocation : Maybe LatLng }
 
 
 main : Program Flags
@@ -82,8 +80,8 @@ subscriptions model =
         InitializedVR _ _ ->
             Sub.none
 
-        HomeModel model settings ->
-            AppHome.subscriptions (hostAppHome settings) model
+        HomeModel model _ ->
+            Sub.map HomeMsg <| AppHome.subscriptions model
 
         FacilityDetailsModel model settings ->
             AppFacilityDetails.subscriptions (hostAppFacilityDetails settings) model
@@ -115,7 +113,21 @@ mainUpdate msg mainModel =
                 HomeModel model settings ->
                     case msg of
                         HomeMsg msg ->
-                            AppHome.update (hostAppHome settings) msg model
+                            case msg of
+                                AppHome.FacilityClicked facilityId ->
+                                    ( HomeModel model settings, navigateFacility facilityId )
+
+                                AppHome.ServiceClicked serviceId ->
+                                    ( HomeModel model settings, navigateSearchService serviceId )
+
+                                AppHome.LocationClicked locationId ->
+                                    ( HomeModel model settings, navigateSearchLocation locationId )
+
+                                AppHome.Search q ->
+                                    ( HomeModel model settings, navigateSearch q )
+
+                                AppHome.Private _ ->
+                                    wrapHome settings (AppHome.update settings msg model)
 
                         _ ->
                             Debug.crash "unexpected message"
@@ -159,7 +171,7 @@ mainUrlUpdate result mainModel =
             in
                 case Routing.routeFromResult result of
                     RootRoute ->
-                        AppHome.init (hostAppHome settings) viewport userLocation
+                        wrapHome settings (AppHome.init settings viewport userLocation)
 
                     FacilityRoute facilityId ->
                         AppFacilityDetails.init (hostAppFacilityDetails settings) viewport userLocation facilityId
@@ -169,6 +181,11 @@ mainUrlUpdate result mainModel =
 
                     _ ->
                         Debug.crash "route not handled"
+
+
+wrapHome : Settings -> ( AppHome.Model, Cmd AppHome.Msg ) -> ( MainModel, Cmd MainMsg )
+wrapHome settings t =
+    mapFst (\m -> HomeModel m settings) (mapSnd (Cmd.map HomeMsg) t)
 
 
 mapViewport : MainModel -> MapViewport
@@ -229,7 +246,7 @@ mainView : MainModel -> Html MainMsg
 mainView mainModel =
     case mainModel of
         HomeModel model settings ->
-            AppHome.view (hostAppHome settings) model
+            Shared.layout <| Html.App.map HomeMsg <| AppHome.view settings model
 
         FacilityDetailsModel model settings ->
             AppFacilityDetails.view (hostAppFacilityDetails settings) model
@@ -244,16 +261,37 @@ mainView mainModel =
             Shared.mapWithControl Nothing
 
 
-hostAppHome : Settings -> AppHome.Host MainModel MainMsg
-hostAppHome settings =
-    { model = \m -> HomeModel m settings
-    , msg = HomeMsg
-    , facilityClicked = Navigate << FacilityRoute
-    , serviceClicked = Navigate << (\id -> SearchRoute { q = Nothing, l = Nothing, latLng = Nothing, s = Just id })
-    , locationClicked = Navigate << (\id -> SearchRoute { q = Nothing, l = Just id, latLng = Nothing, s = Nothing })
-    , search = Navigate << (\q -> SearchRoute { q = Just q, l = Nothing, latLng = Nothing, s = Nothing })
-    , fakeLocation = settings.fakeLocation
-    }
+
+--hostAppHome : Settings -> AppHome.Host MainModel MainMsg
+--hostAppHome settings =
+--    { model = \m -> HomeModel m settings
+--    , msg = HomeMsg
+--    , facilityClicked = Navigate << FacilityRoute
+--    , serviceClicked = Navigate << (\id -> SearchRoute { q = Nothing, l = Nothing, latLng = Nothing, s = Just id })
+--    , locationClicked = Navigate << (\id -> SearchRoute { q = Nothing, l = Just id, latLng = Nothing, s = Nothing })
+--    , search = Navigate << (\q -> SearchRoute { q = Just q, l = Nothing, latLng = Nothing, s = Nothing })
+--    , fakeLocation = settings.fakeLocation
+--    }
+
+
+navigateFacility : Int -> Cmd MainMsg
+navigateFacility =
+    Utils.performMessage << Navigate << FacilityRoute
+
+
+navigateSearchService : Int -> Cmd MainMsg
+navigateSearchService =
+    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Nothing, latLng = Nothing, s = Just id })
+
+
+navigateSearchLocation : Int -> Cmd MainMsg
+navigateSearchLocation =
+    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Just id, latLng = Nothing, s = Nothing })
+
+
+navigateSearch : String -> Cmd MainMsg
+navigateSearch =
+    Utils.performMessage << Navigate << (\q -> SearchRoute { q = Just q, l = Nothing, latLng = Nothing, s = Nothing })
 
 
 hostAppFacilityDetails : Settings -> AppFacilityDetails.Host MainModel MainMsg

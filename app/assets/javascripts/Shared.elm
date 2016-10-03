@@ -14,10 +14,7 @@ type alias Suggestions =
 
 mapWithControl : Maybe (Html a) -> Html a
 mapWithControl content =
-    div [ id "container" ]
-        [ mapCanvas
-        , mapControl content
-        ]
+    layout (mapControl content)
 
 
 mapCanvas : Html a
@@ -25,17 +22,25 @@ mapCanvas =
     div [ id "map" ] []
 
 
+layout : Html a -> Html a
+layout content =
+    div [ id "container" ] [ mapCanvas, content ]
+
+
+headerWithContent : List (Html a) -> Html a
+headerWithContent content =
+    div [ id "map-control", class "z-depth-1" ] (header :: content)
+
+
 mapControl : Maybe (Html a) -> Html a
 mapControl content =
-    div [ id "map-control", class "z-depth-1" ]
-        ([ header ]
-            ++ (case content of
-                    Nothing ->
-                        []
+    headerWithContent
+        (case content of
+            Nothing ->
+                []
 
-                    Just content ->
-                        [ content ]
-               )
+            Just content ->
+                [ content ]
         )
 
 
