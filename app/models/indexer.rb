@@ -174,10 +174,6 @@ class Indexer
   end
 
   def self.index_csv(filename, service = ElasticsearchService.instance)
-    CSV::Converters[:blank_to_nil] ||= lambda do |field|
-      field && field.empty? ? nil : field
-    end
-
     records = Enumerator.new do |out|
       CSV.foreach(filename, headers: true, converters: [:blank_to_nil]) do |row|
         if valid_csv_row? row

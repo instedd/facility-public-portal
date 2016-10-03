@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+APP_PATH = File.expand_path('../../config/application',  __dir__)
+require_relative '../config/boot'
+require_relative '../config/environment'
+
+require 'csv'
+
+def csv_enumerator(filename)
+  Enumerator.new do |out|
+    CSV.foreach(filename, headers: true, converters: [:blank_to_nil, :numeric]) do |row|
+      out << row
+    end
+  end
+end
+
+def write_output(filename, data, headers)
+  CSV.open(filename, "wb") do |csv|
+    csv << headers
+    data.each do |f|
+      csv << headers.map { |h| f[h.to_sym] }
+    end
+  end
+
+end
+
+facilities = csv_enumerator("data/raw/Spa+Data - Facility List.csv")
+services   = csv_enumerator("data/raw/Spa+Data - MedicalService1.csv")
+facilities_services = csv_enumerator("data/raw/FacilityService.csv")
+locations  = csv_enumerator("data/raw/Spa+Data - OrganizationUnit.csv")
+
+result = SpaNormalization.new(facilities, services, facilities_services, locations).run
+
+write_output "data/input/facilities.csv", result[:facilities], ["id", "name", "lat", "lng", "location_id", "facility_type", "contact_name", "contact_email", "contact_phone", "last"]
+write_output "data/input/services.csv", result[:services], ["id", "name"]
+write_output "data/input/facilities_services.csv", result[:facilities_services], ["facility_id", "service_id"]
+write_output "data/input/locations.csv", result[:locations], ["id", "name", "parent_id"]
