@@ -108,6 +108,9 @@ html, body, #container, #elm, #map {
   position: relative;
   a {
     color: inherit;
+    &.detected {
+      color: #0f47af;
+    }
   }
 }
 

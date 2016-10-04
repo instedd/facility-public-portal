@@ -23,6 +23,7 @@ type Msg
     = Geolocate
     | LocationDetected LatLng
     | LocationFailed Geolocation.Error
+    | GotoLocation
 
 
 init : Model
@@ -50,6 +51,9 @@ update s msg model =
         LocationFailed e ->
             -- TODO
             NoLocation ! []
+
+        GotoLocation ->
+            model ! [ Map.fitContent ]
 
 
 fakeGeolocateUser : LatLng -> Cmd Msg
@@ -81,8 +85,12 @@ view model =
                         ]
                     ]
 
-            _ ->
+            NoLocation ->
                 a [ href "#", onClick Geolocate ]
+                    [ icon "my_location" ]
+
+            Detected _ ->
+                a [ href "#", onClick GotoLocation, class "detected" ]
                     [ icon "my_location" ]
         ]
 
