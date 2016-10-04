@@ -171,12 +171,15 @@ html, body, #container, #elm, #map {
   }
 }
 
+.content {
+  max-height: 74vh;
+  overflow-y: scroll;
+}
+
 .results {
   margin-top: 0;
   margin-bottom: 0;
   border: none;
-  max-height: 74vh;
-  overflow-y: auto;
 
   a.collection-item.avatar {
     color: black;
@@ -234,24 +237,29 @@ html, body, #container, #elm, #map {
     }
   }
 
-  .pic {
+  .content {
     margin: 0;
     padding: 0;
-    height: 217px;
-    img { height: 100%; }
-  }
 
-  .contact {
-    padding-top: 0;
-    color: $blue;
-    font-size: 12pt;
+    .pic {
+      margin: 0;
+      padding: 0;
+      height: 217px;
+      img { height: 100%; }
+    }
 
-    li {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
+    .contact {
+      padding-top: 0;
+      color: $blue;
+      font-size: 12pt;
 
-      i { margin-right: 15px; }
+      li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+
+        i { margin-right: 15px; }
+      }
     }
 
   }

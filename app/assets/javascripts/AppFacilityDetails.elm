@@ -181,14 +181,16 @@ facilityDetail now facility =
                     [ class "material-icons right", Events.onClick Close ]
                     [ text "clear" ]
                 ]
-            , div [ class "detailSection pic" ] [ img [ src "/facility.png" ] [] ]
-            , div [ class "detailSection contact" ] [ facilityContactDetails contactInfo ]
-            , div [ class "detailSection services" ]
-                [ span [] [ text "Services" ]
-                , if List.isEmpty facility.services then
-                    div [ class "noData" ] [ text "There is currently no information about services provided by this facility." ]
-                  else
-                    ul [] (List.map (\s -> li [] [ text s ]) facility.services)
+            , div [ class "content" ]
+                [ div [ class "detailSection pic" ] [ img [ src "/facility.png" ] [] ]
+                , div [ class "detailSection contact" ] [ facilityContactDetails contactInfo ]
+                , div [ class "detailSection services" ]
+                    [ span [] [ text "Services" ]
+                    , if List.isEmpty facility.services then
+                        div [ class "noData" ] [ text "There is currently no information about services provided by this facility." ]
+                      else
+                        ul [] (List.map (\s -> li [] [ text s ]) facility.services)
+                    ]
                 ]
             ]
 

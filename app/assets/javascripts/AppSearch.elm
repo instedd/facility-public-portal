@@ -190,7 +190,7 @@ searchResults model =
                 Just results ->
                     List.map facilityRow results.items
     in
-        div [ class "collection results" ] entries
+        div [ class "collection results content" ] entries
 
 
 facilityRow : Facility -> Html Msg
