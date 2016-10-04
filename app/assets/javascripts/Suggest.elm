@@ -113,7 +113,7 @@ suggestion s =
     case s of
         Models.F { id, name, kind, services, adm } ->
             a
-                [ class "collection-item avatar suggestion facility"
+                [ class "collection-item avatar suggestion"
                 , onClick <| FacilityClicked id
                 ]
                 [ icon "local_hospital"
@@ -124,7 +124,7 @@ suggestion s =
 
         Models.S { id, name, facilityCount } ->
             a
-                [ class "collection-item avatar suggestion service"
+                [ class "collection-item avatar suggestion"
                 , onClick <| ServiceClicked id
                 ]
                 [ icon "label"
@@ -135,7 +135,7 @@ suggestion s =
 
         Models.L { id, name, parentName } ->
             a
-                [ class "collection-item avatar suggestion location"
+                [ class "collection-item avatar suggestion"
                 , onClick <| LocationClicked id
                 ]
                 [ icon "location_on"
