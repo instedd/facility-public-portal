@@ -19,14 +19,14 @@ class SpaNormalization
 
         {
           id: f["Id"],
-          name: f["FacilityName"],
+          name: f["FacilityName"].try(:titleize).try(:strip),
           lat: latlng["Latitude"],
           lng: latlng["Longitude"],
           location_id: f["OrganizationUnitId"],
-          facility_type: types[f["FacilityTypeId"]]["FacilityTypeName"],
-          contact_name: full_name.empty? ? nil : full_name,
-          contact_email: contact["Email"],
-          contact_phone: contact["Telephone"],
+          facility_type: types[f["FacilityTypeId"]]["FacilityTypeName"].strip,
+          contact_name: full_name.empty? ? nil : full_name.strip,
+          contact_email: contact["Email"].try(:strip),
+          contact_phone: contact["Telephone"].try(:strip),
           last_update: nil # TODO
         }
       end
@@ -34,7 +34,7 @@ class SpaNormalization
       result[:services] = @dataset[:services].map do |s|
         {
           id: s["Id"],
-          name: s["ServiceTypeName"],
+          name: s["ServiceTypeName"].strip,
         }
       end
 
@@ -48,7 +48,7 @@ class SpaNormalization
       result[:locations] = @dataset[:locations].map do |l|
         {
           id: l["Id"],
-          name: (l["OfficialName"] || l["OffcialName"]).titleize,
+          name: (l["OfficialName"] || l["OffcialName"]).titleize.strip,
           parent_id: l["ParentId"],
         }
       end
