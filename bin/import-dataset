@@ -11,6 +11,10 @@ end
 
 input_path = ARGV[0]
 
+ElasticsearchService.instance.drop_index rescue nil
+ElasticsearchService.instance.setup_index
+ElasticsearchService.instance.setup_mappings
+
 if File.file? input_path
   system("tar -xzvf #{input_path}")
   if $?.exitstatus == 0
