@@ -29,15 +29,14 @@ type PrivateMsg
 
 type Msg
     = Close
+    | FacilityClicked Int
     | Private PrivateMsg
 
 
 init : MapViewport -> UserLocation.Model -> Int -> ( Model, Cmd Msg )
 init mapViewport userLocation facilityId =
     Loading mapViewport facilityId Nothing userLocation
-        ! [ -- TODO should make them grey instead of removing
-            Map.clearFacilityMarkers
-          , Api.fetchFacility (Private << ApiFetch) facilityId
+        ! [ Api.fetchFacility (Private << ApiFetch) facilityId
           , currentDate
           ]
 
@@ -51,7 +50,7 @@ update s msg model =
                     ( setDate date model, Cmd.none )
 
                 ApiFetch (Api.FetchFacilitySuccess facility) ->
-                    ( Loaded (mapViewport model) facility (date model) (userLocation model), Map.addFacilityMarker facility )
+                    ( Loaded (mapViewport model) facility (date model) (userLocation model), Map.setHighlightedFacilityMarker facility )
 
                 UserLocationMsg msg ->
                     mapTCmd (\l -> setUserLocation l model) (Private << UserLocationMsg) <|
@@ -87,7 +86,7 @@ userLocationView model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Map.facilityMarkerClicked FacilityClicked
 
 
 mapViewport : Model -> MapViewport

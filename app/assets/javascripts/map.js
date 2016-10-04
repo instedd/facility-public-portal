@@ -19,6 +19,7 @@ $(document).ready(function() {
 
       FPP.facilityLayerGroup = L.layerGroup().addTo(FPP.map);
       FPP.userMarker = null;
+      FPP.highlightedFacilityMarker = null;
 
       FPP.map.on('moveend', function(){
         elm.ports.mapViewportChanged.send(FPP.getMapViewport());
@@ -71,9 +72,45 @@ $(document).ready(function() {
       FPP.facilityLayerGroup.clearLayers();
     },
 
+    setHighlightedFacilityMarker: function(o) {
+      if (FPP.highlightedFacilityMarker) {
+        FPP.map.removeLayer(FPP.highlightedFacilityMarker);
+      }
+
+      $("#map").addClass("grey-facilities");
+      var latLng = [o.position.lat, o.position.lng];
+      var id = o.id;
+
+      FPP.highlightedFacilityMarker =
+        L.circleMarker(latLng, {
+          radius: 8,
+          className: 'facilityMarker-highlighted'
+        });
+
+      FPP.highlightedFacilityMarker.addTo(FPP.map);
+      FPP.highlightedFacilityMarker.bringToFront();
+      FPP._userMarkerToFront();
+    },
+
+    removeHighlightedFacilityMarker: function () {
+      $("#map").removeClass("grey-facilities");
+      if (FPP.highlightedFacilityMarker) {
+        FPP.map.removeLayer(FPP.highlightedFacilityMarker);
+      }
+    },
+
     fitContent: function() {
       var controlWidth = document.getElementById("map-control").offsetWidth; // TODO: review for mobile
-      var group = L.featureGroup(FPP.facilityLayerGroup.getLayers());
+      var group;
+      var fitBoundsOptions;
+
+      if (FPP.highlightedFacilityMarker == null) {
+        group = L.featureGroup(FPP.facilityLayerGroup.getLayers());
+        fitBoundsOptions = { padding: [0,0] }
+      } else {
+        group = L.featureGroup([FPP.highlightedFacilityMarker]);
+        fitBoundsOptions = { paddingTopLeft: [340,0] }
+      }
 
       if (FPP.userMarker) {
         group.addLayer(FPP.userMarker.getLayers()[0]);
@@ -81,7 +118,7 @@ $(document).ready(function() {
 
       // bounds are invalid when there are no elements
       if (group.getBounds().isValid()) {
-        FPP.map.fitBounds(group.getBounds());
+        FPP.map.fitBounds(group.getBounds(), fitBoundsOptions);
       }
     }
   };

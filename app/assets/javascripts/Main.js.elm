@@ -140,6 +140,9 @@ mainUpdate msg mainModel =
                                 AppFacilityDetails.Close ->
                                     ( mainModel, navigateBack )
 
+                                AppFacilityDetails.FacilityClicked facilityId ->
+                                    ( FacilityDetailsModel model settings, navigateFacility facilityId )
+
                                 _ ->
                                     wrapFacilityDetails settings (AppFacilityDetails.update settings msg model)
 

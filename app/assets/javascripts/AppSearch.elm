@@ -36,9 +36,10 @@ type Msg
 
 init : Settings -> SearchSpec -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init s query mapViewport userLocation =
-    ( { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing }
-    , Api.search (Private << ApiSearch) { query | latLng = Just mapViewport.center }
-    )
+    { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing }
+        ! [ Api.search (Private << ApiSearch) { query | latLng = Just mapViewport.center }
+          , Map.removeHighlightedFacilityMarker
+          ]
 
 
 update : Settings -> Msg -> Model -> ( Model, Cmd Msg )

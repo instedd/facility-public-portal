@@ -32,9 +32,8 @@ type Msg
 
 init : Settings -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init _ mapViewport userLocation =
-    ( { suggest = Suggest.empty, mapViewport = mapViewport, userLocation = userLocation }
-    , searchAllFacilitiesStartingFrom mapViewport.center
-    )
+    { suggest = Suggest.empty, mapViewport = mapViewport, userLocation = userLocation }
+        ! [ searchAllFacilitiesStartingFrom mapViewport.center, Map.removeHighlightedFacilityMarker ]
 
 
 update : Settings -> Msg -> Model -> ( Model, Cmd Msg )

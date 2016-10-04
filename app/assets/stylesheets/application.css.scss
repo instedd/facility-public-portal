@@ -45,12 +45,18 @@ html, body, #container, #elm, #map {
     fill-opacity: 1;
   }
 
-  .facilityMarker {
+  .facilityMarker, .facilityMarker-highlighted {
     stroke: white;
     stroke-width: 2;
     stroke-opacity: 1;
     fill: #0F47AF;
     fill-opacity: 1;
+  }
+
+  &.grey-facilities {
+    .facilityMarker {
+      fill: #a0a0a0;
+    }
   }
 }
 
