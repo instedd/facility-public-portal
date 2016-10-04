@@ -1,32 +1,86 @@
 # Importing data
 
-Import CSV facilities information as follows:
+## Input data schema
+
+This tool can import data using the following schema, where each table is stored in a CSV file with headers.
+
+### Facilities
+
+| Field         | Type                      |
+|---------------|---------------------------|
+| id            | String                    |
+| name          | String                    |
+| lat           | Float                     |
+| lng           | Float                     |
+| location_id   | String                    |
+| facility_type | String                    |
+| contact_name  | String                    |
+| contact_email | String                    |
+| contact_phone | String                    |
+| last update   | String (ISO-8601 encoded) |
+
+
+### Services
+
+| Field | Type   |
+|-------|--------|
+| id    | String |
+| name  | String |
+
+
+### facilities_services
+
+| Field       | Type   |
+|-------------|--------|
+| facility_id | String |
+| service_id  | String |
+
+### locations
+
+| Field     | Type   |
+|-----------|--------|
+| id        | String |
+| name      | String |
+| parent_id | String |
+
+
+## Importing CSV data
+
+The import script assumes CSV files with the following names:
+```
+data
+├── input
+    ├── facilities.csv
+    ├── facilities_services.csv
+    ├── locations.csv
+    └── services.csv
+```
+
+To import CSV data run the following:
 
 ```
-$ curl -XPUT localhost:9200/fpp/_settings -d '{"index" : {"refresh_interval" : "-1"} }'
-$ bin/import-dataset "data-normalized.csv"
-$ curl -XPUT localhost:9200/fpp/_settings -d '{"index" : {"refresh_interval" : "1s"} }'
-$ curl -XPOST localhost:9200/fpp/_forcemerge?max_num_segments=5
+$ bin/import-dataset data/input
 ```
 
-The input file needs to have the following fields:
+## Normalizing SPA Census information
 
-  - resmap-id
-  - name
-  - lat
-  - long
-  - services
-  - administrative_boundaries
-  - administrative_boundaries-1
-  - administrative_boundaries-2
-  - administrative_boundaries-3
-  - administrative_boundaries-4
-  - report_to
-  - poc_email
-  - poc_phonenumber
-  - pocname
-  - facility_type
-  - last update
+To import data from raw CSV exports of SPA results, store raw files as follows:
 
+```
+data
+├── input
+└── raw
+    ├── ContactInfo.csv
+    ├── Facility.csv
+    ├── FacilityService.csv
+    ├── FacilityType.csv
+    ├── MedicalService.csv
+    ├── OrganizationUnit.csv
+    └── geoloc.csv
+```
 
-The script `bin/transform-dataset` might be handy to transform other CSV schemas into the expected one.
+And then run the following scripts to generate the normalized input files in the `data/input` directory:
+
+```
+$ bin/normalize-spa-data data/raw data/input
+```
