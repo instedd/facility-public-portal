@@ -105,7 +105,7 @@ suggestionsContent s =
                 _ ->
                     List.map suggestion s
     in
-        div [ class "collection results" ] entries
+        div [ class "collection results content" ] entries
 
 
 suggestion : Models.Suggestion -> Html Msg
