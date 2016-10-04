@@ -9,11 +9,19 @@ unless ARGV.size == 1
   exit 1
 end
 
-csv_files_path = ARGV[0]
+input_path = ARGV[0]
 
-unless Dir.exists? csv_files_path
-  puts "The directory #{csv_files_path} does not exist"
+if File.file? input_path
+  system("tar -xzvf #{input_path}")
+  if $?.exitstatus == 0
+    Indexing.index_csv_tables('data/input')
+  else
+    puts "Error: could not extract input file"
+    exit 1
+  end
+elsif Dir.exists? input_path
+  Indexing.index_csv_tables(input_path)
+else
+  puts "The directory #{input_path} does not exist"
   exit 1
 end
-
-Indexing.index_csv_tables(csv_files_path)
