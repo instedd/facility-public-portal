@@ -18,7 +18,7 @@ $(document).ready(function() {
       }).addTo(FPP.map);
 
       FPP.facilityLayerGroup = L.layerGroup().addTo(FPP.map);
-      FPP.userMarkerGroup = L.layerGroup().addTo(FPP.map);
+      FPP.userMarker = null;
 
       FPP.map.on('moveend', function(){
         elm.ports.mapViewportChanged.send(FPP.getMapViewport());
@@ -45,7 +45,8 @@ $(document).ready(function() {
         }).bindPopup(popup),
       ]);
 
-      FPP.facilityLayerGroup.addLayer(FPP.userMarker);
+      FPP.userMarker.addTo(FPP.map);
+      FPP._userMarkerToFront();
       popup.openOn(FPP.map);
     },
 
@@ -63,6 +64,7 @@ $(document).ready(function() {
         });
 
       FPP.facilityLayerGroup.addLayer(facilityMarker);
+      FPP._userMarkerToFront();
     },
 
     clearFacilityMarkers: function() {
@@ -96,7 +98,15 @@ $(document).ready(function() {
         west: bounds.getWest()
       }
     };
-  }
+  };
+
+  FPP._userMarkerToFront = function() {
+    if (FPP.userMarker) {
+      FPP.userMarker.eachLayer(function(layer){
+        layer.bringToFront();
+      });
+    }
+  };
 
   elm.ports.jsCommand.subscribe(function(msg) {
     FPP.commands[msg[0]](msg[1]);
