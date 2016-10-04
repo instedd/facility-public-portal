@@ -18,6 +18,7 @@ $(document).ready(function() {
       }).addTo(FPP.map);
 
       FPP.facilityLayerGroup = L.layerGroup().addTo(FPP.map);
+      FPP.userMarkerGroup = L.layerGroup().addTo(FPP.map);
 
       FPP.map.on('moveend', function(){
         elm.ports.mapViewportChanged.send(FPP.getMapViewport());
@@ -36,21 +37,15 @@ $(document).ready(function() {
       FPP.userMarker = L.layerGroup([
         L.circleMarker(latLng, {
           radius: 20,
-          opacity: 0,
-          fillOpacity: 0.3,
-          fillColor: '#333333'
+          className: 'userMarker-outer'
         }),
         L.circleMarker(latLng, {
           radius: 10,
-          weight: 2,
-          color: 'white',
-          fillColor: '#F44336',
-          opacity: 1,
-          fillOpacity: 1
+          className: 'userMarker'
         }).bindPopup(popup),
       ]);
 
-      FPP.userMarker.addTo(FPP.map);
+      FPP.facilityLayerGroup.addLayer(FPP.userMarker);
       popup.openOn(FPP.map);
     },
 
@@ -62,11 +57,7 @@ $(document).ready(function() {
       var facilityMarker =
         L.circleMarker(latLng, {
           radius: 8,
-          weight: 2,
-          color: 'white',
-          fillColor: '#0F47AF',
-          opacity: 1,
-          fillOpacity: 1
+          className: 'facilityMarker'
         }).on('click', function(){
           elm.ports.facilityMarkerClicked.send(id);
         });
