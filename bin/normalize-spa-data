@@ -22,7 +22,7 @@ OUTPUT_PATH = ARGV[1]
 
 def csv_enumerator(filename)
   Enumerator.new do |out|
-    CSV.foreach(filename, headers: true, converters: [:blank_to_nil, :numeric]) do |row|
+    CSV.foreach(filename, headers: true, converters: [:spa_input_blanks, :numeric]) do |row|
       out << row
     end
   end
