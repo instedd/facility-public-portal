@@ -6,13 +6,15 @@ $(document).ready(function() {
     initializeMap: function(o) {
       var latLng = [o.lat, o.lng];
       FPP.map = L.map('map', {
-        zoomControl: false
+        zoomControl: false,
+        attributionControl: false
       });
 
       var tileUrl = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={accessToken}';
 
       L.tileLayer(tileUrl, {
         maxZoom: 18,
+        minZoom: 5,
         id: 'mapbox/streets-v9',
         accessToken: 'pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ'
       }).addTo(FPP.map);

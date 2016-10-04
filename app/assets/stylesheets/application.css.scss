@@ -76,6 +76,7 @@ html, body, #container, #elm, #map {
   min-width: 318px;
   flex-direction: column;
   overflow: hidden;
+  z-index: 3
 }
 
 #map-toolbar {
@@ -83,6 +84,7 @@ html, body, #container, #elm, #map {
   bottom: 24px;
   height: 32px;
   flex-direction: column;
+  z-index: 2
 }
 
 #TopNav {
@@ -245,7 +247,10 @@ html, body, #container, #elm, #map {
       margin: 0;
       padding: 0;
       height: 217px;
-      img { height: 100%; }
+      img {
+        height: 100%;
+        width: 100%;
+      }
     }
 
     .contact {
@@ -290,6 +295,11 @@ html, body, #container, #elm, #map {
     width: 100%;
     left: 0;
     top: 0;
+
+    .content {
+      min-height: 100vh;
+      overflow-y: scroll;
+    }
   }
 }
 
