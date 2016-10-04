@@ -77,7 +77,7 @@ class Indexing
         f.merge({
           id: @last_facility_id += 1,
           source_id: f[:id],
-          contact_phone: f[:contact_phone].to_s,
+          contact_phone: f[:contact_phone] && f[:contact_phone].to_s,
 
           position: {
             lat: f[:lat],
