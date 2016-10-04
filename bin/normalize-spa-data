@@ -5,6 +5,21 @@ require_relative '../config/environment'
 
 require 'csv'
 
+unless ARGV.size == 2
+  puts "Usage: #{__FILE__} /input/csv/dir /output/csv/dir"
+  exit 1
+end
+
+ARGV.each do |dir|
+  unless Dir.exists? dir
+    puts "The directory #{dir} does not exist"
+    exit 1
+  end
+end
+
+INPUT_PATH = ARGV[0]
+OUTPUT_PATH = ARGV[1]
+
 def csv_enumerator(filename)
   Enumerator.new do |out|
     CSV.foreach(filename, headers: true, converters: [:blank_to_nil, :numeric]) do |row|
@@ -14,7 +29,10 @@ def csv_enumerator(filename)
 end
 
 def write_output(filename, data, headers)
-  CSV.open(filename, "wb") do |csv|
+  full_filename = File.join(OUTPUT_PATH, filename)
+  puts "Writing #{full_filename}"
+
+  CSV.open(full_filename, "wb") do |csv|
     csv << headers
     data.each do |f|
       csv << headers.map { |h| f[h.to_sym] }
@@ -23,14 +41,23 @@ def write_output(filename, data, headers)
 
 end
 
-facilities = csv_enumerator("data/raw/Spa+Data - Facility List.csv")
-services   = csv_enumerator("data/raw/Spa+Data - MedicalService1.csv")
-facilities_services = csv_enumerator("data/raw/FacilityService.csv")
-locations  = csv_enumerator("data/raw/Spa+Data - OrganizationUnit.csv")
+filenames = {
+  facilities: "Facility.csv",
+  facility_types: "FacilityType.csv",
+  geoloc: "geoloc.csv",
+  contact_info: "ContactInfo.csv",
+  facilities_services: "FacilityService.csv",
+  services: "MedicalService.csv",
+  locations: "OrganizationUnit.csv",
+}
 
-result = SpaNormalization.new(facilities, services, facilities_services, locations).run
+dataset = filenames.map_values do |filename|
+  csv_enumerator(File.join(INPUT_PATH, filename))
+end
 
-write_output "data/input/facilities.csv", result[:facilities], ["id", "name", "lat", "lng", "location_id", "facility_type", "contact_name", "contact_email", "contact_phone", "last"]
-write_output "data/input/services.csv", result[:services], ["id", "name"]
-write_output "data/input/facilities_services.csv", result[:facilities_services], ["facility_id", "service_id"]
-write_output "data/input/locations.csv", result[:locations], ["id", "name", "parent_id"]
+result = SpaNormalization.new(dataset).run
+
+write_output "facilities.csv", result[:facilities], ["id", "name", "lat", "lng", "location_id", "facility_type", "contact_name", "contact_email", "contact_phone", "last"]
+write_output "services.csv", result[:services], ["id", "name"]
+write_output "facilities_services.csv", result[:facilities_services], ["facility_id", "service_id"]
+write_output "locations.csv", result[:locations], ["id", "name", "parent_id"]

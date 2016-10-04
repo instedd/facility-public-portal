@@ -4,36 +4,55 @@ RSpec.describe SpaNormalization do
 
   it "foo" do
     # | last update   | ???                             |
-    facilities = [
-      {
-        "Spa_Id" => "F1",
-        "FacilityName" => "Berko Health Center",
-        "Lat" => 12.22913,
-        "Long" => 38.77668,
-        "OrganizationUnitId" => "L2",
-        "Facility Type" => "Health Center",
-        "POC Name" => "Fikadu Fetene",
-        "Email" => nil,
-        "Phone Number" => "924243855",
-      }
-    ]
+    dataset = {
+      facilities: [
+        {
+          "Id" => "F1",
+          "FacilityName" => "Berko Health Center",
+          "GeographicCoordinateId" => "GC1",
+          "ContactInformationId" => "CI1",
+          "OrganizationUnitId" => "L2",
+          "FacilityTypeId" => "T1",
+        }
+      ],
 
-    facilities_services = [
-      {"FacilityId" => "F1", "MedicalServiceId" => "S1"},
-      {"FacilityId" => "F1", "MedicalServiceId" => "S2"}
-    ]
+      facility_types: [
+        "Id" => "T1",
+        "FacilityTypeName" => "Health Center"
+      ],
 
-    services = [
-      { "Id" => "S1", "ServiceTypeName" => "Efavirenz (efv) tablets/capsules" },
-      { "Id" => "S2", "ServiceTypeName" => "Ent and ophthalmolgy equipments" }
-    ]
+      geoloc: [
+        "Id" => "GC1",
+        "Latitude" => 12.22913,
+        "Longitude" => 38.77668,
+      ],
 
-    locations  = [
-      {"Id" => "L1", "OfficialName" => "Location 1", "ParentId" => "-----------------"},
-      {"Id" => "L2", "OfficialName" => "Location 2", "ParentId" => "L1"}
-    ]
+      contact_info: [
+        "Id" => "CI1",
+        "FirstName" => "Fikadu",
+        "MiddleName" => "Tamicho",
+        "LastName" => "Fetene",
+        "Email" => "ftfetene@example.com",
+        "Telephone" => "924243855",
+      ],
 
-    result = SpaNormalization.new(facilities, services, facilities_services, locations).run
+      facilities_services: [
+        {"FacilityId" => "F1", "MedicalServiceId" => "S1"},
+        {"FacilityId" => "F1", "MedicalServiceId" => "S2"}
+      ],
+
+      services: [
+        { "Id" => "S1", "ServiceTypeName" => "Efavirenz (efv) tablets/capsules" },
+        { "Id" => "S2", "ServiceTypeName" => "Ent and ophthalmolgy equipments" }
+      ],
+
+      locations: [
+        {"Id" => "L1", "OfficialName" => "Location 1", "ParentId" => "-----------------"},
+        {"Id" => "L2", "OfficialName" => "Location 2", "ParentId" => "L1"}
+      ],
+    }
+
+    result = SpaNormalization.new(dataset).run
 
     expect(result).to eq({facilities: [{
                                          id: "F1",
@@ -42,8 +61,8 @@ RSpec.describe SpaNormalization do
                                          lng: 38.77668,
                                          location_id: "L2",
                                          facility_type: "Health Center",
-                                         contact_name: "Fikadu Fetene",
-                                         contact_email: nil,
+                                         contact_name: "Fikadu Tamicho Fetene",
+                                         contact_email: "ftfetene@example.com",
                                          contact_phone: "924243855",
                                          last_update: nil
                                        }],
@@ -62,7 +81,6 @@ RSpec.describe SpaNormalization do
                             {id: "L1", name: "Location 1", parent_id: "-----------------"},
                             {id: "L2", name: "Location 2", parent_id: "L1"}
                           ]})
-
   end
 
 end

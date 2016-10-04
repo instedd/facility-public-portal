@@ -2,47 +2,52 @@ require "csv"
 
 class SpaNormalization
 
-  def initialize(facilities, services, facilities_services, locations)
-    @facilities = facilities
-    @services = services
-    @facilities_services = facilities_services
-    @locations = locations
+  def initialize(dataset)
+    @dataset = dataset
   end
 
   def run
     {}.tap do |result|
-      result[:facilities] = @facilities.map do |f|
+      coordinates = @dataset[:geoloc].index_by { |geoloc| geoloc["Id"] }
+      types = @dataset[:facility_types].index_by { |type| type["Id"] }
+      contact_info = @dataset[:contact_info].index_by { |type| type["Id"] }
+
+      result[:facilities] = @dataset[:facilities].map do |f|
+        latlng = coordinates[f["GeographicCoordinateId"]] || {}
+        contact = contact_info[f["ContactInformationId"]] || {}
+        full_name = [contact["FirstName"], contact["MiddleName"], contact["LastName"]].compact.join(" ")
+
         {
-          id: f["Spa_Id"],
+          id: f["Id"],
           name: f["FacilityName"],
-          lat: f["Lat"],
-          lng: f["Long"],
+          lat: latlng["Latitude"],
+          lng: latlng["Longitude"],
           location_id: f["OrganizationUnitId"],
-          facility_type: f["Facility Type"],
-          contact_name: /^Unavilable/ =~ f["POC Name"] ? nil : f["POC Name"],
-          contact_email: f["Email"],
-          contact_phone: f["Phone Number"],
+          facility_type: types[f["FacilityTypeId"]]["FacilityTypeName"],
+          contact_name: full_name.empty? ? nil : full_name,
+          contact_email: contact["Email"],
+          contact_phone: contact["Telephone"],
           last_update: nil # TODO
         }
       end
 
-      result[:services] = @services.map do |s|
+      result[:services] = @dataset[:services].map do |s|
         {
-          id: s["Id"] || s["ï»¿Id"],
+          id: s["Id"],
           name: s["ServiceTypeName"],
         }
       end
 
-      result[:facilities_services] = @facilities_services.map do |assoc|
+      result[:facilities_services] = @dataset[:facilities_services].map do |assoc|
         {
           facility_id: assoc["FacilityId"],
           service_id: assoc["MedicalServiceId"],
         }
       end
 
-      result[:locations] = @locations.map do |l|
+      result[:locations] = @dataset[:locations].map do |l|
         {
-          id: l["Id"] || l["ï»¿Id"],
+          id: l["Id"],
           name: (l["OfficialName"] || l["OffcialName"]).titleize,
           parent_id: l["ParentId"],
         }
