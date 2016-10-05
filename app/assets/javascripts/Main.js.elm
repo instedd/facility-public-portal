@@ -92,7 +92,7 @@ subscriptions model =
 
 mainUpdate : MainMsg -> MainModel -> ( MainModel, Cmd MainMsg )
 mainUpdate msg mainModel =
-    case Debug.log "msg" msg of
+    case msg of
         Navigate route ->
             ( mainModel, Routing.navigate route )
 

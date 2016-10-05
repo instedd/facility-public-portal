@@ -24,6 +24,7 @@ $light-blue: #4367a4;
 $grey1: grey;
 $grey2: #a6b3d9;
 $grey3: #dadada;
+$grey4: #777777;
 
 html, body, #container, #elm, #map {
   height: 100%;
@@ -288,6 +289,10 @@ html, body, #container, #elm, #map {
   }
 }
 
+#bottom-action {
+  display: none;
+}
+
 @media all and(max-width: 568px) {
   #map-control {
     //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
@@ -300,6 +305,34 @@ html, body, #container, #elm, #map {
       min-height: 100vh;
       overflow-y: scroll;
     }
+  }
+
+  #bottom-action {
+    align-items: center;
+    background-color: #ffffff;
+    bottom: 0;
+    color: #777777;
+    display: flex;
+    font-size: 13pt;
+    height: 55px;
+    padding: 15px;
+    position: absolute;
+    text-transform: uppercase;
+    width: 100%;
+    justify-content: center;
+    font-weight: 500;
+  }
+
+  .floating-actions {
+    position: relative;
+    bottom: 45px;
+  }
+
+  .nav-back {
+    display: flex;
+    font-size: 20px;
+    i { flex-grow: 1 }
+    span { flex-grow: 9 }
   }
 }
 

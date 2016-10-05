@@ -14,7 +14,7 @@ import Suggest
 
 
 type alias Model =
-    { suggest : Suggest.Model, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult }
+    { suggest : Suggest.Model, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult, mobileFocusMap : Bool }
 
 
 type PrivateMsg
@@ -24,6 +24,7 @@ type PrivateMsg
     | UserLocationMsg UserLocation.Msg
     | MapMsg Map.Msg
     | SuggestMsg Suggest.Msg
+    | ToggleMobileFocus
 
 
 type Msg
@@ -36,7 +37,7 @@ type Msg
 
 init : Settings -> SearchSpec -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init s query mapViewport userLocation =
-    { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing }
+    { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing, mobileFocusMap = True }
         ! [ Api.search (Private << ApiSearch) { query | latLng = Just mapViewport.center }
           , Map.removeHighlightedFacilityMarker
           ]
@@ -117,6 +118,9 @@ update s msg model =
                         _ ->
                             wrapSuggest model <| Suggest.update { mapViewport = model.mapViewport } msg model.suggest
 
+                ToggleMobileFocus ->
+                    ( { model | mobileFocusMap = (not model.mobileFocusMap) }, Cmd.none )
+
         _ ->
             -- public events
             ( model, Cmd.none )
@@ -129,17 +133,49 @@ wrapSuggest model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ Shared.headerWithContent
-            ((suggestionInput model)
-                :: (if Suggest.hasSuggestionsToShow model.suggest then
-                        []
-                    else
-                        [ searchResults model ]
-                   )
-                ++ (suggestionItems model)
-            )
-        , userLocationView model
+    let
+        onlyMobile =
+            ( "hide-on-med-and-up", True )
+
+        hideOnMobileMapFocused =
+            ( "hide-on-small-only", model.mobileFocusMap )
+
+        hideOnMobileListingFocused =
+            ( "hide-on-small-only", not model.mobileFocusMap )
+
+        hideOnSuggestions =
+            ( "hide", Suggest.hasSuggestionsToShow model.suggest )
+    in
+        div []
+            [ Shared.controlStack
+                ([ div [ classList [ hideOnMobileListingFocused ] ] [ Shared.header ]
+                 , div
+                    [ classList [ onlyMobile, hideOnMobileMapFocused ] ]
+                    [ mobileBackHeader ]
+                 , suggestionInput model
+                 , div
+                    [ classList [ hideOnSuggestions, hideOnMobileMapFocused ] ]
+                    [ searchResults model ]
+                 ]
+                    ++ suggestionItems model
+                )
+            , div
+                [ classList [ hideOnMobileListingFocused, onlyMobile ] ]
+                [ mobileFocusToggleView ]
+            , userLocationView model
+            ]
+
+
+mobileBackHeader =
+    nav [ id "TopNav", class "z-depth-0" ]
+        [ a
+            [ href "#!"
+            , class "nav-back"
+            , Shared.onClick (Private ToggleMobileFocus)
+            ]
+            [ Shared.icon "arrow_back"
+            , span [] [ text "Search Results" ]
+            ]
         ]
 
 
@@ -152,7 +188,19 @@ suggestionItems model =
 
 
 userLocationView model =
-    Html.App.map (Private << UserLocationMsg) (UserLocation.viewMapControl model.userLocation)
+    div [ class "floating-actions" ]
+        [ Html.App.map (Private << UserLocationMsg) (UserLocation.viewMapControl model.userLocation)
+        ]
+
+
+mobileFocusToggleView =
+    a
+        [ href "#!"
+        , id "bottom-action"
+        , class "z-depth-1"
+        , Shared.onClick (Private ToggleMobileFocus)
+        ]
+        [ text "List results" ]
 
 
 subscriptions : Model -> Sub Msg

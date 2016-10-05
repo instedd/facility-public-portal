@@ -28,6 +28,11 @@ headerWithContent content =
     div [ id "map-control", class "z-depth-1" ] (header :: content)
 
 
+controlStack : List (Html a) -> Html a
+controlStack content =
+    div [ id "map-control", class "z-depth-1" ] content
+
+
 mapControl : Maybe (Html a) -> Html a
 mapControl content =
     headerWithContent
