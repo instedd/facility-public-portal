@@ -150,6 +150,7 @@ html, body, #container, #elm, #map {
     -webkit-flex: 1;
     -ms-flex: 1;
     flex: 1;
+    height: 50px;
     position: relative;
     padding: 0 45px 0 10px;
     input {
@@ -333,6 +334,10 @@ html, body, #container, #elm, #map {
     font-size: 20px;
     i { flex-grow: 1 }
     span { flex-grow: 9 }
+  }
+
+  .facilityDetail .title {
+    height: 72px;
   }
 }
 
