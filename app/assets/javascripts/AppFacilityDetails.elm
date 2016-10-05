@@ -68,8 +68,9 @@ update s msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ Shared.headerWithContent
-            [ case model of
+        [ Shared.controlStack
+            [ div [ class "hide-on-small-only" ] [ Shared.header ]
+            , case model of
                 Loading _ _ _ _ ->
                     Html.h3 [] [ text "Loading... " ]
 
