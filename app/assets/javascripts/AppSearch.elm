@@ -135,13 +135,13 @@ view : Model -> Html Msg
 view model =
     let
         onlyMobile =
-            ( "hide-on-med-and-up", True )
+            ( "hide-on-large-only", True )
 
         hideOnMobileMapFocused =
-            ( "hide-on-small-only", model.mobileFocusMap )
+            ( "hide-on-med-and-down", model.mobileFocusMap )
 
         hideOnMobileListingFocused =
-            ( "hide-on-small-only", not model.mobileFocusMap )
+            ( "hide-on-med-and-down", not model.mobileFocusMap )
 
         hideOnSuggestions =
             ( "hide", Suggest.hasSuggestionsToShow model.suggest )

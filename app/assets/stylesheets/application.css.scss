@@ -294,7 +294,7 @@ html, body, #container, #elm, #map {
   display: none;
 }
 
-@media all and(max-width: 568px) {
+@media all and(max-width: 992px) {
   #map-control {
     //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
     border-radius: 0;

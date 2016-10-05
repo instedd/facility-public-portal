@@ -69,7 +69,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ Shared.controlStack
-            [ div [ class "hide-on-small-only" ] [ Shared.header ]
+            [ div [ class "hide-on-med-and-down" ] [ Shared.header ]
             , case model of
                 Loading _ _ _ _ ->
                     Html.h3 [] [ text "Loading... " ]
