@@ -60,9 +60,9 @@ searchBar : String -> a -> (String -> a) -> Html a
 searchBar userInput submitMsg inputMsg =
     div [ class "search-box" ]
         [ div [ class "search" ]
-            [ Html.form [ Events.onSubmit submitMsg ]
+            [ Html.form [ action "#", method "GET", autocomplete False, Events.onSubmit submitMsg ]
                 [ input
-                    [ type' "text"
+                    [ type' "search"
                     , placeholder "Search health facilities"
                     , value userInput
                     , Events.onInput inputMsg
