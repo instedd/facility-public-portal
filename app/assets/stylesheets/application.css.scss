@@ -32,6 +32,8 @@ html, body, #container, #elm, #map {
 }
 
 #map {
+  z-index: 1;
+
   .userMarker-outer {
     stroke-opacity: 0;
     fill-opacity: 0.3;
