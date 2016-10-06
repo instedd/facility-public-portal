@@ -83,4 +83,5 @@ encodeFacility facility =
     object
         [ ( "id", int facility.id )
         , ( "position", encodeLatLng facility.position )
+        , ( "facilityType", string facility.kind )
         ]

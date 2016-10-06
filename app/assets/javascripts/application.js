@@ -13,4 +13,6 @@
 //= require jquery
 //= require jquery_ujs
 //= require leaflet
+//= require leaflet
+//= require leaflet.markercluster
 //= require_tree .

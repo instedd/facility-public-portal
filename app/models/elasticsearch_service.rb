@@ -27,6 +27,7 @@ class ElasticsearchService
               analyzer: "standard"
             },
             contact_phone: {type: 'string'},
+            facility_type: {type: 'string', index: 'not_analyzed'},
             position: {type: 'geo_point'},
             last_updated: {
               type: 'date'

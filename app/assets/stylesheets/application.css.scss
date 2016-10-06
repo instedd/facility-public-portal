@@ -12,6 +12,7 @@
  *
  *= require materialize
  *= require leaflet
+ *= require leaflet.markercluster
  *= require_tree .
  *= require_self
  */
@@ -52,13 +53,34 @@ html, body, #container, #elm, #map {
     stroke: white;
     stroke-width: 2;
     stroke-opacity: 1;
-    fill: #0F47AF;
+    fill: red; // TODO: remove this kind of markers
     fill-opacity: 1;
   }
 
+  .clusterMarker {
+    border-radius: 50%;
+    background-color: $blue;
+    border: 2px solid white;
+
+    width: 18px !important;
+    height: 18px !important;
+    margin-left: -9px !important;
+    margin-top: -9px !important;
+
+    &.small {
+      width: 14px !important;
+      height: 14px !important;
+      margin-left: -7px !important;
+      margin-top: -7px !important;
+    }
+  }
+
   &.grey-facilities {
-    .facilityMarker {
-      fill: #a0a0a0;
+    .clusterMarker {
+      background-color: #a0a0a0;
+    }
+    .clusterMarker.highlighted {
+      background-color: $blue;
     }
   }
 }

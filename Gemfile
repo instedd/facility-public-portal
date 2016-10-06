@@ -22,6 +22,7 @@ gem 'elasticsearch'
 source 'https://rails-assets.org' do
   gem 'rails-assets-materialize'
   gem 'rails-assets-leaflet'
+  gem 'rails-assets-leaflet.markercluster'
 end
 
 group :development, :test do

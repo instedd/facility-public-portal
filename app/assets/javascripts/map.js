@@ -2,6 +2,13 @@ $(document).ready(function() {
   var elmContainer = document.getElementById('elm');
   var elm = Elm.Main.embed(elmContainer, FPP.settings);
 
+  FPP.mapSettings = {
+    maxZoom: 18,
+    minZoom: 5,
+    id: 'mapbox/streets-v9',
+    accessToken: 'pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ'
+  };
+
   FPP.commands = {
     initializeMap: function(o) {
       var latLng = [o.lat, o.lng];
@@ -13,14 +20,21 @@ $(document).ready(function() {
 
       var tileUrl = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={accessToken}';
 
-      L.tileLayer(tileUrl, {
-        maxZoom: 18,
-        minZoom: 5,
-        id: 'mapbox/streets-v9',
-        accessToken: 'pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ'
-      }).addTo(FPP.map);
+      L.tileLayer(tileUrl, FPP.mapSettings).addTo(FPP.map);
 
-      FPP.facilityLayerGroup = L.layerGroup().addTo(FPP.map);
+      FPP.facilityClusterGroup = L.markerClusterGroup({
+        animate: false,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: false,
+        disableClusteringAtZoom: FPP.mapSettings.maxZoom,
+        spiderfyOnMaxZoom: false,
+        removeOutsideVisibleBounds: true,
+        singleMarkerMode: true,
+        iconCreateFunction: FPP._createClusterIcon
+      }).on('clusterclick', FPP._clusterClick)
+        .on('click', FPP._facilityClick)
+        .addTo(FPP.map);
+
       FPP.userMarker = null;
       FPP.highlightedFacilityMarker = null;
 
@@ -54,44 +68,33 @@ $(document).ready(function() {
       popup.openOn(FPP.map);
     },
 
-    addFacilityMarker: function(o) {
-      var latLng = [o.position.lat, o.position.lng];
-      var id = o.id;
+    addFacilityMarker: function(facility) {
+      var latLng = [facility.position.lat, facility.position.lng];
 
       // TODO should avoid adding multiple markers (when user is panning this might happen)
-      var facilityMarker =
-        L.circleMarker(latLng, {
-          radius: 8,
-          className: 'facilityMarker'
-        }).on('click', function(){
-          elm.ports.facilityMarkerClicked.send(id);
-        });
+      var facilityMarker = L.marker(latLng, { facility: facility });
 
-      FPP.facilityLayerGroup.addLayer(facilityMarker);
+      FPP.facilityClusterGroup.addLayer(facilityMarker);
+
       FPP._userMarkerToFront();
     },
 
     clearFacilityMarkers: function() {
-      FPP.facilityLayerGroup.clearLayers();
+      FPP.facilityClusterGroup.clearLayers();
     },
 
-    setHighlightedFacilityMarker: function(o) {
+    setHighlightedFacilityMarker: function(facility) {
       if (FPP.highlightedFacilityMarker) {
-        FPP.map.removeLayer(FPP.highlightedFacilityMarker);
+        FPP.facilityClusterGroup.removeLayer(FPP.highlightedFacilityMarker);
       }
 
       $("#map").addClass("grey-facilities");
-      var latLng = [o.position.lat, o.position.lng];
-      var id = o.id;
 
-      FPP.highlightedFacilityMarker =
-        L.circleMarker(latLng, {
-          radius: 8,
-          className: 'facilityMarker-highlighted'
-        });
+      var latLng = [facility.position.lat, facility.position.lng];
+      FPP.highlightedFacilityMarker =  L.marker(latLng, { facility: facility });
 
-      FPP.highlightedFacilityMarker.addTo(FPP.map);
-      FPP.highlightedFacilityMarker.bringToFront();
+      FPP.facilityClusterGroup.addLayer(FPP.highlightedFacilityMarker);
+
       FPP._userMarkerToFront();
     },
 
@@ -110,7 +113,7 @@ $(document).ready(function() {
       var group;
 
       if (FPP.highlightedFacilityMarker == null) {
-        group = L.featureGroup(FPP.facilityLayerGroup.getLayers());
+        group = L.featureGroup(FPP.facilityClusterGroup.getLayers());
       } else {
         group = L.featureGroup([FPP.highlightedFacilityMarker]);
       }
@@ -151,6 +154,31 @@ $(document).ready(function() {
         layer.bringToFront();
       });
     }
+  };
+
+  FPP._createClusterIcon = function(cluster) {
+    var className;
+    if ($.inArray(FPP.highlightedFacilityMarker, cluster.getAllChildMarkers()) >= 0) {
+      className = 'clusterMarker highlighted';
+    } else {
+      className = 'clusterMarker';
+    }
+
+    return L.divIcon({className: className});
+  } ;
+
+  FPP._clusterRepresentative = function(cluster) {
+    return cluster.getAllChildMarkers()[0].options.facility;
+  };
+
+  FPP._facilityClick = function(target) {
+    var facility = target.layer.options.facility;
+    elm.ports.facilityMarkerClicked.send(facility.id);
+  };
+
+  FPP._clusterClick = function(target) {
+    var facility = FPP._clusterRepresentative(target.layer);
+    elm.ports.facilityMarkerClicked.send(facility.id);
   };
 
   elm.ports.jsCommand.subscribe(function(msg) {
