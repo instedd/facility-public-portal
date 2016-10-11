@@ -18,42 +18,9 @@ $(document).ready(function() {
       });
       FPP._fitContentUsingPadding = false;
 
-      var tileUrl = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={accessToken}';
+      L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={accessToken}', FPP.mapSettings).addTo(FPP.map);
 
-      L.tileLayer(tileUrl, FPP.mapSettings).addTo(FPP.map);
-
-      FPP.facilityClusterGroup = L.markerClusterGroup({
-        animate: false,
-        showCoverageOnHover: false,
-        zoomToBoundsOnClick: false,
-        disableClusteringAtZoom: FPP.mapSettings.maxZoom,
-        spiderfyOnMaxZoom: false,
-        removeOutsideVisibleBounds: true,
-        singleMarkerMode: true,
-        iconCreateFunction: FPP._createClusterIcon,
-        maxClusterRadius: function(zoom) {
-          var table = {
-            5: 15,
-            6: 15,
-            7: 10,
-            8: 10,
-            9: 10,
-            10: 10,
-            11: 3,
-            12: 3,
-            13: 3,
-            14: 3,
-            15: 3,
-            16: 3,
-            17: 1,
-            18: 1
-          };
-          return table[zoom];
-        }
-      }).on('clusterclick', FPP._clusterClick)
-        .on('click', FPP._facilityClick)
-        .addTo(FPP.map);
-
+      FPP.facilityClusterGroup = FPP._createClusterLayer().addTo(FPP.map);
       FPP.userMarker = null;
       FPP.highlightedFacilityMarker = null;
 
@@ -188,18 +155,39 @@ $(document).ready(function() {
     }
   };
 
-  FPP._createClusterIcon = function(cluster) {
-    var classes = ['clusterMarker'];
-    var representative = FPP._clusterRepresentative(cluster);
+  FPP._createClusterLayer = function() {
+    return L.markerClusterGroup({
+      animate: false,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: false,
+      spiderfyOnMaxZoom: false,
+      removeOutsideVisibleBounds: false, // clusters and markers too far from the viewport are removed for performance
+      singleMarkerMode: true,  // draw single facilities as if they were a 1-point cluster
+      disableClusteringAtZoom: 14,
+      iconCreateFunction: function(cluster) {
+        var classes = ['clusterMarker'];
+        var representative = FPP._clusterRepresentative(cluster);
 
-    if (FPP._isHighlightedFacility(representative)) {
-      classes.push('highlighted');
-    } else if (representative.facilityType === "Health Center") {
-      classes.push('small');
-    }
+        if (FPP._isHighlightedFacility(representative)) {
+          classes.push('highlighted');
+        } else if (representative.facilityType === "Health Center") {
+          classes.push('small');
+        }
 
-    return L.divIcon({className: classes.join(' ')});
-  } ;
+        return L.divIcon({className: classes.join(' ')});
+      },
+      maxClusterRadius: function(zoom) {
+        if (zoom < 7) {
+          return 15;
+        } else if (zoom < 11) {
+          return 10;
+        } else {
+          return 3;
+        }
+      }
+    }).on('clusterclick', FPP._clusterClick)
+      .on('click', FPP._facilityClick);
+  };
 
   FPP._clusterRepresentative = function(cluster) {
     if ($.inArray(FPP.highlightedFacilityMarker, cluster.getAllChildMarkers()) >= 0) {
