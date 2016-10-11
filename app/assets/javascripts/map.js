@@ -30,7 +30,26 @@ $(document).ready(function() {
         spiderfyOnMaxZoom: false,
         removeOutsideVisibleBounds: true,
         singleMarkerMode: true,
-        iconCreateFunction: FPP._createClusterIcon
+        iconCreateFunction: FPP._createClusterIcon,
+        maxClusterRadius: function(zoom) {
+          var table = {
+            5: 15,
+            6: 15,
+            7: 10,
+            8: 10,
+            9: 10,
+            10: 10,
+            11: 3,
+            12: 3,
+            13: 3,
+            14: 3,
+            15: 3,
+            16: 3,
+            17: 1,
+            18: 1
+          };
+          return table[zoom];
+        }
       }).on('clusterclick', FPP._clusterClick)
         .on('click', FPP._facilityClick)
         .addTo(FPP.map);
@@ -170,18 +189,32 @@ $(document).ready(function() {
   };
 
   FPP._createClusterIcon = function(cluster) {
-    var className;
-    if ($.inArray(FPP.highlightedFacilityMarker, cluster.getAllChildMarkers()) >= 0) {
-      className = 'clusterMarker highlighted';
-    } else {
-      className = 'clusterMarker';
+    var classes = ['clusterMarker'];
+    var representative = FPP._clusterRepresentative(cluster);
+
+    if (FPP._isHighlightedFacility(representative)) {
+      classes.push('highlighted');
+    } else if (representative.facilityType === "Health Center") {
+      classes.push('small');
     }
 
-    return L.divIcon({className: className});
+    return L.divIcon({className: classes.join(' ')});
   } ;
 
   FPP._clusterRepresentative = function(cluster) {
-    return cluster.getAllChildMarkers()[0].options.facility;
+    if ($.inArray(FPP.highlightedFacilityMarker, cluster.getAllChildMarkers()) >= 0) {
+      return FPP.highlightedFacilityMarker.options.facility;
+    } else {
+      return cluster.getAllChildMarkers()[0].options.facility;
+    }
+  };
+
+  FPP._isHighlightedFacility = function(facility) {
+    if (!FPP.highlightedFacilityMarker) {
+      return false;
+    }
+
+    return FPP.highlightedFacilityMarker.options.facility.id == facility.id;
   };
 
   FPP._facilityClick = function(target) {
