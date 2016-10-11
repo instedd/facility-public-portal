@@ -65,7 +65,7 @@ class Indexing
     end
 
     logger.info "Indexing facilities"
-    @dataset[:facilities].each_slice(100) do |batch|
+    @dataset[:facilities].select { |f| validate_facility(f) }.each_slice(100) do |batch|
       index_entries = batch.map do |f|
         f = f.to_h.symbolize_keys
         location = locations_by_id[f[:location_id]]
@@ -130,4 +130,9 @@ class Indexing
     self.new(dataset, ElasticsearchService.instance).run
   end
 
+  private
+
+  def validate_facility(facility)
+    ["name", "facility_type", "lat", "lng"].none? { |field| facility[field].blank? }
+  end
 end

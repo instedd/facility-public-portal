@@ -1,18 +1,8 @@
 require 'rails_helper'
 
+include Helpers
+
 RSpec.describe ElasticsearchService do
-
-  TESTING_INDEX = "fpp-test"
-
-  before(:all) do
-    @service = ElasticsearchService.new("localhost", TESTING_INDEX, should_log: ENV["ELASTICSEARCH_LOG"])
-  end
-
-  def reset_index
-    @service.drop_index rescue nil
-    @service.setup_index
-    @service.setup_mappings
-  end
 
   before(:context) do
     reset_index
@@ -66,15 +56,6 @@ RSpec.describe ElasticsearchService do
                    ]})
   end
 
-  def index_dataset(dataset)
-    dataset = dataset.map_values { |records| records.map(&:with_indifferent_access) }
-    process = Indexing.new(dataset, @service)
-    process.logger.level = :unknown
-    process.run
-
-    @service.client.indices.refresh index: TESTING_INDEX
-  end
-
   describe "search" do
     describe "by name" do
       it "searches by word prefix" do
@@ -119,7 +100,7 @@ RSpec.describe ElasticsearchService do
     describe "services" do
       it "works" do
         [1,2,3].each do |i|
-          results = @service.suggest_services("service#{i}")
+          results = elasticsearch_service.suggest_services("service#{i}")
           expect(results.map { |s| s['source_id'] }).to eq(["S#{i}"])
         end
       end
@@ -127,7 +108,7 @@ RSpec.describe ElasticsearchService do
 
     describe "locations" do
       it "works" do
-        results = @service.suggest_locations("Hadi")
+        results = elasticsearch_service.suggest_locations("Hadi")
         expect(results.size).to eq(1)
 
         results[0].tap do |r|
@@ -141,7 +122,7 @@ RSpec.describe ElasticsearchService do
   end
 
   def search_assert(params, expected_ids:, order_matters: false)
-    results = @service.search_facilities(params)[:items]
+    results = elasticsearch_service.search_facilities(params)[:items]
     actual_ids = results.map { |r| r['source_id'] }
     if order_matters
       expect(actual_ids).to eq(expected_ids)
