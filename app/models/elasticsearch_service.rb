@@ -70,7 +70,7 @@ class ElasticsearchService
     validate_search(params)
 
     size = params[:size].to_i
-    size = 50 if size == 0
+    size = 1000 if size == 0
     from = params[:from].to_i || 0
 
     search_body = {
