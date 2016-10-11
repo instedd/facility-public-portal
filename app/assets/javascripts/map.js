@@ -4,7 +4,7 @@ $(document).ready(function() {
 
   FPP.mapSettings = {
     maxZoom: 18,
-    minZoom: 5,
+    minZoom: 8,
     id: 'mapbox/streets-v9',
     accessToken: 'pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ'
   };
@@ -166,9 +166,10 @@ $(document).ready(function() {
       showCoverageOnHover: false,
       zoomToBoundsOnClick: false,
       spiderfyOnMaxZoom: false,
+      disableClusteringAtZoom: 14,
       removeOutsideVisibleBounds: false, // clusters and markers too far from the viewport are removed for performance
       singleMarkerMode: true,  // draw single facilities as if they were a 1-point cluster
-      disableClusteringAtZoom: 14,
+      chunkedLoading: true, // allow other tasks to be performed by the browser in the middle of cluster calculation
       iconCreateFunction: function(cluster) {
         var classes = ['clusterMarker'];
         var representative = FPP._clusterRepresentative(cluster);
