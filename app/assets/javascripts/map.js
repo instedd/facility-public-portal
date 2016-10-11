@@ -85,6 +85,11 @@ $(document).ready(function() {
     setHighlightedFacilityMarker: function(facility) {
       if (FPP.highlightedFacilityMarker) {
         FPP.facilityClusterGroup.removeLayer(FPP.highlightedFacilityMarker);
+        FPP.highlightedFacilityMarker = null;
+
+        // remove previous highlight
+        var highlightedCluster = FPP.facilityClusterGroup.getVisibleParent(FPP.highlightedFacilityMarker);
+        FPP.facilityClusterGroup.refreshClusters(highlightedCluster);
       }
 
       $("#map").addClass("grey-facilities");
@@ -170,7 +175,9 @@ $(document).ready(function() {
 
         if (FPP._isHighlightedFacility(representative)) {
           classes.push('highlighted');
-        } else if (representative.facilityType === "Health Center") {
+        }
+
+        if (representative.facilityType === "Health Center") {
           classes.push('small');
         }
 
