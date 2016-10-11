@@ -100,8 +100,11 @@ suggestionsContent s =
         entries =
             case s of
                 [] ->
-                    [ text "Nothing found..." ]
-
+                    [ div
+                        [ class "no-results" ]
+                        [ span [ class "search-icon" ] [ icon "find_in_page" ]
+                        , text "No results found" ]
+                    ]
                 _ ->
                     List.map suggestion s
     in

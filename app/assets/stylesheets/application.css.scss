@@ -77,7 +77,11 @@ html, body, #container, #elm, #map {
   min-width: 318px;
   flex-direction: column;
   overflow: hidden;
-  z-index: 3
+  z-index: 3;
+
+  .preloader-wrapper {
+    margin: 40px auto;
+  }
 }
 
 #map-toolbar {
@@ -184,6 +188,16 @@ html, body, #container, #elm, #map {
   margin-top: 0;
   margin-bottom: 0;
   border: none;
+
+  .no-results {
+    color: $grey3;
+    padding: 40px;
+    text-align: center;
+    span.search-icon {
+      display:block;
+      i { font-size: 400% };
+    }
+  }
 
   a.collection-item.avatar {
     color: black;
