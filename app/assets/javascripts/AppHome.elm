@@ -64,7 +64,7 @@ update s msg model =
                 ApiSearch (Api.SearchSuccess results) ->
                     let
                         addFacilities =
-                            List.map Map.addFacilityMarker results.items
+                            Map.addFacilityMarkers results.items
 
                         loadMore =
                             if shouldLoadMore results model.mapViewport then
@@ -72,7 +72,7 @@ update s msg model =
                             else
                                 Cmd.none
                     in
-                        model ! (loadMore :: addFacilities)
+                        model ! [ loadMore, addFacilities ]
 
                 ApiSearch _ ->
                     -- TODO handle error

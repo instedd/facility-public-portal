@@ -79,6 +79,19 @@ $(document).ready(function() {
       FPP._userMarkerToFront();
     },
 
+
+    addFacilityMarkers: function(facilities) {
+      var markers = $.map(facilities, function(facility) {
+        var latLng = [facility.position.lat, facility.position.lng];
+        // TODO should avoid adding multiple markers (when user is panning this might happen)
+        return L.marker(latLng, { facility: facility });
+      });
+
+      FPP.facilityClusterGroup.addLayers(markers);
+
+      FPP._userMarkerToFront();
+    },
+
     clearFacilityMarkers: function() {
       FPP.facilityClusterGroup.clearLayers();
     },
