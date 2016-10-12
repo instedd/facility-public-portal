@@ -1,4 +1,4 @@
-module Suggest exposing (Config, Model, Msg(..), PrivateMsg, init, empty, update, hasSuggestionsToShow, viewInput, viewSuggestions)
+module Suggest exposing (Config, Model, Msg(..), PrivateMsg, init, empty, update, hasSuggestionsToShow, viewInput, viewInputWith, viewSuggestions)
 
 import Shared exposing (icon)
 import Api
@@ -81,7 +81,12 @@ update config msg model =
 
 viewInput : Model -> Html Msg
 viewInput model =
-    Shared.searchBar model.query (Search model.query) (Private << Input)
+    viewInputWith identity model (icon "search")
+
+
+viewInputWith : (Msg -> a) -> Model -> Html a -> Html a
+viewInputWith wmsg model trailing =
+    Shared.searchBar model.query (wmsg <| Search model.query) (wmsg << Private << Input) trailing
 
 
 viewSuggestions : Model -> List (Html Msg)
@@ -103,8 +108,10 @@ suggestionsContent s =
                     [ div
                         [ class "no-results" ]
                         [ span [ class "search-icon" ] [ icon "find_in_page" ]
-                        , text "No results found" ]
+                        , text "No results found"
+                        ]
                     ]
+
                 _ ->
                     List.map suggestion s
     in

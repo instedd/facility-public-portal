@@ -56,8 +56,8 @@ header =
         ]
 
 
-searchBar : String -> a -> (String -> a) -> Html a
-searchBar userInput submitMsg inputMsg =
+searchBar : String -> a -> (String -> a) -> Html a -> Html a
+searchBar userInput submitMsg inputMsg trailing =
     div [ class "search-box" ]
         [ div [ class "search" ]
             [ Html.form [ action "#", method "GET", autocomplete False, Events.onSubmit submitMsg ]
@@ -68,7 +68,7 @@ searchBar userInput submitMsg inputMsg =
                     , Events.onInput inputMsg
                     ]
                     []
-                , icon "search"
+                , trailing
                 ]
             ]
         ]

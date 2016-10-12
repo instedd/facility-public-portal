@@ -165,6 +165,9 @@ mainUpdate msg mainModel =
                                 AppSearch.LocationClicked locationId ->
                                     ( SearchModel model settings, navigateSearchLocation locationId )
 
+                                AppSearch.ClearSearch ->
+                                    ( mainModel, navigateHome )
+
                                 _ ->
                                     wrapSearch settings (AppSearch.update settings msg model)
 
@@ -292,6 +295,11 @@ mainView mainModel =
 
         InitializedVR _ _ ->
             Shared.mapWithControl Nothing
+
+
+navigateHome : Cmd MainMsg
+navigateHome =
+    Utils.performMessage (Navigate RootRoute)
 
 
 navigateFacility : Int -> Cmd MainMsg

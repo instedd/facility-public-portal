@@ -32,6 +32,7 @@ type Msg
     | ServiceClicked Int
     | LocationClicked Int
     | Search SearchSpec
+    | ClearSearch
     | Private PrivateMsg
 
 
@@ -181,7 +182,11 @@ mobileBackHeader =
 
 
 suggestionInput model =
-    Html.App.map (Private << SuggestMsg) (Suggest.viewInput model.suggest)
+    let
+        close =
+            a [ href "#", Shared.onClick ClearSearch ] [ icon "close" ]
+    in
+        Suggest.viewInputWith (Private << SuggestMsg) model.suggest close
 
 
 suggestionItems model =
