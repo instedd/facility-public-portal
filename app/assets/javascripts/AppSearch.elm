@@ -66,7 +66,7 @@ update s msg model =
                 ApiSearch (Api.SearchSuccess results) ->
                     let
                         addFacilities =
-                            Map.addFacilityMarkers results.items
+                            Map.resetFacilityMarkers results.items
 
                         loadMore =
                             if shouldLoadMore results model.mapViewport then

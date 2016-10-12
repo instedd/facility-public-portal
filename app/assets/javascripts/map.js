@@ -14,7 +14,8 @@ $(document).ready(function() {
       var latLng = [o.lat, o.lng];
       FPP.map = L.map('map', {
         zoomControl: false,
-        attributionControl: false
+        attributionControl: false,
+        bounceAtZoomLimits: false
       });
       FPP._fitContentUsingPadding = false;
 
@@ -54,27 +55,18 @@ $(document).ready(function() {
       popup.openOn(FPP.map);
     },
 
-    addFacilityMarker: function(facility) {
-      var latLng = [facility.position.lat, facility.position.lng];
-
-      // TODO should avoid adding multiple markers (when user is panning this might happen)
-      var facilityMarker = L.marker(latLng, { facility: facility });
-
-      FPP.facilityClusterGroup.addLayer(facilityMarker);
-
-      FPP._userMarkerToFront();
+    resetFacilityMarkers: function(facilities) {
+      FPP.commands.clearFacilityMarkers();
+      FPP.commands.addFacilityMarkers(facilities);
     },
-
 
     addFacilityMarkers: function(facilities) {
       var markers = $.map(facilities, function(facility) {
         var latLng = [facility.position.lat, facility.position.lng];
-        // TODO should avoid adding multiple markers (when user is panning this might happen)
         return L.marker(latLng, { facility: facility });
       });
 
       FPP.facilityClusterGroup.addLayers(markers);
-
       FPP._userMarkerToFront();
     },
 
@@ -198,6 +190,7 @@ $(document).ready(function() {
   };
 
   FPP._clusterRepresentative = function(cluster) {
+    // TODO
     if ($.inArray(FPP.highlightedFacilityMarker, cluster.getAllChildMarkers()) >= 0) {
       return FPP.highlightedFacilityMarker.options.facility;
     } else {
