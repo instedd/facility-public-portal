@@ -52,11 +52,12 @@ update s msg model =
 
                 ApiFetch (Api.FetchFacilitySuccess facility) ->
                     (Loaded (mapViewport model) facility (date model) (userLocation model))
-                        ! (if (Models.contains (mapViewport model) facility.position) then
-                            []
-                           else
-                            [ Map.fitContent ]
-                                ++ [ Map.setHighlightedFacilityMarker facility ]
+                        ! ((if (Models.contains (mapViewport model) facility.position) then
+                                []
+                            else
+                                [ Map.fitContent ]
+                           )
+                            ++ [ Map.setHighlightedFacilityMarker facility ]
                           )
 
                 UserLocationMsg msg ->
