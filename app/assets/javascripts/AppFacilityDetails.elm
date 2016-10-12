@@ -50,7 +50,13 @@ update s msg model =
                     ( setDate date model, Cmd.none )
 
                 ApiFetch (Api.FetchFacilitySuccess facility) ->
-                    ( Loaded (mapViewport model) facility (date model) (userLocation model), Map.setHighlightedFacilityMarker facility )
+                    (Loaded (mapViewport model) facility (date model) (userLocation model))
+                        ! (if (Models.contains (mapViewport model) facility.position) then
+                            []
+                           else
+                            [ Map.fitContent ]
+                                ++ [ Map.setHighlightedFacilityMarker facility ]
+                          )
 
                 UserLocationMsg msg ->
                     mapTCmd (\l -> setUserLocation l model) (Private << UserLocationMsg) <|
