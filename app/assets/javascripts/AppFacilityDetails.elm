@@ -18,7 +18,7 @@ import UserLocation
 
 type Model
     = Loading MapViewport Int (Maybe Date) UserLocation.Model
-    | Loaded MapViewport Facility (Maybe Date) UserLocation.Model Bool
+    | Loaded MapViewport Facility (Maybe Date) UserLocation.Model Bool Bool
 
 
 type PrivateMsg
@@ -26,6 +26,7 @@ type PrivateMsg
     | CurrentDate Date
     | UserLocationMsg UserLocation.Msg
     | ToggleMobileFocus
+    | ToggleFacilityReport
 
 
 type Msg
@@ -52,7 +53,7 @@ update s msg model =
                     ( setDate date model, Cmd.none )
 
                 ApiFetch (Api.FetchFacilitySuccess facility) ->
-                    (Loaded (mapViewport model) facility (date model) (userLocation model) False)
+                    (Loaded (mapViewport model) facility (date model) (userLocation model) False False)
                         ! ((if (Models.contains (mapViewport model) facility.position) then
                                 []
                             else
@@ -70,8 +71,11 @@ update s msg model =
                         Loading _ _ _ _ ->
                             ( model, Cmd.none )
 
-                        Loaded a b c d e ->
-                            ( Loaded a b c d (not e), Cmd.none )
+                        Loaded a b c d e f ->
+                            ( Loaded a b c d (not e) f, Cmd.none )
+
+                ToggleFacilityReport ->
+                    ( (setReportWindow (not <| isReportWindowOpen model) model), Cmd.none )
 
                 _ ->
                     -- TODO handle error
@@ -110,7 +114,7 @@ view model =
                             ]
                         ]
 
-                Loaded _ facility date _ mobileFocusMap ->
+                Loaded _ facility date _ _ _ ->
                     facilityDetail [ hideOnMobileMapFocused ] date facility
             ]
         , toolbar =
@@ -120,6 +124,7 @@ view model =
                 [ classList [ hideOnMobileDetailsFocused ] ]
                 [ mobileFocusToggleView ]
             ]
+        , modal = openReportWindow model
         }
 
 
@@ -135,6 +140,46 @@ userLocationView model =
     Html.App.map (Private << UserLocationMsg) (UserLocation.viewMapControl (userLocation model))
 
 
+openReportWindow : Model -> List (Html Msg)
+openReportWindow model =
+    if isReportWindowOpen model then
+        [ div [ class "modal-content" ]
+            [ div [ class "header" ]
+                [ text "Report an issue"
+                , a [ class "right", Events.onClick (Private ToggleFacilityReport) ] [ Shared.icon "close" ]
+                ]
+            , div [ class "body" ]
+                [ Html.form [ action "#", method "GET" ]
+                    [ p []
+                        [ input [ type' "checkbox", id "wrong_location" ] []
+                        , label [ for "wrong_location" ] [ text "Wrong location" ]
+                        ]
+                    , p []
+                        [ input [ type' "checkbox", id "closed" ] []
+                        , label [ for "closed" ] [ text "Facility closed" ]
+                        ]
+                    , p []
+                        [ input [ type' "checkbox", id "contact_info_missing" ] []
+                        , label [ for "contact_info_missing" ] [ text "Incomplete contact info" ]
+                        ]
+                    , p []
+                        [ input [ type' "checkbox", id "inaccurate_services" ] []
+                        , label [ for "inaccurate_services" ] [ text "Inaccurate service list" ]
+                        ]
+                    , p []
+                        [ input [ type' "checkbox", id "other" ] []
+                        , label [ for "other" ] [ text "Other" ]
+                        ]
+                    ]
+                ]
+            ]
+        , div [ class "modal-footer" ]
+            [ a [ class "btn-flat" ] [ text "Send report" ] ]
+        ]
+    else
+        []
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Map.facilityMarkerClicked FacilityClicked
@@ -146,7 +191,7 @@ mapViewport model =
         Loading mapViewport _ _ _ ->
             mapViewport
 
-        Loaded mapViewport _ _ _ _ ->
+        Loaded mapViewport _ _ _ _ _ ->
             mapViewport
 
 
@@ -156,7 +201,7 @@ date model =
         Loading _ _ date _ ->
             date
 
-        Loaded _ _ date _ _ ->
+        Loaded _ _ date _ _ _ ->
             date
 
 
@@ -166,8 +211,28 @@ setDate date model =
         Loading a b _ d ->
             Loading a b (Just date) d
 
-        Loaded a b _ d e ->
-            Loaded a b (Just date) d e
+        Loaded a b _ d e f ->
+            Loaded a b (Just date) d e f
+
+
+setReportWindow : Bool -> Model -> Model
+setReportWindow bool model =
+    case model of
+        Loading a b c d ->
+            Loading a b c d
+
+        Loaded a b c d e _ ->
+            Loaded a b c d e bool
+
+
+isReportWindowOpen : Model -> Bool
+isReportWindowOpen model =
+    case model of
+        Loading a b c d ->
+            False
+
+        Loaded a b c d e bool ->
+            bool
 
 
 userLocation : Model -> UserLocation.Model
@@ -176,7 +241,7 @@ userLocation model =
         Loading _ _ _ userLocation ->
             userLocation
 
-        Loaded _ _ _ userLocation _ ->
+        Loaded _ _ _ userLocation _ _ ->
             userLocation
 
 
@@ -186,8 +251,8 @@ setUserLocation userLocation model =
         Loading a b c _ ->
             Loading a b c userLocation
 
-        Loaded a b c _ e ->
-            Loaded a b c userLocation e
+        Loaded a b c _ e f ->
+            Loaded a b c userLocation e f
 
 
 mobileFocusMap : Model -> Bool
@@ -196,7 +261,7 @@ mobileFocusMap model =
         Loading _ _ _ _ ->
             True
 
-        Loaded _ _ _ _ b ->
+        Loaded _ _ _ _ b _ ->
             b
 
 
@@ -244,6 +309,7 @@ facilityDetail cssClasses now facility =
                 ]
             , div [ class "content" ]
                 [ div [ class "detailSection pic" ] [ img [ src "/facility.png" ] [] ]
+                , div [ class "detailSection actions" ] [ facilityActions ]
                 , div [ class "detailSection contact" ] [ facilityContactDetails contactInfo ]
                 , div [ class "detailSection services" ]
                     [ span [] [ text "Services" ]
@@ -274,3 +340,12 @@ facilityContactDetails attributes =
                         ]
                    ]
             )
+
+
+facilityActions : Html Msg
+facilityActions =
+    a
+        [ Events.onClick (Private ToggleFacilityReport) ]
+        [ Shared.icon "report"
+        , text "Report an issue"
+        ]

@@ -170,6 +170,7 @@ view model =
                 [ classList [ hideOnMobileListingFocused ] ]
                 [ mobileFocusToggleView ]
             ]
+        , modal = []
         }
 
 

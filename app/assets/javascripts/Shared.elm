@@ -17,6 +17,7 @@ type alias MapView a =
     , content : LHtml a
     , toolbar : LHtml a
     , bottom : LHtml a
+    , modal : LHtml a
     }
 
 

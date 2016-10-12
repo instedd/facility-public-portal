@@ -107,6 +107,7 @@ view model =
     , content = suggestionInput model :: (suggestionItems model)
     , toolbar = [ userLocationView model ]
     , bottom = []
+    , modal = []
     }
 
 

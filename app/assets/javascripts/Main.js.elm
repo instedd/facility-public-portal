@@ -325,10 +325,10 @@ mainView mainModel =
             mapView SearchMsg <| AppSearch.view model
 
         InitializingVR _ _ _ ->
-            mapView identity { headerAttributes = [], content = [], toolbar = [], bottom = [] }
+            mapView identity { headerAttributes = [], content = [], toolbar = [], bottom = [], modal = [] }
 
         InitializedVR _ _ ->
-            mapView identity { headerAttributes = [], content = [], toolbar = [], bottom = [] }
+            mapView identity { headerAttributes = [], content = [], toolbar = [], bottom = [], modal = [] }
 
 
 mapView : (a -> MainMsg) -> Shared.MapView a -> Html MainMsg
@@ -346,6 +346,11 @@ mapView wmsg viewContent =
                             [ div [ id "bottom-action", class "z-depth-1" ] viewContent.bottom ]
                        )
                     ++ [ div [ class "map-toolbar" ] viewContent.toolbar ]
+                    ++ (if List.isEmpty viewContent.modal then
+                            []
+                        else
+                            [ div [ id "modal", class "modal open" ] viewContent.modal ]
+                       )
                 )
             )
 

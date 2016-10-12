@@ -27,6 +27,7 @@ $grey2: #a6b3d9;
 $grey3: #dadada;
 $grey4: #777777;
 
+
 html, body, #container, #elm, #map {
   height: 100%;
   width: 100%;
@@ -206,6 +207,19 @@ html, body, #container, #elm, #map {
   }
 }
 
+.btn-flat {
+  color: $blue;
+}
+
+input[type="checkbox"]:checked + label:before {
+  border-right: 2px solid $blue;
+  border-bottom: 2px solid $blue;
+}
+
+[type="checkbox"] + label:before, [type="checkbox"]:not(.filled-in) + label:after {
+  border-color: $color_mountain_mist_approx;
+}
+
 .content {
   max-height: 74vh;
   overflow-y: scroll;
@@ -293,31 +307,50 @@ html, body, #container, #elm, #map {
   .content {
     margin: 0;
     padding: 0;
+    i { margin-right: 15px; }
 
-    .pic {
-      margin: 0;
-      padding: 0;
-      height: 217px;
-      text-align: center;
-      img {
-        height: 100%;
+    .detailSection {
+      padding: 20px;
+      &.pic {
+        margin: 0;
+        padding: 0;
+        height: 217px;
+        text-align: center;
+        img {
+          height: 100%;
+        }
+      }
+      &.contact {
+        color: $blue;
+        font-size: 12pt;
+      }
+
+      ul {
+        margin: 0;
+        li {
+          display: flex;
+          align-items: center;
+          margin-bottom: 13px;
+        }
+        li:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      &.actions {
+        font-size: 12pt;
+        a {
+          color: $color_mountain_mist_approx;
+          text-transform: uppercase;
+          cursor: pointer;
+        }
+        i {
+          vertical-align: top;
+          bottom: 1px;
+          position: relative;
+        }
       }
     }
-
-    .contact {
-      padding-top: 0;
-      color: $blue;
-      font-size: 12pt;
-
-      li {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-
-        i { margin-right: 15px; }
-      }
-    }
-
   }
 
   .noData {
@@ -335,6 +368,42 @@ html, body, #container, #elm, #map {
     }
     li {
       margin-top: 8px;
+    }
+  }
+}
+
+.modal.open {
+  z-index: 1003;
+  display: block;
+  opacity: 1;
+  transform: scaleX(1);
+  top: 20%;
+  position: absolute;
+  margin: 0 auto;
+  max-height: 80%;
+  width: 400px;
+
+  .modal-content {
+    padding: 0;
+
+    .header {
+      padding: 24px;
+      background-color: $color_mountain_mist_approx;
+      color: white;
+      font-size: 20px;
+      i {
+        color: $grey3;
+        top: 4px;
+        position: relative;
+        cursor: pointer;
+      }
+    }
+
+    .body {
+      padding: 24px;
+      label {
+        color: black;
+      }
     }
   }
 }
