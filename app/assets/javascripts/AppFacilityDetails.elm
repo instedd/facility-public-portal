@@ -38,6 +38,7 @@ init mapViewport userLocation facilityId =
     Loading mapViewport facilityId Nothing userLocation
         ! [ Api.fetchFacility (Private << ApiFetch) facilityId
           , currentDate
+          , Map.fitContentUsingPadding True
           ]
 
 

@@ -1,4 +1,4 @@
-port module Map exposing (Msg(..), mapViewportChanged, subscriptions, initializeMap, addUserMarker, clearFacilityMarkers, addFacilityMarker, fitContent, facilityMarkerClicked, setHighlightedFacilityMarker, removeHighlightedFacilityMarker)
+port module Map exposing (Msg(..), mapViewportChanged, subscriptions, initializeMap, addUserMarker, clearFacilityMarkers, addFacilityMarker, fitContent, facilityMarkerClicked, setHighlightedFacilityMarker, removeHighlightedFacilityMarker, fitContentUsingPadding)
 
 import Json.Encode exposing (..)
 import Models exposing (..)
@@ -43,6 +43,11 @@ addUserMarker pos =
 fitContent : Cmd msg
 fitContent =
     jsCommand ( "fitContent", null )
+
+
+fitContentUsingPadding : Bool -> Cmd msg
+fitContentUsingPadding padded =
+    jsCommand ( "fitContentUsingPadding", bool padded )
 
 
 clearFacilityMarkers : Cmd msg

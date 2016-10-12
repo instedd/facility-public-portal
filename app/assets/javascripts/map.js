@@ -9,6 +9,7 @@ $(document).ready(function() {
         zoomControl: false,
         attributionControl: false
       });
+      FPP._fitContentUsingPadding = false;
 
       var tileUrl = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={accessToken}';
 
@@ -102,17 +103,18 @@ $(document).ready(function() {
     },
 
     fitContent: function() {
-      var controlWidth = document.getElementById("map-control").offsetWidth; // TODO: review for mobile
+      var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      var mapControl = document.getElementById("map-control");
+      var isMobile = w <= 992; // same media query as application.css
+      var paddingLeft = !isMobile && FPP._fitContentUsingPadding ? 340 : 0; // only perform padding if desktop
       var group;
-      var fitBoundsOptions;
 
       if (FPP.highlightedFacilityMarker == null) {
         group = L.featureGroup(FPP.facilityLayerGroup.getLayers());
-        fitBoundsOptions = { padding: [0,0] }
       } else {
         group = L.featureGroup([FPP.highlightedFacilityMarker]);
-        fitBoundsOptions = { paddingTopLeft: [340,0] }
       }
+      var fitBoundsOptions = { paddingTopLeft: [paddingLeft,0] };
 
       if (FPP.userMarker) {
         group.addLayer(FPP.userMarker.getLayers()[0]);
@@ -122,6 +124,10 @@ $(document).ready(function() {
       if (group.getBounds().isValid()) {
         FPP.map.fitBounds(group.getBounds(), fitBoundsOptions);
       }
+    },
+
+    fitContentUsingPadding: function(padded) {
+      FPP._fitContentUsingPadding = padded;
     }
   };
 

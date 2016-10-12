@@ -40,6 +40,7 @@ init s query mapViewport userLocation =
     { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing, mobileFocusMap = True }
         ! [ Api.search (Private << ApiSearch) { query | latLng = Just mapViewport.center }
           , Map.removeHighlightedFacilityMarker
+          , Map.fitContentUsingPadding True
           ]
 
 
