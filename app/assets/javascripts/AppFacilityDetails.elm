@@ -72,7 +72,17 @@ view model =
             [ div [ class "hide-on-med-and-down" ] [ Shared.header ]
             , case model of
                 Loading _ _ _ _ ->
-                    Html.h3 [] [ text "Loading... " ]
+                    div
+                        [ class "preloader-wrapper small active" ]
+                        [ div [ class "spinner-layer spinner-blue-only" ]
+                        [
+                            div [ class "circle-clipper left" ]
+                            [ div [ class "circle" ] [] ],
+                            div [ class "gap-patch" ]
+                            [ div [ class "circle" ] [] ],
+                            div [ class "circle-clipper right" ]
+                            [ div [ class "circle" ] [] ]
+                        ] ]
 
                 Loaded _ facility date _ ->
                     facilityDetail date facility
