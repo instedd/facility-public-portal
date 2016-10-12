@@ -182,6 +182,7 @@ html, body, #container, #elm, #map {
 .content {
   max-height: 74vh;
   overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .results {
