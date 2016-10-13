@@ -77,10 +77,10 @@ $(document).ready(function() {
     setHighlightedFacilityMarker: function(facility) {
       if (FPP.highlightedFacilityMarker) {
         FPP.facilityClusterGroup.removeLayer(FPP.highlightedFacilityMarker);
-        FPP.highlightedFacilityMarker = null;
 
         // remove previous highlight
         var highlightedCluster = FPP.facilityClusterGroup.getVisibleParent(FPP.highlightedFacilityMarker);
+        FPP.highlightedFacilityMarker = null;
         FPP.facilityClusterGroup.refreshClusters(highlightedCluster);
       }
 
@@ -122,6 +122,7 @@ $(document).ready(function() {
       // bounds are invalid when there are no elements
       if (group.getBounds().isValid()) {
         FPP.map.fitBounds(group.getBounds(), fitBoundsOptions);
+        FPP.facilityClusterGroup.refreshClusters();
       }
     },
 
