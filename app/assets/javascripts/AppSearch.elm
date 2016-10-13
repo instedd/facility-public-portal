@@ -255,5 +255,5 @@ facilityRow f =
         ]
         [ icon "local_hospital"
         , span [ class "title" ] [ text f.name ]
-        , p [ class "sub" ] [ text f.kind ]
+        , p [ class "sub" ] [ text f.facilityType ]
         ]

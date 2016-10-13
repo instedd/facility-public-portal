@@ -21,7 +21,7 @@ $(document).ready(function() {
 
       L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={accessToken}', FPP.mapSettings).addTo(FPP.map);
 
-      FPP.facilityClusterGroup = FPP._createClusterLayer().addTo(FPP.map);
+      FPP.clusterGroup = FPP._createClusterLayer().addTo(FPP.map);
       FPP.userMarker = null;
       FPP.highlightedFacilityMarker = null;
 
@@ -66,17 +66,17 @@ $(document).ready(function() {
         return L.marker(latLng, { facility: facility });
       });
 
-      FPP.facilityClusterGroup.addLayers(markers);
+      FPP.clusterGroup.addLayers(markers);
       FPP._userMarkerToFront();
     },
 
     clearFacilityMarkers: function() {
-      FPP.facilityClusterGroup.clearLayers();
+      FPP.clusterGroup.clearLayers();
     },
 
     setHighlightedFacilityMarker: function(facility) {
       if (FPP.highlightedFacilityMarker) {
-        FPP.facilityClusterGroup.removeLayer(FPP.highlightedFacilityMarker);
+        FPP.clusterGroup.removeLayer(FPP.highlightedFacilityMarker);
       }
 
       $("#map").addClass("grey-facilities");
@@ -84,12 +84,12 @@ $(document).ready(function() {
       var latLng = [facility.position.lat, facility.position.lng];
       FPP.highlightedFacilityMarker =  L.marker(latLng, { facility: facility });
 
-      FPP.facilityClusterGroup.addLayer(FPP.highlightedFacilityMarker);
+      FPP.clusterGroup.addLayer(FPP.highlightedFacilityMarker);
 
       FPP._userMarkerToFront();
 
       // TODO: refresh only previous and new highlighted clusters
-      FPP.facilityClusterGroup.refreshClusters();
+      FPP.clusterGroup.refreshClusters();
     },
 
     removeHighlightedFacilityMarker: function () {
@@ -107,7 +107,7 @@ $(document).ready(function() {
       var group;
 
       if (FPP.highlightedFacilityMarker == null) {
-        group = L.featureGroup(FPP.facilityClusterGroup.getLayers());
+        group = L.featureGroup(FPP.clusterGroup.getLayers());
       } else {
         group = L.featureGroup([FPP.highlightedFacilityMarker]);
       }

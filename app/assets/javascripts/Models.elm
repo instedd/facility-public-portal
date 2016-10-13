@@ -33,7 +33,7 @@ type alias Facility =
     { id : Int
     , name : String
     , position : LatLng
-    , kind : String
+    , facilityType : String
     , facilityTypePriority : Int
     , services : List String
     , adm : List String
@@ -112,10 +112,8 @@ maxDistance mapViewport =
 
 
 contains : MapViewport -> LatLng -> Bool
-contains mapViewport position =
-    case position of
-        ( lat, lng ) ->
-            (between mapViewport.bounds.west mapViewport.bounds.east lng) && (between mapViewport.bounds.south mapViewport.bounds.north lat)
+contains mapViewport ( lat, lng ) =
+    (between mapViewport.bounds.west mapViewport.bounds.east lng) && (between mapViewport.bounds.south mapViewport.bounds.north lat)
 
 
 between : Float -> Float -> Float -> Bool
