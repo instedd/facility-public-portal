@@ -4,7 +4,7 @@ $(document).ready(function() {
 
   FPP.mapSettings = {
     maxZoom: 18,
-    minZoom: 8,
+    minZoom: 7,
     id: 'mapbox/streets-v9',
     accessToken: 'pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ'
   };
@@ -156,7 +156,7 @@ $(document).ready(function() {
       showCoverageOnHover: false,
       zoomToBoundsOnClick: false,
       spiderfyOnMaxZoom: false,
-      disableClusteringAtZoom: 14,
+      disableClusteringAtZoom: 12,
       removeOutsideVisibleBounds: false, // clusters and markers too far from the viewport are removed for performance
       singleMarkerMode: true,  // draw single facilities as if they were a 1-point cluster
       chunkedLoading: true, // allow other tasks to be performed by the browser in the middle of cluster calculation
@@ -174,15 +174,7 @@ $(document).ready(function() {
 
         return L.divIcon({className: classes.join(' ')});
       },
-      maxClusterRadius: function(zoom) {
-        if (zoom < 7) {
-          return 15;
-        } else if (zoom < 11) {
-          return 10;
-        } else {
-          return 3;
-        }
-      }
+      maxClusterRadius: 17
     }).on('clusterclick', FPP._clusterClick)
       .on('click', FPP._facilityClick);
   };
