@@ -191,11 +191,17 @@ $(document).ready(function() {
   };
 
   FPP._clusterRepresentative = function(cluster) {
-    // TODO
     if ($.inArray(FPP.highlightedFacilityMarker, cluster.getAllChildMarkers()) >= 0) {
       return FPP.highlightedFacilityMarker.options.facility;
     } else {
-      return cluster.getAllChildMarkers()[0].options.facility;
+      var facilities = cluster.getAllChildMarkers();
+      var currentBest = facilities[0].options.facility;
+      $.each(facilities, function(i, item) {
+        if (item.options.facility.facilityTypePriority > currentBest.facilityTypePriority) {
+          currentBest = item.options.facility;
+        }
+      });
+      return currentBest;
     }
   };
 
