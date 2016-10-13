@@ -1,4 +1,4 @@
-module AppSearch exposing (Model, Msg(..), PrivateMsg, init, view, update, subscriptions, mapViewport, userLocation)
+module AppSearch exposing (Model, Msg(..), PrivateMsg, init, restoreCmd, view, update, subscriptions, mapViewport, userLocation)
 
 import Api
 import Map
@@ -36,12 +36,16 @@ type Msg
     | Private PrivateMsg
 
 
+restoreCmd : Cmd Msg
+restoreCmd =
+    Cmd.batch [ Map.removeHighlightedFacilityMarker, Map.fitContentUsingPadding True ]
+
+
 init : Settings -> SearchSpec -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init s query mapViewport userLocation =
     { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing, mobileFocusMap = True }
         ! [ Api.search (Private << ApiSearch) { query | latLng = Just mapViewport.center }
-          , Map.removeHighlightedFacilityMarker
-          , Map.fitContentUsingPadding True
+          , restoreCmd
           ]
 
 

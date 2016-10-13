@@ -37,7 +37,7 @@ type MainModel
       -- map initialized pending to determine which view/route to load
     | InitializedVR MapViewport Settings
     | HomeModel AppHome.Model Settings
-    | FacilityDetailsModel AppFacilityDetails.Model Settings
+    | FacilityDetailsModel AppFacilityDetails.Model Settings FacilityDetailsContext
     | SearchModel AppSearch.Model Settings
 
 
@@ -48,6 +48,11 @@ type MainMsg
     | HomeMsg AppHome.Msg
     | FacilityDetailsMsg AppFacilityDetails.Msg
     | SearchMsg AppSearch.Msg
+
+
+type FacilityDetailsContext
+    = FromUnkown
+    | FromSearch AppSearch.Model
 
 
 init : Flags -> Result String Route -> ( MainModel, Cmd MainMsg )
@@ -83,7 +88,7 @@ subscriptions model =
         HomeModel model _ ->
             Sub.map HomeMsg <| AppHome.subscriptions model
 
-        FacilityDetailsModel model _ ->
+        FacilityDetailsModel model _ _ ->
             Sub.map FacilityDetailsMsg <| AppFacilityDetails.subscriptions model
 
         SearchModel model _ ->
@@ -133,18 +138,25 @@ mainUpdate msg mainModel =
                         _ ->
                             Debug.crash "unexpected message"
 
-                FacilityDetailsModel model settings ->
+                FacilityDetailsModel model settings context ->
                     case msg of
                         FacilityDetailsMsg msg ->
                             case msg of
                                 AppFacilityDetails.Close ->
-                                    ( mainModel, navigateBack )
+                                    ( mainModel
+                                    , case context of
+                                        FromSearch searchModel ->
+                                            navigateSearch searchModel.query
+
+                                        _ ->
+                                            navigateHome
+                                    )
 
                                 AppFacilityDetails.FacilityClicked facilityId ->
-                                    ( FacilityDetailsModel model settings, navigateFacility facilityId )
+                                    ( FacilityDetailsModel model settings context, navigateFacility facilityId )
 
                                 _ ->
-                                    wrapFacilityDetails settings (AppFacilityDetails.update settings msg model)
+                                    wrapFacilityDetails settings context (AppFacilityDetails.update settings msg model)
 
                         _ ->
                             Debug.crash "unexpected message"
@@ -200,10 +212,31 @@ mainUrlUpdate result mainModel =
                         wrapHome settings (AppHome.init settings viewport userLocation)
 
                     FacilityRoute facilityId ->
-                        wrapFacilityDetails settings (AppFacilityDetails.init viewport userLocation facilityId)
+                        let
+                            context =
+                                case mainModel of
+                                    SearchModel searchModel _ ->
+                                        FromSearch searchModel
+
+                                    FacilityDetailsModel _ _ previousContext ->
+                                        previousContext
+
+                                    _ ->
+                                        FromUnkown
+                        in
+                            wrapFacilityDetails settings context (AppFacilityDetails.init viewport userLocation facilityId)
 
                     SearchRoute searchSpec ->
-                        wrapSearch settings (AppSearch.init settings searchSpec viewport userLocation)
+                        wrapSearch settings <|
+                            case mainModel of
+                                FacilityDetailsModel _ _ (FromSearch searchModel) ->
+                                    if searchModel.query == searchSpec then
+                                        ( searchModel, AppSearch.restoreCmd )
+                                    else
+                                        AppSearch.init settings searchSpec viewport userLocation
+
+                                _ ->
+                                    AppSearch.init settings searchSpec viewport userLocation
 
                     _ ->
                         Debug.crash "route not handled"
@@ -214,9 +247,9 @@ wrapHome settings =
     mapTCmd (\m -> HomeModel m settings) HomeMsg
 
 
-wrapFacilityDetails : Settings -> ( AppFacilityDetails.Model, Cmd AppFacilityDetails.Msg ) -> ( MainModel, Cmd MainMsg )
-wrapFacilityDetails settings =
-    mapTCmd (\m -> FacilityDetailsModel m settings) FacilityDetailsMsg
+wrapFacilityDetails : Settings -> FacilityDetailsContext -> ( AppFacilityDetails.Model, Cmd AppFacilityDetails.Msg ) -> ( MainModel, Cmd MainMsg )
+wrapFacilityDetails settings context =
+    mapTCmd (\m -> FacilityDetailsModel m settings context) FacilityDetailsMsg
 
 
 wrapSearch : Settings -> ( AppSearch.Model, Cmd AppSearch.Msg ) -> ( MainModel, Cmd MainMsg )
@@ -236,7 +269,7 @@ mapViewport mainModel =
         HomeModel model _ ->
             AppHome.mapViewport model
 
-        FacilityDetailsModel model _ ->
+        FacilityDetailsModel model _ _ ->
             AppFacilityDetails.mapViewport model
 
         SearchModel model _ ->
@@ -255,7 +288,7 @@ getSettings mainModel =
         HomeModel model settings ->
             settings
 
-        FacilityDetailsModel model settings ->
+        FacilityDetailsModel model settings _ ->
             settings
 
         SearchModel model settings ->
@@ -268,7 +301,7 @@ getUserLocation mainModel =
         HomeModel model _ ->
             AppHome.userLocation model
 
-        FacilityDetailsModel model _ ->
+        FacilityDetailsModel model _ _ ->
             AppFacilityDetails.userLocation model
 
         SearchModel model _ ->
@@ -284,7 +317,7 @@ mainView mainModel =
         HomeModel model settings ->
             Shared.layout <| Html.App.map HomeMsg <| AppHome.view model
 
-        FacilityDetailsModel model settings ->
+        FacilityDetailsModel model settings _ ->
             Shared.layout <| Html.App.map FacilityDetailsMsg <| AppFacilityDetails.view model
 
         SearchModel model settings ->
