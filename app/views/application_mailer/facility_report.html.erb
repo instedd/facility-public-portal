@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  </head>
+  <body>
+    <h1>Report on <%= @facility %></h1>
+    <p>
+      It was reported that:
+      <ul>
+        <% if @report["wrong_location"] %>
+          <li>This facility's location in the map is incorrect</li><% end %>
+        <% if @report["closed"] %>
+          <li>The facility is closed</li><% end %>
+        <% if @report["contact_info_missing"] %>
+          <li>Contact information is missing</li><% end %>
+        <% if @report["inaccurate_services"] %>
+          <li>The service list is inaccurate</li><% end %>
+        <% if @report["other"] %>
+          <li>There is an unspecified problem with the facility</li><% end %>
+      </ul>
+    </p>
+  </body>
+</html>

@@ -7,5 +7,6 @@ Rails.application.routes.draw do
     get 'facilities/:id', to: 'api#get_facility'
   end
 
+  post 'facilities/:id/report', to: 'application#report_facility'
   get '*unmatched_route', :to => 'application#map'
 end
