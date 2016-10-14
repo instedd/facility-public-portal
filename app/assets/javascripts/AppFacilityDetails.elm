@@ -14,11 +14,14 @@ import String
 import Task
 import Map
 import UserLocation
+import Http
+import Json.Decode as Decode
+import Json.Encode exposing (..)
 
 
 type Model
     = Loading MapViewport Int (Maybe Date) UserLocation.Model
-    | Loaded MapViewport Facility (Maybe Date) UserLocation.Model Bool Bool
+    | Loaded MapViewport Facility (Maybe Date) UserLocation.Model Bool (Maybe FacilityReport)
 
 
 type PrivateMsg
@@ -27,12 +30,24 @@ type PrivateMsg
     | UserLocationMsg UserLocation.Msg
     | ToggleMobileFocus
     | ToggleFacilityReport
+    | ToggleCheckbox String
+    | ReportFinalized
 
 
 type Msg
     = Close
     | FacilityClicked Int
     | Private PrivateMsg
+    | FacilityReportMsg FacilityReportResult
+
+
+type alias FacilityReport =
+    { wrong_location : Bool
+    , closed : Bool
+    , contact_info_missing : Bool
+    , inaccurate_services : Bool
+    , other : Bool
+    }
 
 
 init : MapViewport -> UserLocation.Model -> Int -> ( Model, Cmd Msg )
@@ -53,7 +68,7 @@ update s msg model =
                     ( setDate date model, Cmd.none )
 
                 ApiFetch (Api.FetchFacilitySuccess facility) ->
-                    (Loaded (mapViewport model) facility (date model) (userLocation model) False False)
+                    (Loaded (mapViewport model) facility (date model) (userLocation model) False Nothing)
                         ! ((if (Models.contains (mapViewport model) facility.position) then
                                 []
                             else
@@ -75,7 +90,16 @@ update s msg model =
                             ( Loaded a b c d (not e) f, Cmd.none )
 
                 ToggleFacilityReport ->
-                    ( (setReportWindow (not <| isReportWindowOpen model) model), Cmd.none )
+                    if (isReportWindowOpen model) then
+                        ( closeReportWindow model, Cmd.none )
+                    else
+                        ( openReportWindow model, Cmd.none )
+
+                ReportFinalized ->
+                    ( closeReportWindow model, sendReport model )
+
+                ToggleCheckbox name ->
+                    ( toggleCheckbox name model, Cmd.none )
 
                 _ ->
                     -- TODO handle error
@@ -124,7 +148,7 @@ view model =
                 [ classList [ hideOnMobileDetailsFocused ] ]
                 [ mobileFocusToggleView ]
             ]
-        , modal = openReportWindow model
+        , modal = reportWindow model
         }
 
 
@@ -140,8 +164,8 @@ userLocationView model =
     Html.App.map (Private << UserLocationMsg) (UserLocation.viewMapControl (userLocation model))
 
 
-openReportWindow : Model -> List (Html Msg)
-openReportWindow model =
+reportWindow : Model -> List (Html Msg)
+reportWindow model =
     if isReportWindowOpen model then
         [ div [ class "modal-content" ]
             [ div [ class "header" ]
@@ -150,31 +174,16 @@ openReportWindow model =
                 ]
             , div [ class "body" ]
                 [ Html.form [ action "#", method "GET" ]
-                    [ p []
-                        [ input [ type' "checkbox", id "wrong_location" ] []
-                        , label [ for "wrong_location" ] [ text "Wrong location" ]
-                        ]
-                    , p []
-                        [ input [ type' "checkbox", id "closed" ] []
-                        , label [ for "closed" ] [ text "Facility closed" ]
-                        ]
-                    , p []
-                        [ input [ type' "checkbox", id "contact_info_missing" ] []
-                        , label [ for "contact_info_missing" ] [ text "Incomplete contact info" ]
-                        ]
-                    , p []
-                        [ input [ type' "checkbox", id "inaccurate_services" ] []
-                        , label [ for "inaccurate_services" ] [ text "Inaccurate service list" ]
-                        ]
-                    , p []
-                        [ input [ type' "checkbox", id "other" ] []
-                        , label [ for "other" ] [ text "Other" ]
-                        ]
+                    [ Shared.checkbox "wrong_location" "Wrong location" (facilityReport model).wrong_location (Private (ToggleCheckbox "wrong_location"))
+                    , Shared.checkbox "closed" "Facility closed" (facilityReport model).closed (Private (ToggleCheckbox "closed"))
+                    , Shared.checkbox "contact_info_missing" "Incomplete contact information" (facilityReport model).contact_info_missing (Private (ToggleCheckbox "contact_info_missing"))
+                    , Shared.checkbox "inaccurate_services" "Inaccurate service list" (facilityReport model).inaccurate_services (Private (ToggleCheckbox "inaccurate_services"))
+                    , Shared.checkbox "other" "Other" (facilityReport model).other (Private (ToggleCheckbox "other"))
                     ]
                 ]
             ]
         , div [ class "modal-footer" ]
-            [ a [ class "btn-flat" ] [ text "Send report" ] ]
+            [ a [ class "btn-flat", Events.onClick (Private ReportFinalized) ] [ text "Send report" ] ]
         ]
     else
         []
@@ -215,14 +224,79 @@ setDate date model =
             Loaded a b (Just date) d e f
 
 
-setReportWindow : Bool -> Model -> Model
-setReportWindow bool model =
+toggleCheckbox : String -> Model -> Model
+toggleCheckbox name model =
+    case model of
+        Loading a b c d ->
+            Loading a b c d
+
+        Loaded a b c d e Nothing ->
+            Loaded a b c d e Nothing
+
+        Loaded a b c d e (Just f) ->
+            case name of
+                "wrong_location" ->
+                    Loaded a b c d e (Just { f | wrong_location = not f.wrong_location })
+
+                "closed" ->
+                    Loaded a b c d e (Just { f | closed = not f.closed })
+
+                "contact_info_missing" ->
+                    Loaded a b c d e (Just { f | contact_info_missing = not f.contact_info_missing })
+
+                "inaccurate_services" ->
+                    Loaded a b c d e (Just { f | inaccurate_services = not f.inaccurate_services })
+
+                "other" ->
+                    Loaded a b c d e (Just { f | other = not f.other })
+
+                _ ->
+                    Debug.crash "Not implemented"
+
+
+facilityReport : Model -> FacilityReport
+facilityReport model =
+    case model of
+        Loading _ _ _ _ ->
+            Debug.crash "Facility report getter should not be called without one"
+
+        Loaded _ _ _ _ _ Nothing ->
+            Debug.crash "Facility report getter should not be called without one"
+
+        Loaded _ _ _ _ _ (Just b) ->
+            b
+
+
+openReportWindow : Model -> Model
+openReportWindow model =
     case model of
         Loading a b c d ->
             Loading a b c d
 
         Loaded a b c d e _ ->
-            Loaded a b c d e bool
+            Loaded a
+                b
+                c
+                d
+                e
+                (Just
+                    { wrong_location = False
+                    , closed = False
+                    , contact_info_missing = False
+                    , inaccurate_services = False
+                    , other = False
+                    }
+                )
+
+
+closeReportWindow : Model -> Model
+closeReportWindow model =
+    case model of
+        Loading a b c d ->
+            Loading a b c d
+
+        Loaded a b c d e _ ->
+            Loaded a b c d e Nothing
 
 
 isReportWindowOpen : Model -> Bool
@@ -231,8 +305,11 @@ isReportWindowOpen model =
         Loading a b c d ->
             False
 
-        Loaded a b c d e bool ->
-            bool
+        Loaded a b c d e Nothing ->
+            False
+
+        Loaded a b c d e (Just _) ->
+            True
 
 
 userLocation : Model -> UserLocation.Model
@@ -263,6 +340,36 @@ mobileFocusMap model =
 
         Loaded _ _ _ _ b _ ->
             b
+
+
+type FacilityReportResult
+    = ReportSuccess
+    | ReportFailed
+
+
+encodeReport : FacilityReport -> Json.Encode.Value
+encodeReport report =
+    Json.Encode.object
+        [ ( "wrong_location", bool report.wrong_location )
+        , ( "closed", bool report.closed )
+        , ( "contact_info_missing", bool report.contact_info_missing )
+        , ( "inaccurate_services", bool report.inaccurate_services )
+        , ( "other", bool report.other )
+        ]
+
+
+sendReport : Model -> Cmd Msg
+sendReport model =
+    let
+        url =
+            case model of
+                Loading _ id _ _ ->
+                    "/facilities/" ++ (toString id) ++ "/report"
+
+                Loaded _ facility _ _ _ _ ->
+                    "/facilities/" ++ (toString facility.id) ++ "/report"
+    in
+        Task.perform (always (FacilityReportMsg ReportFailed)) (always (FacilityReportMsg ReportSuccess)) (Http.post (Decode.succeed ()) url (Http.string (Json.Encode.encode 0 (encodeReport (facilityReport model)))))
 
 
 currentDate : Cmd Msg
