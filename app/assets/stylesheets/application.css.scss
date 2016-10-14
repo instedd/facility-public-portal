@@ -365,6 +365,7 @@ html, body, #container, #elm, #map {
     width: 100%;
     justify-content: center;
     font-weight: 500;
+    z-index: 1;
   }
 
   .floating-actions {
