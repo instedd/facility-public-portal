@@ -72,6 +72,13 @@ RSpec.describe SpaNormalization do
                             { id: "S2", name: "Ent and ophthalmolgy equipments" }
                           ],
 
+                          facility_types: [
+                            { name: "Health Center", priority: 1 },
+                            { name: "Primary Hospital", priority: 2 },
+                            { name: "General Hospital", priority: 3 },
+                            { name: "Referral Hospital", priority: 4 }
+                          ],
+
                           facilities_services: [
                             {facility_id: "F1", service_id: "S1"},
                             {facility_id: "F1", service_id: "S2"}
