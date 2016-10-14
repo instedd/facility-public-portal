@@ -89,6 +89,5 @@ encodeFacility facility =
         [ ( "id", int facility.id )
         , ( "position", encodeLatLng facility.position )
         , ( "facilityType", string facility.facilityType )
-          -- TODO rename field
-        , ( "facilityTypePriority", int facility.facilityTypePriority )
+        , ( "priority", int facility.priority )
         ]

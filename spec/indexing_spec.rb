@@ -118,24 +118,24 @@ RSpec.describe Indexing do
       expect(all_facilities.size).to eq(1)
     end
 
-    describe "facility type priority" do
+    describe "facility priority" do
       context "priority is not explicit in the dataset" do
         it "assigns minimum value" do
           index_dataset(valid_dataset)
 
           facility = all_facilities[0]
-          expect(facility["facility_type_priority"]).to eq(0)
+          expect(facility["priority"]).to eq(0)
         end
       end
 
       context "priority is explicit in the dataset" do
-        it "assigns the value" do
+        it "assigns priority based no the facility's type" do
           index_dataset(valid_dataset.tap do |ds|
                           ds[:facility_types] = [ { name: "Health Center", priority: 3 } ]
                         end)
 
           facility = all_facilities[0]
-          expect(facility["facility_type_priority"]).to eq(3)
+          expect(facility["priority"]).to eq(3)
         end
       end
     end

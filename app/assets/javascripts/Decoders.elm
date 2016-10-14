@@ -29,7 +29,7 @@ facility =
         |> required "name" string
         |> required "position" latLng
         |> required "facility_type" string
-        |> required "facility_type_priority" int
+        |> required "priority" int
         |> required "service_names" (list string)
         |> required "adm" (list string)
         |> required "contact_name" (nullable string)

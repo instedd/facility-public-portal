@@ -76,13 +76,13 @@ class Indexing
         services = services_by_facility[f[:id]] || []
         services.each { |s| s[:facility_count] +=1 }
 
-        facility_type_priority = facility_types[f[:facility_type]][:priority] rescue 0
+        priority = facility_types[f[:facility_type]][:priority] rescue 0
 
         f.merge({
           id: @last_facility_id += 1,
           source_id: f[:id],
           contact_phone: f[:contact_phone] && f[:contact_phone].to_s,
-          facility_type_priority: facility_type_priority,
+          priority: priority,
 
           position: {
             lat: f[:lat],

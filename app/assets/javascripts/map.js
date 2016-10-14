@@ -184,13 +184,13 @@ $(document).ready(function() {
       return FPP.highlightedFacilityMarker.options.facility;
     } else {
       var facilities = cluster.getAllChildMarkers();
-      var currentBest = facilities[0].options.facility;
+      var ret = facilities[0].options.facility;
       $.each(facilities, function(i, item) {
-        if (item.options.facility.facilityTypePriority > currentBest.facilityTypePriority) {
-          currentBest = item.options.facility;
+        if (item.options.facility.priority > ret.priority) {
+          ret = item.options.facility;
         }
       });
-      return currentBest;
+      return ret;
     }
   };
 

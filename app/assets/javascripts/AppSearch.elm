@@ -75,7 +75,7 @@ update s msg model =
                                 Cmd.none
                     in
                         { model | results = Just results }
-                            ! (loadMore :: Map.fitContent :: addFacilities :: [ Map.clearFacilityMarkers ])
+                            ! [ loadMore, Map.fitContent, addFacilities ]
 
                 ApiSearch _ ->
                     -- TODO handle error

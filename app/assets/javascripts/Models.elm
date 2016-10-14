@@ -34,7 +34,7 @@ type alias Facility =
     , name : String
     , position : LatLng
     , facilityType : String
-    , facilityTypePriority : Int
+    , priority : Int
     , services : List String
     , adm : List String
     , contactName : Maybe String
