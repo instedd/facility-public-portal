@@ -66,7 +66,7 @@ update s msg model =
                 ApiSearch (Api.SearchSuccess results) ->
                     let
                         addFacilities =
-                            List.map Map.addFacilityMarker results.items
+                            Map.resetFacilityMarkers results.items
 
                         loadMore =
                             if shouldLoadMore results model.mapViewport then
@@ -75,7 +75,7 @@ update s msg model =
                                 Cmd.none
                     in
                         { model | results = Just results }
-                            ! (loadMore :: Map.fitContent :: addFacilities ++ [ Map.clearFacilityMarkers ])
+                            ! [ loadMore, Map.fitContent, addFacilities ]
 
                 ApiSearch _ ->
                     -- TODO handle error
@@ -84,7 +84,7 @@ update s msg model =
                 ApiSearchMore (Api.SearchSuccess results) ->
                     let
                         addFacilities =
-                            List.map Map.addFacilityMarker results.items
+                            Map.addFacilityMarkers results.items
 
                         loadMore =
                             if shouldLoadMore results model.mapViewport then
@@ -93,7 +93,7 @@ update s msg model =
                                 Cmd.none
                     in
                         -- TODO append/merge or replace results items to current results. The order might not be trivial
-                        model ! (loadMore :: addFacilities)
+                        model ! [ loadMore, addFacilities ]
 
                 ApiSearchMore _ ->
                     -- TODO handle error
@@ -255,5 +255,5 @@ facilityRow f =
         ]
         [ icon "local_hospital"
         , span [ class "title" ] [ text f.name ]
-        , p [ class "sub" ] [ text f.kind ]
+        , p [ class "sub" ] [ text f.facilityType ]
         ]

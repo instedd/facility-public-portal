@@ -48,6 +48,8 @@ RSpec.describe ElasticsearchService do
                      {facility_id: "F2", service_id: "S3"}
                    ],
 
+                   facility_types: [],
+
                    locations: [
                      {id: "L1", name: "Ethiopia", parent_id: "-----------------"},
                      {id: "L2", name: "Snnp Region", parent_id: "L1"},

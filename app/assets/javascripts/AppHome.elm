@@ -18,7 +18,7 @@ type alias Model =
 type PrivateMsg
     = SuggestMsg Suggest.Msg
     | MapMsg Map.Msg
-    | ApiSearch Api.SearchMsg
+    | ApiSearch Bool Api.SearchMsg
     | UserLocationMsg UserLocation.Msg
 
 
@@ -61,20 +61,23 @@ update s msg model =
                         _ ->
                             wrapSuggest model <| Suggest.update { mapViewport = model.mapViewport } msg model.suggest
 
-                ApiSearch (Api.SearchSuccess results) ->
+                ApiSearch initial (Api.SearchSuccess results) ->
                     let
                         addFacilities =
-                            List.map Map.addFacilityMarker results.items
+                            if initial then
+                                Map.resetFacilityMarkers results.items
+                            else
+                                Map.addFacilityMarkers results.items
 
                         loadMore =
                             if shouldLoadMore results model.mapViewport then
-                                Api.searchMore (Private << ApiSearch) results
+                                Api.searchMore (Private << (ApiSearch False)) results
                             else
                                 Cmd.none
                     in
-                        model ! (loadMore :: addFacilities)
+                        model ! [ loadMore, addFacilities ]
 
-                ApiSearch _ ->
+                ApiSearch _ _ ->
                     -- TODO handle error
                     ( model, Cmd.none )
 
@@ -139,4 +142,4 @@ userLocation model =
 
 searchAllFacilitiesStartingFrom : Models.LatLng -> Cmd Msg
 searchAllFacilitiesStartingFrom latLng =
-    Api.search (Private << ApiSearch) { emptySearch | latLng = Just latLng }
+    Api.search (Private << (ApiSearch True)) { emptySearch | latLng = Just latLng }

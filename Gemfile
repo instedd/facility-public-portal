@@ -1,5 +1,4 @@
 source 'https://rubygems.org'
-source 'https://rails-assets.org'
 
 
 gem 'rails', '~> 5.0.0', '>= 5.0.0.1'
@@ -23,6 +22,7 @@ gem 'elasticsearch'
 source 'https://rails-assets.org' do
   gem 'rails-assets-materialize'
   gem 'rails-assets-leaflet'
+  gem 'rails-assets-leaflet.markercluster'
 end
 
 group :development, :test do

@@ -2,25 +2,26 @@ $(document).ready(function() {
   var elmContainer = document.getElementById('elm');
   var elm = Elm.Main.embed(elmContainer, FPP.settings);
 
+  FPP.mapSettings = {
+    maxZoom: 18,
+    minZoom: 7,
+    id: 'mapbox/streets-v9',
+    accessToken: 'pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ'
+  };
+
   FPP.commands = {
     initializeMap: function(o) {
       var latLng = [o.lat, o.lng];
       FPP.map = L.map('map', {
         zoomControl: false,
-        attributionControl: false
+        attributionControl: false,
+        bounceAtZoomLimits: false
       });
       FPP._fitContentUsingPadding = false;
 
-      var tileUrl = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={accessToken}';
+      L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={accessToken}', FPP.mapSettings).addTo(FPP.map);
 
-      L.tileLayer(tileUrl, {
-        maxZoom: 18,
-        minZoom: 5,
-        id: 'mapbox/streets-v9',
-        accessToken: 'pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ'
-      }).addTo(FPP.map);
-
-      FPP.facilityLayerGroup = L.layerGroup().addTo(FPP.map);
+      FPP.clusterGroup = FPP._createClusterLayer().addTo(FPP.map);
       FPP.userMarker = null;
       FPP.highlightedFacilityMarker = null;
 
@@ -54,45 +55,41 @@ $(document).ready(function() {
       popup.openOn(FPP.map);
     },
 
-    addFacilityMarker: function(o) {
-      var latLng = [o.position.lat, o.position.lng];
-      var id = o.id;
+    resetFacilityMarkers: function(facilities) {
+      FPP.commands.clearFacilityMarkers();
+      FPP.commands.addFacilityMarkers(facilities);
+    },
 
-      // TODO should avoid adding multiple markers (when user is panning this might happen)
-      var facilityMarker =
-        L.circleMarker(latLng, {
-          radius: 8,
-          className: 'facilityMarker'
-        }).on('click', function(){
-          elm.ports.facilityMarkerClicked.send(id);
-        });
+    addFacilityMarkers: function(facilities) {
+      var markers = $.map(facilities, function(facility) {
+        var latLng = [facility.position.lat, facility.position.lng];
+        return L.marker(latLng, { facility: facility });
+      });
 
-      FPP.facilityLayerGroup.addLayer(facilityMarker);
+      FPP.clusterGroup.addLayers(markers);
       FPP._userMarkerToFront();
     },
 
     clearFacilityMarkers: function() {
-      FPP.facilityLayerGroup.clearLayers();
+      FPP.clusterGroup.clearLayers();
     },
 
-    setHighlightedFacilityMarker: function(o) {
+    setHighlightedFacilityMarker: function(facility) {
       if (FPP.highlightedFacilityMarker) {
-        FPP.map.removeLayer(FPP.highlightedFacilityMarker);
+        FPP.clusterGroup.removeLayer(FPP.highlightedFacilityMarker);
       }
 
       $("#map").addClass("grey-facilities");
-      var latLng = [o.position.lat, o.position.lng];
-      var id = o.id;
 
-      FPP.highlightedFacilityMarker =
-        L.circleMarker(latLng, {
-          radius: 8,
-          className: 'facilityMarker-highlighted'
-        });
+      var latLng = [facility.position.lat, facility.position.lng];
+      FPP.highlightedFacilityMarker =  L.marker(latLng, { facility: facility });
 
-      FPP.highlightedFacilityMarker.addTo(FPP.map);
-      FPP.highlightedFacilityMarker.bringToFront();
+      FPP.clusterGroup.addLayer(FPP.highlightedFacilityMarker);
+
       FPP._userMarkerToFront();
+
+      // TODO: refresh only previous and new highlighted clusters
+      FPP.clusterGroup.refreshClusters();
     },
 
     removeHighlightedFacilityMarker: function () {
@@ -110,7 +107,7 @@ $(document).ready(function() {
       var group;
 
       if (FPP.highlightedFacilityMarker == null) {
-        group = L.featureGroup(FPP.facilityLayerGroup.getLayers());
+        group = L.featureGroup(FPP.clusterGroup.getLayers());
       } else {
         group = L.featureGroup([FPP.highlightedFacilityMarker]);
       }
@@ -151,6 +148,68 @@ $(document).ready(function() {
         layer.bringToFront();
       });
     }
+  };
+
+  FPP._createClusterLayer = function() {
+    return L.markerClusterGroup({
+      animate: false,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: false,
+      spiderfyOnMaxZoom: false,
+      disableClusteringAtZoom: 12,
+      removeOutsideVisibleBounds: false, // clusters and markers too far from the viewport are removed for performance
+      singleMarkerMode: true,  // draw single facilities as if they were a 1-point cluster
+      chunkedLoading: true, // allow other tasks to be performed by the browser in the middle of cluster calculation
+      iconCreateFunction: function(cluster) {
+        var classes = ['clusterMarker'];
+        var representative = FPP._clusterRepresentative(cluster);
+
+        if (FPP._isHighlightedFacility(representative)) {
+          classes.push('highlighted');
+        }
+
+        if (representative.facilityType === "Health Center") {
+          classes.push('small');
+        }
+
+        return L.divIcon({className: classes.join(' ')});
+      },
+      maxClusterRadius: 17
+    }).on('clusterclick', FPP._clusterClick)
+      .on('click', FPP._facilityClick);
+  };
+
+  FPP._clusterRepresentative = function(cluster) {
+    if ($.inArray(FPP.highlightedFacilityMarker, cluster.getAllChildMarkers()) >= 0) {
+      return FPP.highlightedFacilityMarker.options.facility;
+    } else {
+      var facilities = cluster.getAllChildMarkers();
+      var ret = facilities[0].options.facility;
+      $.each(facilities, function(i, item) {
+        if (item.options.facility.priority > ret.priority) {
+          ret = item.options.facility;
+        }
+      });
+      return ret;
+    }
+  };
+
+  FPP._isHighlightedFacility = function(facility) {
+    if (!FPP.highlightedFacilityMarker) {
+      return false;
+    }
+
+    return FPP.highlightedFacilityMarker.options.facility.id == facility.id;
+  };
+
+  FPP._facilityClick = function(target) {
+    var facility = target.layer.options.facility;
+    elm.ports.facilityMarkerClicked.send(facility.id);
+  };
+
+  FPP._clusterClick = function(target) {
+    var facility = FPP._clusterRepresentative(target.layer);
+    elm.ports.facilityMarkerClicked.send(facility.id);
   };
 
   elm.ports.jsCommand.subscribe(function(msg) {

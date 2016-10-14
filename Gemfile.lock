@@ -113,7 +113,9 @@ GEM
       railties (= 5.0.0.1)
       sprockets-rails (>= 2.0.0)
     rails-assets-jquery (3.1.0)
-    rails-assets-leaflet (0.7.7)
+    rails-assets-leaflet (1.0.1)
+    rails-assets-leaflet.markercluster (1.0.0)
+      rails-assets-leaflet (>= 1.0.0)
     rails-assets-materialize (0.97.7)
       rails-assets-jquery (>= 2.1.1)
     rails-dom-testing (2.0.1)
@@ -196,6 +198,7 @@ DEPENDENCIES
   puma (~> 3.0)
   rails (~> 5.0.0, >= 5.0.0.1)
   rails-assets-leaflet!
+  rails-assets-leaflet.markercluster!
   rails-assets-materialize!
   rspec-rails (~> 3.5)
   sass-rails (~> 5.0)

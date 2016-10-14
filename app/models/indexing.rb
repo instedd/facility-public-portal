@@ -65,6 +65,8 @@ class Indexing
     end
 
     logger.info "Indexing facilities"
+    facility_types = @dataset[:facility_types].map { |t| t.to_h.symbolize_keys }.index_by { |type| type[:name] }
+
     @dataset[:facilities].select { |f| validate_facility(f) }.each_slice(100) do |batch|
       index_entries = batch.map do |f|
         f = f.to_h.symbolize_keys
@@ -74,10 +76,13 @@ class Indexing
         services = services_by_facility[f[:id]] || []
         services.each { |s| s[:facility_count] +=1 }
 
+        priority = facility_types[f[:facility_type]][:priority] rescue 0
+
         f.merge({
           id: @last_facility_id += 1,
           source_id: f[:id],
           contact_phone: f[:contact_phone] && f[:contact_phone].to_s,
+          priority: priority,
 
           position: {
             lat: f[:lat],
@@ -124,6 +129,7 @@ class Indexing
       facilities: csv_enumerator.call("facilities.csv"),
       services: csv_enumerator.call("services.csv"),
       facilities_services: csv_enumerator.call("facilities_services.csv"),
+      facility_types: csv_enumerator.call("facility_types.csv"),
       locations: csv_enumerator.call("locations.csv"),
     }
 

@@ -121,7 +121,7 @@ suggestionsContent s =
 suggestion : Models.Suggestion -> Html Msg
 suggestion s =
     case s of
-        Models.F { id, name, kind, services, adm } ->
+        Models.F { id, name, facilityType, services, adm } ->
             a
                 [ class "collection-item avatar suggestion"
                 , onClick <| FacilityClicked id

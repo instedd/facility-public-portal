@@ -35,6 +35,14 @@ This tool can import data using the following schema, where each table is stored
 | facility_id | String |
 | service_id  | String |
 
+
+### facility_types
+
+| Field    | Type   |
+|----------|--------|
+| name     | String |
+| priority | Int    |
+
 ### locations
 
 | Field     | Type   |
@@ -43,6 +51,9 @@ This tool can import data using the following schema, where each table is stored
 | name      | String |
 | parent_id | String |
 
+
+The priority of a facility type can be used to decide which facilities will be displayed in lower zoom levels.
+If a facility's type doesn't have a corresponding entry in the `facilities` table it will be assigned the lowest priority.
 
 ## Importing CSV data
 
