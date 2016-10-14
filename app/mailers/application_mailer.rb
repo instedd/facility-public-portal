@@ -3,9 +3,9 @@ class ApplicationMailer < ActionMailer::Base
   layout 'mailer'
 
   def facility_report(facility, report)
-    mail_address = "example@example.com"
+    mail_address = Settings.report_email_to
     @facility = facility
     @report = report
-    mail(to: mail_address, subject: "Facility report for #{@facility}")
+    mail(to: mail_address, from: Settings.report_email_from, subject: "Facility report for #{@facility}")
   end
 end
