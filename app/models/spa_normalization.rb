@@ -52,6 +52,13 @@ class SpaNormalization
           parent_id: l["ParentId"],
         }
       end
+
+      result[:facility_types] = [
+        { name: "Health Center", priority: 1 },
+        { name: "Primary Hospital", priority: 2 },
+        { name: "General Hospital", priority: 3 },
+        { name: "Referral Hospital", priority: 4 },
+      ]
     end
   end
 
