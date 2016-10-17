@@ -14,6 +14,7 @@ class ApplicationController < ActionController::Base
     facility = ElasticsearchService.instance.get_facility(params[:id])
     facility_name = facility["name"]
     report = JSON.parse(request.body.read)
+    #TODO send on background
     ApplicationMailer.facility_report(facility_name, report).deliver
     head :ok
   end
