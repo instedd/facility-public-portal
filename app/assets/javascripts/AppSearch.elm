@@ -6,7 +6,7 @@ import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
-import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, shouldLoadMore)
+import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, FacilitySummary, shouldLoadMore)
 import Shared exposing (icon)
 import Utils exposing (mapTCmd)
 import UserLocation
@@ -251,7 +251,7 @@ searchResults model =
         div [ class "collection results content" ] entries
 
 
-facilityRow : Facility -> Html Msg
+facilityRow : FacilitySummary -> Html Msg
 facilityRow f =
     a
         [ class "collection-item result avatar"
