@@ -8,6 +8,18 @@ import Models
 import String
 
 
+type alias LHtml a =
+    List (Html a)
+
+
+type alias MapView a =
+    { headerAttributes : Attribute a
+    , content : LHtml a
+    , toolbar : LHtml a
+    , bottom : LHtml a
+    }
+
+
 mapWithControl : Maybe (Html a) -> Html a
 mapWithControl content =
     layout (mapControl content)

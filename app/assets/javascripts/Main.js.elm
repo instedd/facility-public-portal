@@ -9,7 +9,8 @@ import AppHome
 import AppSearch
 import AppFacilityDetails
 import UserLocation
-import Html exposing (Html)
+import Html exposing (Html, div)
+import Html.Attributes exposing (id, class)
 import Html.App
 import Utils exposing (mapFst, mapSnd, mapTCmd)
 
@@ -321,13 +322,29 @@ mainView mainModel =
             Shared.layout <| Html.App.map FacilityDetailsMsg <| AppFacilityDetails.view model
 
         SearchModel model settings ->
-            Shared.layout <| Html.App.map SearchMsg <| AppSearch.view model
+            mapView SearchMsg <| AppSearch.view model
 
         InitializingVR _ _ _ ->
             Shared.mapWithControl Nothing
 
         InitializedVR _ _ ->
             Shared.mapWithControl Nothing
+
+
+mapView : (a -> MainMsg) -> Shared.MapView a -> Html MainMsg
+mapView wmsg viewContent =
+    Shared.layout <|
+        Html.App.map wmsg
+            (div
+                []
+                ([ Shared.controlStack
+                    ((div [ viewContent.headerAttributes ] [ Shared.header ]) :: viewContent.content)
+                 ]
+                    ++ [ div [ id "bottom-action", class "z-depth-1" ] viewContent.bottom
+                       , div [ class "floating-actions" ] viewContent.toolbar
+                       ]
+                )
+            )
 
 
 navigateHome : Cmd MainMsg
