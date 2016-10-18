@@ -5,7 +5,7 @@ import Html exposing (..)
 import Html.App
 import Map
 import Models exposing (Settings, MapViewport, LatLng, SearchResult, shouldLoadMore)
-import Shared
+import Shared exposing (MapView)
 import Utils exposing (mapFst, mapTCmd)
 import UserLocation
 import Suggest
@@ -101,13 +101,13 @@ wrapSuggest model =
     mapTCmd (\s -> { model | suggest = s }) (Private << SuggestMsg)
 
 
-view : Model -> Html Msg
+view : Model -> MapView Msg
 view model =
-    div []
-        [ Shared.headerWithContent
-            (suggestionInput model :: (suggestionItems model))
-        , userLocationView model
-        ]
+    { headerAttributes = []
+    , content = suggestionInput model :: (suggestionItems model)
+    , toolbar = [ userLocationView model ]
+    , bottom = []
+    }
 
 
 suggestionInput model =

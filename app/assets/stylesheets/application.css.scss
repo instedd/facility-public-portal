@@ -258,6 +258,13 @@ html, body, #container, #elm, #map {
     border-top: 1px solid $grey3;
   }
 
+  a {
+    color: $blue;
+    &:hover {
+      color: $light-blue;
+    }
+  }
+
   .title {
     display: flex;
     align-items: center;
@@ -355,20 +362,29 @@ html, body, #container, #elm, #map {
     align-items: center;
     background-color: #ffffff;
     bottom: 0;
-    color: #777777;
     display: flex;
     font-size: 13pt;
     height: 55px;
     padding: 15px;
     position: absolute;
     text-transform: uppercase;
-    width: 100%;
     justify-content: center;
     font-weight: 500;
     z-index: 1;
+    width: 100%;
+    flex: 1;
+    div {
+      width: 100%;
+    }
+    a {
+      text-align: center;
+      display: inline-block;
+      color: #777777;
+      width: 100%;
+    }
   }
 
-  .floating-actions {
+  #bottom-action + .map-toolbar {
     position: relative;
     bottom: 45px;
   }

@@ -8,9 +8,16 @@ import Models
 import String
 
 
-mapWithControl : Maybe (Html a) -> Html a
-mapWithControl content =
-    layout (mapControl content)
+type alias LHtml a =
+    List (Html a)
+
+
+type alias MapView a =
+    { headerAttributes : List (Attribute a)
+    , content : LHtml a
+    , toolbar : LHtml a
+    , bottom : LHtml a
+    }
 
 
 mapCanvas : Html a
@@ -23,26 +30,9 @@ layout content =
     div [ id "container" ] [ mapCanvas, content ]
 
 
-headerWithContent : List (Html a) -> Html a
-headerWithContent content =
-    div [ id "map-control", class "z-depth-1" ] (header :: content)
-
-
 controlStack : List (Html a) -> Html a
 controlStack content =
     div [ id "map-control", class "z-depth-1" ] content
-
-
-mapControl : Maybe (Html a) -> Html a
-mapControl content =
-    headerWithContent
-        (case content of
-            Nothing ->
-                []
-
-            Just content ->
-                [ content ]
-        )
 
 
 header : Html a

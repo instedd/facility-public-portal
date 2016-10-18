@@ -7,7 +7,7 @@ import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
 import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, shouldLoadMore)
-import Shared exposing (icon)
+import Shared exposing (MapView, icon)
 import Utils exposing (mapTCmd)
 import UserLocation
 import Suggest
@@ -137,7 +137,7 @@ wrapSuggest model =
     mapTCmd (\s -> { model | suggest = s }) (Private << SuggestMsg)
 
 
-view : Model -> Html Msg
+view : Model -> MapView Msg
 view model =
     let
         onlyMobile =
@@ -152,24 +152,25 @@ view model =
         hideOnSuggestions =
             ( "hide", Suggest.hasSuggestionsToShow model.suggest )
     in
-        div []
-            [ Shared.controlStack
-                ([ div [ classList [ hideOnMobileListingFocused ] ] [ Shared.header ]
-                 , div
-                    [ classList [ onlyMobile, hideOnMobileMapFocused ] ]
-                    [ mobileBackHeader ]
-                 , suggestionInput model
-                 , div
-                    [ classList [ hideOnSuggestions, hideOnMobileMapFocused ] ]
-                    [ searchResults model ]
-                 ]
-                    ++ suggestionItems model
-                )
+        { headerAttributes = [ classList [ hideOnMobileListingFocused ] ]
+        , content =
+            [ div
+                [ classList [ onlyMobile, hideOnMobileMapFocused ] ]
+                [ mobileBackHeader ]
+            , suggestionInput model
             , div
-                [ classList [ hideOnMobileListingFocused, onlyMobile ] ]
-                [ mobileFocusToggleView ]
-            , userLocationView model
+                [ classList [ hideOnSuggestions, hideOnMobileMapFocused ] ]
+                [ searchResults model ]
             ]
+                ++ suggestionItems model
+        , toolbar =
+            [ userLocationView model ]
+        , bottom =
+            [ div
+                [ classList [ hideOnMobileListingFocused ] ]
+                [ mobileFocusToggleView ]
+            ]
+        }
 
 
 mobileBackHeader =
@@ -198,16 +199,12 @@ suggestionItems model =
 
 
 userLocationView model =
-    div [ class "floating-actions" ]
-        [ Html.App.map (Private << UserLocationMsg) (UserLocation.viewMapControl model.userLocation)
-        ]
+    Html.App.map (Private << UserLocationMsg) (UserLocation.viewMapControl model.userLocation)
 
 
 mobileFocusToggleView =
     a
-        [ href "#!"
-        , id "bottom-action"
-        , class "z-depth-1"
+        [ href "#"
         , Shared.onClick (Private ToggleMobileFocus)
         ]
         [ text "List results" ]

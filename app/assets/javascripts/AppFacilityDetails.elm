@@ -5,7 +5,7 @@ import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
-import Shared
+import Shared exposing (MapView)
 import Api
 import Date exposing (Date)
 import Utils exposing (mapTCmd)
@@ -18,13 +18,14 @@ import UserLocation
 
 type Model
     = Loading MapViewport Int (Maybe Date) UserLocation.Model
-    | Loaded MapViewport Facility (Maybe Date) UserLocation.Model
+    | Loaded MapViewport Facility (Maybe Date) UserLocation.Model Bool
 
 
 type PrivateMsg
     = ApiFetch Api.FetchFacilityMsg
     | CurrentDate Date
     | UserLocationMsg UserLocation.Msg
+    | ToggleMobileFocus
 
 
 type Msg
@@ -51,7 +52,7 @@ update s msg model =
                     ( setDate date model, Cmd.none )
 
                 ApiFetch (Api.FetchFacilitySuccess facility) ->
-                    (Loaded (mapViewport model) facility (date model) (userLocation model))
+                    (Loaded (mapViewport model) facility (date model) (userLocation model) False)
                         ! ((if (Models.contains (mapViewport model) facility.position) then
                                 []
                             else
@@ -64,6 +65,14 @@ update s msg model =
                     mapTCmd (\l -> setUserLocation l model) (Private << UserLocationMsg) <|
                         UserLocation.update s msg (userLocation model)
 
+                ToggleMobileFocus ->
+                    case model of
+                        Loading _ _ _ _ ->
+                            ( model, Cmd.none )
+
+                        Loaded a b c d e ->
+                            ( Loaded a b c d (not e), Cmd.none )
+
                 _ ->
                     -- TODO handle error
                     ( model, Cmd.none )
@@ -73,12 +82,21 @@ update s msg model =
             ( model, Cmd.none )
 
 
-view : Model -> Html Msg
+view : Model -> MapView Msg
 view model =
-    div []
-        [ Shared.controlStack
-            [ div [ class "hide-on-med-and-down" ] [ Shared.header ]
-            , case model of
+    let
+        onlyMobile =
+            ( "hide-on-large-only", True )
+
+        hideOnMobileMapFocused =
+            ( "hide-on-med-and-down", mobileFocusMap model )
+
+        hideOnMobileDetailsFocused =
+            ( "hide-on-med-and-down", not (mobileFocusMap model) )
+    in
+        { headerAttributes = [ classList [ hideOnMobileDetailsFocused ] ]
+        , content =
+            [ case model of
                 Loading _ _ _ _ ->
                     div
                         [ class "preloader-wrapper small active" ]
@@ -92,11 +110,25 @@ view model =
                             ]
                         ]
 
-                Loaded _ facility date _ ->
-                    facilityDetail date facility
+                Loaded _ facility date _ mobileFocusMap ->
+                    facilityDetail [ hideOnMobileMapFocused ] date facility
             ]
-        , userLocationView model
+        , toolbar =
+            [ userLocationView model ]
+        , bottom =
+            [ div
+                [ classList [ hideOnMobileDetailsFocused ] ]
+                [ mobileFocusToggleView ]
+            ]
+        }
+
+
+mobileFocusToggleView =
+    a
+        [ href "#"
+        , Shared.onClick (Private ToggleMobileFocus)
         ]
+        [ text "Show details" ]
 
 
 userLocationView model =
@@ -114,7 +146,7 @@ mapViewport model =
         Loading mapViewport _ _ _ ->
             mapViewport
 
-        Loaded mapViewport _ _ _ ->
+        Loaded mapViewport _ _ _ _ ->
             mapViewport
 
 
@@ -124,7 +156,7 @@ date model =
         Loading _ _ date _ ->
             date
 
-        Loaded _ _ date _ ->
+        Loaded _ _ date _ _ ->
             date
 
 
@@ -134,8 +166,8 @@ setDate date model =
         Loading a b _ d ->
             Loading a b (Just date) d
 
-        Loaded a b _ d ->
-            Loaded a b (Just date) d
+        Loaded a b _ d e ->
+            Loaded a b (Just date) d e
 
 
 userLocation : Model -> UserLocation.Model
@@ -144,7 +176,7 @@ userLocation model =
         Loading _ _ _ userLocation ->
             userLocation
 
-        Loaded _ _ _ userLocation ->
+        Loaded _ _ _ userLocation _ ->
             userLocation
 
 
@@ -154,8 +186,18 @@ setUserLocation userLocation model =
         Loading a b c _ ->
             Loading a b c userLocation
 
-        Loaded a b c _ ->
-            Loaded a b c userLocation
+        Loaded a b c _ e ->
+            Loaded a b c userLocation e
+
+
+mobileFocusMap : Model -> Bool
+mobileFocusMap model =
+    case model of
+        Loading _ _ _ _ ->
+            True
+
+        Loaded _ _ _ _ b ->
+            b
 
 
 currentDate : Cmd Msg
@@ -167,8 +209,8 @@ currentDate =
         Task.perform notFailing (Utils.dateFromEpochMillis >> CurrentDate >> Private) Time.now
 
 
-facilityDetail : Maybe Date -> Facility -> Html Msg
-facilityDetail now facility =
+facilityDetail : List ( String, Bool ) -> Maybe Date -> Facility -> Html Msg
+facilityDetail cssClasses now facility =
     let
         lastUpdatedSub =
             case facility.lastUpdated of
@@ -190,7 +232,7 @@ facilityDetail now facility =
               -- , entry "directions" facility.address
             ]
     in
-        div [ class "facilityDetail" ]
+        div [ classList <| ( "facilityDetail", True ) :: cssClasses ]
             [ div [ class "title" ]
                 [ span [ class "name" ]
                     [ text facility.name
@@ -214,12 +256,21 @@ facilityDetail now facility =
             ]
 
 
-facilityContactDetails : List ( String, String ) -> Html msg
+facilityContactDetails : List ( String, String ) -> Html Msg
 facilityContactDetails attributes =
     let
         item ( iconName, information ) =
             li [] [ Shared.icon iconName, span [] [ text information ] ]
     in
-        attributes
-            |> List.map item
-            |> ul []
+        ul [] <|
+            (List.map item attributes
+                ++ [ li [ class "hide-on-large-only" ]
+                        [ Shared.icon "location_on"
+                        , a
+                            [ href "#"
+                            , Shared.onClick (Private ToggleMobileFocus)
+                            ]
+                            [ text "View on map" ]
+                        ]
+                   ]
+            )
