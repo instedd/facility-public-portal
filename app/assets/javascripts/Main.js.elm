@@ -319,7 +319,7 @@ mainView mainModel =
             Shared.layout <| Html.App.map HomeMsg <| AppHome.view model
 
         FacilityDetailsModel model settings _ ->
-            Shared.layout <| Html.App.map FacilityDetailsMsg <| AppFacilityDetails.view model
+            mapView FacilityDetailsMsg <| AppFacilityDetails.view model
 
         SearchModel model settings ->
             mapView SearchMsg <| AppSearch.view model

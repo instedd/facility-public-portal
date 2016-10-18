@@ -204,7 +204,7 @@ userLocationView model =
 
 mobileFocusToggleView =
     a
-        [ href "#!"
+        [ href "#"
         , Shared.onClick (Private ToggleMobileFocus)
         ]
         [ text "List results" ]

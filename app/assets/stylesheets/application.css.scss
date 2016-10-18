@@ -258,6 +258,13 @@ html, body, #container, #elm, #map {
     border-top: 1px solid $grey3;
   }
 
+  a {
+    color: $blue;
+    &:hover {
+      color: $light-blue;
+    }
+  }
+
   .title {
     display: flex;
     align-items: center;
