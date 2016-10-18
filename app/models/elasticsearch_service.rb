@@ -76,7 +76,7 @@ class ElasticsearchService
     search_body = {
       size: size,
       from: from,
-      _source: [ "id", "name", "lat", "lng", "priority", "facility_type", "position", "adm" ],
+      _source: [ "id", "name", "priority", "facility_type", "position", "adm" ],
       query: { bool: { must: [] } },
       sort: {}
     }
@@ -193,9 +193,10 @@ class ElasticsearchService
   end
 
   def api_latlng(document)
-    document["position"] = {}
-    document["position"]["lat"] = document["lat"].to_f
-    document["position"]["lng"] = document["lng"].to_f
+    document["position"] = {
+      "lat" => document["position"]["lat"].to_f,
+      "lng" => document["position"]["lon"].to_f
+    }
     document
   end
 
