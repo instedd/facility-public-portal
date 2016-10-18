@@ -7,6 +7,13 @@ services:
     volumes:
       - elastic:/usr/share/elasticsearch/data
 
+  smtp:
+    image: 'djfarrelly/maildev:latest'
+    command: 'bin/maildev --web 3080 --smtp 1025 --incoming-user smtp --incoming-pass smtp'
+    ports:
+      - '3080:3080'
+      - '1025:1025'
+
   postgres:
     image: postgres:9.5
     environment:
