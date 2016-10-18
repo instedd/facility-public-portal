@@ -325,10 +325,10 @@ mainView mainModel =
             mapView SearchMsg <| AppSearch.view model
 
         InitializingVR _ _ _ ->
-            Shared.mapWithControl Nothing
+            mapView identity { headerAttributes = [], content = [], toolbar = [], bottom = [] }
 
         InitializedVR _ _ ->
-            Shared.mapWithControl Nothing
+            mapView identity { headerAttributes = [], content = [], toolbar = [], bottom = [] }
 
 
 mapView : (a -> MainMsg) -> Shared.MapView a -> Html MainMsg
