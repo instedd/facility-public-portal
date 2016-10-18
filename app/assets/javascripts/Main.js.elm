@@ -316,7 +316,7 @@ mainView : MainModel -> Html MainMsg
 mainView mainModel =
     case mainModel of
         HomeModel model settings ->
-            Shared.layout <| Html.App.map HomeMsg <| AppHome.view model
+            mapView HomeMsg <| AppHome.view model
 
         FacilityDetailsModel model settings _ ->
             mapView FacilityDetailsMsg <| AppFacilityDetails.view model
@@ -338,11 +338,14 @@ mapView wmsg viewContent =
             (div
                 []
                 ([ Shared.controlStack
-                    ((div [ viewContent.headerAttributes ] [ Shared.header ]) :: viewContent.content)
+                    ((div viewContent.headerAttributes [ Shared.header ]) :: viewContent.content)
                  ]
-                    ++ [ div [ id "bottom-action", class "z-depth-1" ] viewContent.bottom
-                       , div [ class "floating-actions" ] viewContent.toolbar
-                       ]
+                    ++ (if List.isEmpty viewContent.bottom then
+                            []
+                        else
+                            [ div [ id "bottom-action", class "z-depth-1" ] viewContent.bottom ]
+                       )
+                    ++ [ div [ class "map-toolbar" ] viewContent.toolbar ]
                 )
             )
 

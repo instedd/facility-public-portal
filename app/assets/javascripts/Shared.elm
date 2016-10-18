@@ -13,7 +13,7 @@ type alias LHtml a =
 
 
 type alias MapView a =
-    { headerAttributes : Attribute a
+    { headerAttributes : List (Attribute a)
     , content : LHtml a
     , toolbar : LHtml a
     , bottom : LHtml a

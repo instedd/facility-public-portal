@@ -94,7 +94,7 @@ view model =
         hideOnMobileDetailsFocused =
             ( "hide-on-med-and-down", not (mobileFocusMap model) )
     in
-        { headerAttributes = classList [ hideOnMobileDetailsFocused ]
+        { headerAttributes = [ classList [ hideOnMobileDetailsFocused ] ]
         , content =
             [ case model of
                 Loading _ _ _ _ ->

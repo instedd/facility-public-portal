@@ -152,7 +152,7 @@ view model =
         hideOnSuggestions =
             ( "hide", Suggest.hasSuggestionsToShow model.suggest )
     in
-        { headerAttributes = classList [ hideOnMobileListingFocused ]
+        { headerAttributes = [ classList [ hideOnMobileListingFocused ] ]
         , content =
             [ div
                 [ classList [ onlyMobile, hideOnMobileMapFocused ] ]

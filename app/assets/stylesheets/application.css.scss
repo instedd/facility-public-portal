@@ -384,7 +384,7 @@ html, body, #container, #elm, #map {
     }
   }
 
-  .floating-actions {
+  #bottom-action + .map-toolbar {
     position: relative;
     bottom: 45px;
   }
