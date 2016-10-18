@@ -170,7 +170,7 @@ reportWindow model =
         [ div [ class "modal-content" ]
             [ div [ class "header" ]
                 [ text "Report an issue"
-                , a [ class "right", Events.onClick (Private ToggleFacilityReport) ] [ Shared.icon "close" ]
+                , a [ href "#", class "right", Shared.onClick (Private ToggleFacilityReport) ] [ Shared.icon "close" ]
                 ]
             , div [ class "body" ]
                 [ Html.form [ action "#", method "GET" ]
@@ -183,7 +183,7 @@ reportWindow model =
                 ]
             ]
         , div [ class "modal-footer" ]
-            [ a [ class "btn-flat", Events.onClick (Private ReportFinalized) ] [ text "Send report" ] ]
+            [ a [ href "#", class "btn-flat", Shared.onClick (Private ReportFinalized) ] [ text "Send report" ] ]
         ]
     else
         []
@@ -452,7 +452,7 @@ facilityContactDetails attributes =
 facilityActions : Html Msg
 facilityActions =
     a
-        [ Events.onClick (Private ToggleFacilityReport) ]
+        [ href "#", Shared.onClick (Private ToggleFacilityReport) ]
         [ Shared.icon "report"
         , text "Report an issue"
         ]
