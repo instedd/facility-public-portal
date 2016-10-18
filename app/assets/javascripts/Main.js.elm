@@ -13,11 +13,13 @@ import Html exposing (Html, div)
 import Html.Attributes exposing (id, class)
 import Html.App
 import Utils exposing (mapFst, mapSnd, mapTCmd)
+import Menu
 
 
 type alias Flags =
     { fakeUserPosition : Bool
     , initialPosition : LatLng
+    , contactEmail : String
     }
 
 
@@ -41,7 +43,7 @@ type MainModel
 
 
 type alias CommonPageState =
-    { settings : Settings }
+    { settings : Settings, menu : Menu.Model }
 
 
 type PagedModel
@@ -57,6 +59,7 @@ type MainMsg
     | HomeMsg AppHome.Msg
     | FacilityDetailsMsg AppFacilityDetails.Msg
     | SearchMsg AppSearch.Msg
+    | ToggleMenu
 
 
 type FacilityDetailsContext
@@ -74,6 +77,7 @@ init flags route =
                  else
                     Nothing
                 )
+            , contactEmail = flags.contactEmail
             }
 
         model =
@@ -115,6 +119,14 @@ mainUpdate msg mainModel =
         NavigateBack ->
             -- remove
             ( mainModel, Navigation.back 1 )
+
+        ToggleMenu ->
+            case mainModel of
+                Page pagedModel common ->
+                    ( Page pagedModel { common | menu = Menu.toggle common.menu }, Cmd.none )
+
+                _ ->
+                    ( mainModel, Cmd.none )
 
         _ ->
             case mainModel of
@@ -223,7 +235,7 @@ mainUrlUpdate result mainModel =
                     (getUserLocation mainModel)
 
                 common =
-                    { settings = getSettings mainModel }
+                    { settings = getSettings mainModel, menu = Menu.Closed }
             in
                 case Routing.routeFromResult result of
                     RootRoute ->
@@ -330,45 +342,45 @@ getUserLocation mainModel =
 mainView : MainModel -> Html MainMsg
 mainView mainModel =
     case mainModel of
-        Page pagedModel _ ->
+        Page pagedModel common ->
             case pagedModel of
                 HomeModel pagedModel ->
-                    mapView HomeMsg <| AppHome.view pagedModel
+                    mapView HomeMsg common.settings common.menu <| AppHome.view pagedModel
 
                 FacilityDetailsModel pagedModel _ ->
-                    mapView FacilityDetailsMsg <| AppFacilityDetails.view pagedModel
+                    mapView FacilityDetailsMsg common.settings common.menu <| AppFacilityDetails.view pagedModel
 
                 SearchModel pagedModel ->
-                    mapView SearchMsg <| AppSearch.view pagedModel
+                    mapView SearchMsg common.settings common.menu <| AppSearch.view pagedModel
 
-        InitializingVR _ _ _ ->
-            mapView identity { headerAttributes = [], content = [], toolbar = [], bottom = [], modal = [] }
+        InitializingVR _ _ settings ->
+            mapView identity settings Menu.Closed { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
 
-        InitializedVR _ _ ->
-            mapView identity { headerAttributes = [], content = [], toolbar = [], bottom = [], modal = [] }
+        InitializedVR _ settings ->
+            mapView identity settings Menu.Closed { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
 
 
-mapView : (a -> MainMsg) -> Shared.MapView a -> Html MainMsg
-mapView wmsg viewContent =
+mapView : (a -> MainMsg) -> Settings -> Menu.Model -> Shared.MapView a -> Html MainMsg
+mapView wmsg settings menuModel viewContent =
     Shared.layout <|
-        Html.App.map wmsg
-            (div
-                []
-                ([ Shared.controlStack
-                    ((div viewContent.headerAttributes [ Shared.header ]) :: viewContent.content)
-                 ]
-                    ++ (if List.isEmpty viewContent.bottom then
-                            []
-                        else
-                            [ div [ id "bottom-action", class "z-depth-1" ] viewContent.bottom ]
-                       )
-                    ++ [ div [ class "map-toolbar" ] viewContent.toolbar ]
-                    ++ (if List.isEmpty viewContent.modal then
-                            []
-                        else
-                            [ div [ id "modal", class "modal open" ] viewContent.modal ]
-                       )
+        div
+            []
+            ([ Shared.controlStack
+                ((div [ class viewContent.headerClass ] [ Shared.header [ Menu.anchor ToggleMenu ] ])
+                    :: (Menu.orContent settings menuModel (Shared.lmap wmsg viewContent.content))
                 )
+             ]
+                ++ (if List.isEmpty viewContent.bottom then
+                        []
+                    else
+                        [ div [ id "bottom-action", class "z-depth-1" ] (Shared.lmap wmsg viewContent.bottom) ]
+                   )
+                ++ [ div [ class "map-toolbar" ] (Shared.lmap wmsg viewContent.toolbar) ]
+                ++ (if List.isEmpty viewContent.modal then
+                        []
+                    else
+                        [ div [ id "modal", class "modal open" ] (Shared.lmap wmsg viewContent.modal) ]
+                   )
             )
 
 

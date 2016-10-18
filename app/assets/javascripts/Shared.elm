@@ -1,6 +1,7 @@
 module Shared exposing (..)
 
 import Html exposing (..)
+import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
 import Json.Decode
@@ -13,12 +14,25 @@ type alias LHtml a =
 
 
 type alias MapView a =
-    { headerAttributes : List (Attribute a)
+    { headerClass : String
     , content : LHtml a
     , toolbar : LHtml a
     , bottom : LHtml a
     , modal : LHtml a
     }
+
+
+classNames : List ( String, Bool ) -> String
+classNames list =
+    list
+        |> List.filter snd
+        |> List.map fst
+        |> String.join " "
+
+
+lmap : (a -> b) -> LHtml a -> LHtml b
+lmap =
+    List.map << Html.App.map
 
 
 mapCanvas : Html a
@@ -36,14 +50,16 @@ controlStack content =
     div [ id "map-control", class "z-depth-1" ] content
 
 
-header : Html a
-header =
+header : LHtml a -> Html a
+header content =
     nav [ id "TopNav", class "z-depth-0" ]
         [ div [ class "nav-wrapper" ]
-            [ a [ href "/" ]
+            ([ a [ href "/" ]
                 [ img [ id "logo", src "/logo.svg" ] [] ]
-              --, a [ class "right" ] [ icon "menu" ]
-            ]
+               --, a [ class "right" ] [ icon "menu" ]
+             ]
+                ++ content
+            )
         ]
 
 

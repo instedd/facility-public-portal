@@ -33,6 +33,12 @@ html, body, #container, #elm, #map {
   width: 100%;
 }
 
+nav .nav-wrapper {
+  i {
+    height: 62px;
+  }
+}
+
 #map {
   z-index: 1;
 
@@ -124,6 +130,44 @@ html, body, #container, #elm, #map {
 
   i { font-size: 25px; }
   #logo { height: 50px; }
+}
+
+.menu {
+  margin-top: 0;
+  margin-bottom: 0;
+  border: none;
+
+  ul {
+    margin: 10px 0;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid #ccc;
+    margin: 15px 0;
+  }
+
+  li {
+    padding: 14px 0px;
+    a {
+      color: black;
+      padding-left: 55px;
+      min-height: auto;
+      position: relative;
+
+      i {
+        position: absolute;
+        left: 17px;
+        top: -5px;
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      &.active, &:hover {
+        color: $blue;
+      }
+    }
+  }
 }
 
 .location {

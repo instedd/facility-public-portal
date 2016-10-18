@@ -7,7 +7,7 @@ import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
 import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, FacilitySummary, shouldLoadMore)
-import Shared exposing (MapView, icon)
+import Shared exposing (MapView, icon, classNames)
 import Utils exposing (mapTCmd)
 import UserLocation
 import Suggest
@@ -152,7 +152,7 @@ view model =
         hideOnSuggestions =
             ( "hide", Suggest.hasSuggestionsToShow model.suggest )
     in
-        { headerAttributes = [ classList [ hideOnMobileListingFocused ] ]
+        { headerClass = classNames [ hideOnMobileListingFocused ]
         , content =
             [ div
                 [ classList [ onlyMobile, hideOnMobileMapFocused ] ]
