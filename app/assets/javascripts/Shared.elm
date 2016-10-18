@@ -17,6 +17,7 @@ type alias MapView a =
     , content : LHtml a
     , toolbar : LHtml a
     , bottom : LHtml a
+    , modal : LHtml a
     }
 
 
@@ -76,3 +77,11 @@ onClick message =
         , stopPropagation = True
         }
         (Json.Decode.succeed message)
+
+
+checkbox : String -> String -> Bool -> a -> Html a
+checkbox htmlId label v msg =
+    p []
+        [ input [ type' "checkbox", id htmlId, checked v, onClick msg ] []
+        , Html.label [ for htmlId ] [ text label ]
+        ]

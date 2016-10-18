@@ -1,0 +1,7 @@
+report_email_to: "example@example.com"
+report_email_from: "do-not-reply@facilitypublicportal.com"
+smtp_settings:
+  address: 127.0.0.1
+  port: 1025
+  user_name: smtp
+  password: smtp
