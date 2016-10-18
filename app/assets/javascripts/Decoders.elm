@@ -10,14 +10,14 @@ import Utils exposing (..)
 search : Decoder SearchResult
 search =
     object2 (\items nextUrl -> { items = items, nextUrl = nextUrl })
-        ("items" := list facility)
+        ("items" := list facilitySummary)
         (maybe ("next_url" := string))
 
 
 suggestions : Decoder (List Suggestion)
 suggestions =
     decode (\f s l -> f ++ s ++ l)
-        |> required "facilities" (list (map F facility))
+        |> required "facilities" (list (map F facilitySummary))
         |> required "services" (list (map S service))
         |> required "locations" (list (map L location))
 
@@ -37,6 +37,17 @@ facility =
         |> required "contact_email" (nullable string)
         |> required "report_to" (nullable string)
         |> required "last_updated" (nullable date)
+
+
+facilitySummary : Decoder FacilitySummary
+facilitySummary =
+    decode FacilitySummary
+        |> required "id" int
+        |> required "name" string
+        |> required "position" latLng
+        |> required "facility_type" string
+        |> required "priority" int
+        |> required "adm" (list string)
 
 
 service : Decoder Service

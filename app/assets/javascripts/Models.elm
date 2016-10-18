@@ -45,6 +45,16 @@ type alias Facility =
     }
 
 
+type alias FacilitySummary =
+    { id : Int
+    , name : String
+    , position : LatLng
+    , facilityType : String
+    , priority : Int
+    , adm: List String
+    }
+
+
 type alias Service =
     { id : Int
     , name : String
@@ -60,7 +70,7 @@ type alias Location =
 
 
 type Suggestion
-    = F Facility
+    = F FacilitySummary
     | S Service
     | L Location
 
@@ -86,7 +96,7 @@ type alias MapViewport =
 
 
 type alias SearchResult =
-    { items : List Facility
+    { items : List FacilitySummary
     , nextUrl : Maybe String
     }
 

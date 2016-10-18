@@ -9,28 +9,28 @@ RSpec.describe ElasticsearchService do
 
     index_dataset({facilities: [
                      {
-                       id: "F1",
-                       name: "1st Wetanibo Balchi",
-                       lat: 8.958315,
-                       lng: 38.761659,
-                       location_id: "L3",
-                       facility_type: "Health Center",
-                       contact_name: "",
-                       contact_email: nil,
-                       contact_phone: nil,
-                       last_update: nil
+                        id: "F1",
+                        name: "1st Wetanibo Balchi",
+                        lat: 8.958315,
+                        lng: 38.761659,
+                        location_id: "L3",
+                        facility_type: "Health Center",
+                        contact_name: "",
+                        contact_email: nil,
+                        contact_phone: nil,
+                        last_update: nil
                      },
                      {
-                       id: "F2",
-                       name: "Abaferet Health Center",
-                       lat: 10.696144,
-                       lng: 38.370941,
-                       location_id: "L4",
-                       facility_type: "Health Center",
-                       contact_name: "",
-                       contact_email: nil,
-                       contact_phone: nil,
-                       last_update: nil
+                        id: "F2",
+                        name: "Abaferet Health Center",
+                        lat: 10.696144,
+                        lng: 38.370941,
+                        location_id: "L4",
+                        facility_type: "Health Center",
+                        contact_name: "",
+                        contact_email: nil,
+                        contact_phone: nil,
+                        last_update: nil
                      }
                    ],
 
@@ -61,35 +61,35 @@ RSpec.describe ElasticsearchService do
   describe "search" do
     describe "by name" do
       it "searches by word prefix" do
-        search_assert({ q: "Wet" }, expected_ids: ["F1"])
+        search_assert({ q: "Wet" }, expected_names: ["1st Wetanibo Balchi"])
       end
 
       it "searches by inner words" do
-        search_assert({ q: "Bal" }, expected_ids: ["F1"])
+        search_assert({ q: "Bal" }, expected_names: ["1st Wetanibo Balchi"])
       end
     end
 
     describe "by service" do
       it "works!" do
-        search_assert({ s: 1 }, expected_ids: ["F1"])
-        search_assert({ s: 2 }, expected_ids: ["F1", "F2"])
-        search_assert({ s: 3 }, expected_ids: ["F2"])
+        search_assert({ s: 1 }, expected_names: ["1st Wetanibo Balchi"])
+        search_assert({ s: 2 }, expected_names: ["1st Wetanibo Balchi", "Abaferet Health Center"])
+        search_assert({ s: 3 }, expected_names: ["Abaferet Health Center"])
       end
     end
 
     describe "by administrative location" do
       it "works!" do
-        search_assert({ l: 1 }, expected_ids: ["F1","F2"])
-        search_assert({ l: 2 }, expected_ids: ["F1","F2"])
-        search_assert({ l: 3 }, expected_ids: "F1")
-        search_assert({ l: 4 }, expected_ids: "F2")
+        search_assert({ l: 1 }, expected_names: ["1st Wetanibo Balchi","Abaferet Health Center"])
+        search_assert({ l: 2 }, expected_names: ["1st Wetanibo Balchi","Abaferet Health Center"])
+        search_assert({ l: 3 }, expected_names: "1st Wetanibo Balchi")
+        search_assert({ l: 4 }, expected_names: "Abaferet Health Center")
       end
     end
 
     describe "sorting by user location" do
       it "works!" do
-        search_assert({ lat: 8.959169, lng: 38.827452 }, expected_ids: ["F1", "F2"])
-        search_assert({ lat: 10.622245, lng: 38.646663 }, expected_ids: ["F2", "F1"])
+        search_assert({ lat: 8.959169, lng: 38.827452 }, expected_names: ["1st Wetanibo Balchi", "Abaferet Health Center"])
+        search_assert({ lat: 10.622245, lng: 38.646663 }, expected_names: ["Abaferet Health Center", "1st Wetanibo Balchi"])
       end
     end
   end
@@ -103,7 +103,7 @@ RSpec.describe ElasticsearchService do
       it "works" do
         [1,2,3].each do |i|
           results = elasticsearch_service.suggest_services("service#{i}")
-          expect(results.map { |s| s['source_id'] }).to eq(["S#{i}"])
+          expect(results.map { |s| s['id'] }).to eq([i])
         end
       end
     end
@@ -123,13 +123,13 @@ RSpec.describe ElasticsearchService do
     end
   end
 
-  def search_assert(params, expected_ids:, order_matters: false)
+  def search_assert(params, expected_names:, order_matters: false)
     results = elasticsearch_service.search_facilities(params)[:items]
-    actual_ids = results.map { |r| r['source_id'] }
+    actual_names = results.map { |r| r['name'] }
     if order_matters
-      expect(actual_ids).to eq(expected_ids)
+      expect(actual_names).to eq(expected_names)
     else
-      expect(actual_ids).to match_array(expected_ids)
+      expect(actual_names).to match_array(expected_names)
     end
   end
 end

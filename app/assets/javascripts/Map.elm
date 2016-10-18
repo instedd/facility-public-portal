@@ -55,14 +55,14 @@ clearFacilityMarkers =
     jsCommand ( "clearFacilityMarkers", null )
 
 
-addFacilityMarkers : List Facility -> Cmd msg
+addFacilityMarkers : List FacilitySummary -> Cmd msg
 addFacilityMarkers facilities =
-    jsCommand ( "addFacilityMarkers", list <| List.map encodeFacility facilities )
+    jsCommand ( "addFacilityMarkers", list <| List.map encodeFacilitySummary facilities )
 
 
-resetFacilityMarkers : List Facility -> Cmd msg
+resetFacilityMarkers : List FacilitySummary -> Cmd msg
 resetFacilityMarkers facilities =
-    jsCommand ( "resetFacilityMarkers", list <| List.map encodeFacility facilities )
+    jsCommand ( "resetFacilityMarkers", list <| List.map encodeFacilitySummary facilities )
 
 
 setHighlightedFacilityMarker : Facility -> Cmd msg
@@ -80,6 +80,16 @@ encodeLatLng ( lat, lng ) =
     object
         [ ( "lat", float lat )
         , ( "lng", float lng )
+        ]
+
+
+encodeFacilitySummary : FacilitySummary -> Json.Encode.Value
+encodeFacilitySummary facility =
+    object
+        [ ( "id", int facility.id )
+        , ( "position", encodeLatLng facility.position )
+        , ( "facilityType", string facility.facilityType )
+        , ( "priority", int facility.priority )
         ]
 
 
