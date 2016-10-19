@@ -1,0 +1,17 @@
+<% content_for :body do %>
+  <script>
+    window.FPP = {
+      settings: <%= raw(@js_flags.to_json) %>
+    }
+  </script>
+  <header>
+    <div id="elm-menu" class="side-nav fixed">
+    </div>
+  </header>
+  <main>
+    <section class="content">
+      <%= content_for?(:content) ? yield(:content) : yield %>
+    </section>
+  </main>
+<% end %>
+<%= render template: "layouts/application" %>

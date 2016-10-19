@@ -10,7 +10,7 @@
     <%= stylesheet_link_tag "application", media: 'all' %>
   </head>
 
-  <body>
-    <%= yield %>
+  <body class="<%= params[:controller] %>">
+    <%= content_for?(:body) ? yield(:body) : yield %>
   </body>
 </html>

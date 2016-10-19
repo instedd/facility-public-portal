@@ -1,31 +1,8 @@
-/*
- * This is a manifest file that'll be compiled into application.css, which will include all the files
- * listed below.
- *
- * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
- * or any plugin's vendor/assets/stylesheets directory can be referenced here using a relative path.
- *
- * You're free to add application-wide styles to this file and they'll appear at the bottom of the
- * compiled file so the styles you add here take precedence over styles defined in any other CSS/SCSS
- * files in this directory. Styles in this file should be added after the last require_* statement.
- * It is generally better to create a new file per style scope.
- *
- *= require materialize
- *= require leaflet
- *= require leaflet.markercluster
- *= require_tree .
- *= require_self
- */
-
-//colors
-$color_wild_sand_approx: rgb(245,245,245);
-$color_mountain_mist_approx: #999999;
-$blue: #0f47af;
-$light-blue: #4367a4;
-$grey1: grey;
-$grey2: #a6b3d9;
-$grey3: #dadada;
-$grey4: #777777;
+@import 'materialize';
+@import 'leaflet';
+@import 'leaflet.markercluster';
+@import 'variables';
+@import 'docs';
 
 
 html, body, #container, #elm, #map {
@@ -300,7 +277,7 @@ input[type="checkbox"]:checked + label:before {
     }
 
     .sub {
-      color: $grey1;
+      color: $color_mountain_mist_approx;
     }
   }
 }
@@ -399,7 +376,7 @@ input[type="checkbox"]:checked + label:before {
 
   .noData {
     padding-left: 0;
-    color: $grey1;
+    color: $color_mountain_mist_approx;
   }
 
   .services {
@@ -408,7 +385,7 @@ input[type="checkbox"]:checked + label:before {
       text-transform: uppercase;
       font-weight: bold;
       font-size: 15.5px;
-      color: $grey1;
+      color: $color_mountain_mist_approx;
     }
     li {
       margin-top: 8px;
@@ -492,7 +469,7 @@ input[type="checkbox"]:checked + label:before {
     a {
       text-align: center;
       display: inline-block;
-      color: #777777;
+      color: $color_mountain_mist_approx;
       width: 100%;
     }
   }

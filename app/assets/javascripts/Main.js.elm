@@ -367,7 +367,7 @@ mapView wmsg settings menuModel viewContent =
             []
             ([ Shared.controlStack
                 ((div [ class viewContent.headerClass ] [ Shared.header [ Menu.anchor ToggleMenu ] ])
-                    :: (Menu.orContent settings menuModel (Shared.lmap wmsg viewContent.content))
+                    :: (Menu.orContent settings Menu.Map menuModel (Shared.lmap wmsg viewContent.content))
                 )
              ]
                 ++ (if List.isEmpty viewContent.bottom then
