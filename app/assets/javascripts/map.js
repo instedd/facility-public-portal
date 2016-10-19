@@ -139,7 +139,8 @@ $(document).ready(function() {
         south: bounds.getSouth(),
         east: bounds.getEast(),
         west: bounds.getWest()
-      }
+      },
+      scale: FPP._getScale(100) // 100px max width of scale reference
     };
   };
 
@@ -212,6 +213,35 @@ $(document).ready(function() {
     var facility = FPP._clusterRepresentative(target.layer);
     elm.ports.facilityMarkerClicked.send(facility.id);
   };
+
+  FPP._getScale = function(maxWidth) {
+    // source Control.Scale.js
+    // https://github.com/Leaflet/Leaflet/blob/1b1d21b1bf8ae0acf2415ade9e9e4c62189857be/src/control/Control.Scale.js
+
+    var y = FPP.map.getSize().y / 2;
+    var maxMeters = FPP.map.distance(
+        FPP.map.containerPointToLatLng([0, y]),
+        FPP.map.containerPointToLatLng([maxWidth, y]));
+
+    var getRoundNum = function (num) {
+      var pow10 = Math.pow(10, (Math.floor(num) + '').length - 1),
+          d = num / pow10;
+
+      d = d >= 10 ? 10 :
+          d >= 5 ? 5 :
+          d >= 3 ? 3 :
+          d >= 2 ? 2 : 1;
+
+      return pow10 * d;
+    }
+
+    var meters = getRoundNum(maxMeters);
+
+    return {
+      label: meters < 1000 ? meters + ' m' : (meters / 1000) + ' km',
+      width: Math.round(meters / maxMeters * maxWidth)
+    };
+  }
 
   elm.ports.jsCommand.subscribe(function(msg) {
     FPP.commands[msg[0]](msg[1]);

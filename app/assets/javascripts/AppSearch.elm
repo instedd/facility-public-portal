@@ -200,7 +200,7 @@ suggestionItems model =
 
 
 userLocationView model =
-    Html.App.map (Private << UserLocationMsg) (UserLocation.viewMapControl model.userLocation)
+    Html.App.map (Private << UserLocationMsg) (UserLocation.view model.userLocation)
 
 
 mobileFocusToggleView =

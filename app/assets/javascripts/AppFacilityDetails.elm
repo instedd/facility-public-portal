@@ -161,7 +161,7 @@ mobileFocusToggleView =
 
 
 userLocationView model =
-    Html.App.map (Private << UserLocationMsg) (UserLocation.viewMapControl (userLocation model))
+    Html.App.map (Private << UserLocationMsg) (UserLocation.view (userLocation model))
 
 
 reportWindow : Model -> List (Html Msg)

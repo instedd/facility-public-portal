@@ -89,9 +89,16 @@ type alias MapViewportBounds =
     }
 
 
+type alias MapScale =
+    { label : String
+    , width : Int
+    }
+
+
 type alias MapViewport =
     { center : LatLng
     , bounds : MapViewportBounds
+    , scale : MapScale
     }
 
 

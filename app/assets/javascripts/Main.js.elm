@@ -9,8 +9,8 @@ import AppHome
 import AppSearch
 import AppFacilityDetails
 import UserLocation
-import Html exposing (Html, div)
-import Html.Attributes exposing (id, class)
+import Html exposing (Html, div, span)
+import Html.Attributes exposing (id, class, style)
 import Html.App
 import Utils exposing (mapFst, mapSnd, mapTCmd)
 import Menu
@@ -343,21 +343,38 @@ mainView : MainModel -> Html MainMsg
 mainView mainModel =
     case mainModel of
         Page pagedModel common ->
-            case pagedModel of
-                HomeModel pagedModel ->
-                    mapView HomeMsg common.settings common.menu <| AppHome.view pagedModel
+            let
+                withScale =
+                    prependToolbar (scaleControlView (Debug.log "scale" (mapViewport mainModel).scale))
+            in
+                case pagedModel of
+                    HomeModel pagedModel ->
+                        mapView HomeMsg common.settings common.menu <| withScale <| AppHome.view pagedModel
 
-                FacilityDetailsModel pagedModel _ ->
-                    mapView FacilityDetailsMsg common.settings common.menu <| AppFacilityDetails.view pagedModel
+                    FacilityDetailsModel pagedModel _ ->
+                        mapView FacilityDetailsMsg common.settings common.menu <| withScale <| AppFacilityDetails.view pagedModel
 
-                SearchModel pagedModel ->
-                    mapView SearchMsg common.settings common.menu <| AppSearch.view pagedModel
+                    SearchModel pagedModel ->
+                        mapView SearchMsg common.settings common.menu <| withScale <| AppSearch.view pagedModel
 
         InitializingVR _ _ settings ->
             mapView identity settings Menu.Closed { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
 
         InitializedVR _ settings ->
             mapView identity settings Menu.Closed { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
+
+
+prependToolbar : Html a -> Shared.MapView a -> Shared.MapView a
+prependToolbar item view =
+    { view | toolbar = item :: view.toolbar }
+
+
+scaleControlView : MapScale -> Html a
+scaleControlView scale =
+    div [ class "scale" ]
+        [ span [] [ Html.text scale.label ]
+        , div [ class "line", style [ ( "width", (toString scale.width) ++ "px" ) ] ] []
+        ]
 
 
 mapView : (a -> MainMsg) -> Settings -> Menu.Model -> Shared.MapView a -> Html MainMsg
@@ -375,7 +392,7 @@ mapView wmsg settings menuModel viewContent =
                     else
                         [ div [ id "bottom-action", class "z-depth-1" ] (Shared.lmap wmsg viewContent.bottom) ]
                    )
-                ++ [ div [ class "map-toolbar" ] (Shared.lmap wmsg viewContent.toolbar) ]
+                ++ [ div [ id "map-toolbar", class "z-depth-1" ] (Shared.lmap wmsg viewContent.toolbar) ]
                 ++ (if List.isEmpty viewContent.modal then
                         []
                     else
