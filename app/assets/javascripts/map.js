@@ -1,5 +1,6 @@
 $(document).ready(function() {
   var elmContainer = document.getElementById('elm');
+  if(!elmContainer) return;
   var elm = Elm.Main.embed(elmContainer, FPP.settings);
 
   FPP.mapSettings = {

@@ -1,0 +1,69 @@
+body.docs {
+  background: $grey-background;
+  margin: 100px 150px;
+  width: 65%;
+  font-size: 16px;
+  line-height: 1.8;
+  a { color: $blue; }
+
+  h1 {
+    font-size: 42px;
+  }
+  h2 {
+    font-size: 24px;
+    margin-bottom: 0.8rem;
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: bold;
+  }
+  p {
+    margin-top: 0;
+  }
+  ul {
+    margin: 30px 0 30px 32px;
+    li {
+      list-style: none;
+      &:before {
+        content:"·";
+        margin-right: 4px;
+        font-size:26px;
+        vertical-align:middle;
+        line-height:20px;
+      }
+    }
+  }
+  p > em > code {
+    font-style: normal;
+    font-size: 24px;
+    font-family: inherit;
+    border: $grey3 1px solid;
+    border-radius: 5px;
+    padding: 10px;
+  }
+  table {
+    background-color: white;
+    border: $grey3 1px solid;
+    border-radius: 5px;
+    border-collapse: inherit;
+    margin: 30px 0;
+    td, th {
+      border-bottom: $grey3 1px solid;
+      padding-top: 9px;
+      padding-bottom: 9px
+    }
+    tr:last-child td { border-bottom: none; }
+    td:first-child, th:first-child { padding: 0 20px; }
+    th {
+      color: $color_mountain_mist_approx;
+      font-weight: normal;
+    }
+  }
+  pre {
+    margin: 30px 0;
+    background-color: $code-background;
+    font-size: 14px;
+    padding: 10px;
+    border-radius: 5px;
+  }
+}
