@@ -5,7 +5,7 @@ import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
-import Shared exposing (MapView)
+import Shared exposing (MapView, classNames)
 import Api
 import Date exposing (Date)
 import Utils exposing (mapTCmd)
@@ -122,7 +122,7 @@ view model =
         hideOnMobileDetailsFocused =
             ( "hide-on-med-and-down", not (mobileFocusMap model) )
     in
-        { headerAttributes = [ classList [ hideOnMobileDetailsFocused ] ]
+        { headerClass = classNames [ hideOnMobileDetailsFocused ]
         , content =
             [ case model of
                 Loading _ _ _ _ ->

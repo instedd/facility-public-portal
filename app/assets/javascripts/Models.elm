@@ -7,7 +7,7 @@ import String
 
 
 type alias Settings =
-    { fakeLocation : Maybe LatLng }
+    { fakeLocation : Maybe LatLng, contactEmail : String }
 
 
 type Route
@@ -51,7 +51,7 @@ type alias FacilitySummary =
     , position : LatLng
     , facilityType : String
     , priority : Int
-    , adm: List String
+    , adm : List String
     }
 
 

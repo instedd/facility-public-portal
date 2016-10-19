@@ -103,7 +103,7 @@ wrapSuggest model =
 
 view : Model -> MapView Msg
 view model =
-    { headerAttributes = []
+    { headerClass = ""
     , content = suggestionInput model :: (suggestionItems model)
     , toolbar = [ userLocationView model ]
     , bottom = []

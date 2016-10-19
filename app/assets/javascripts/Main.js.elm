@@ -13,11 +13,13 @@ import Html exposing (Html, div)
 import Html.Attributes exposing (id, class)
 import Html.App
 import Utils exposing (mapFst, mapSnd, mapTCmd)
+import Menu
 
 
 type alias Flags =
     { fakeUserPosition : Bool
     , initialPosition : LatLng
+    , contactEmail : String
     }
 
 
@@ -37,9 +39,17 @@ type MainModel
       InitializingVR (Result String Route) LatLng Settings
       -- map initialized pending to determine which view/route to load
     | InitializedVR MapViewport Settings
-    | HomeModel AppHome.Model Settings
-    | FacilityDetailsModel AppFacilityDetails.Model Settings FacilityDetailsContext
-    | SearchModel AppSearch.Model Settings
+    | Page PagedModel CommonPageState
+
+
+type alias CommonPageState =
+    { settings : Settings, menu : Menu.Model }
+
+
+type PagedModel
+    = HomeModel AppHome.Model
+    | FacilityDetailsModel AppFacilityDetails.Model FacilityDetailsContext
+    | SearchModel AppSearch.Model
 
 
 type MainMsg
@@ -49,6 +59,7 @@ type MainMsg
     | HomeMsg AppHome.Msg
     | FacilityDetailsMsg AppFacilityDetails.Msg
     | SearchMsg AppSearch.Msg
+    | ToggleMenu
 
 
 type FacilityDetailsContext
@@ -66,6 +77,7 @@ init flags route =
                  else
                     Nothing
                 )
+            , contactEmail = flags.contactEmail
             }
 
         model =
@@ -86,14 +98,16 @@ subscriptions model =
         InitializedVR _ _ ->
             Sub.none
 
-        HomeModel model _ ->
-            Sub.map HomeMsg <| AppHome.subscriptions model
+        Page pagedModel _ ->
+            case pagedModel of
+                HomeModel model ->
+                    Sub.map HomeMsg <| AppHome.subscriptions model
 
-        FacilityDetailsModel model _ _ ->
-            Sub.map FacilityDetailsMsg <| AppFacilityDetails.subscriptions model
+                FacilityDetailsModel model _ ->
+                    Sub.map FacilityDetailsMsg <| AppFacilityDetails.subscriptions model
 
-        SearchModel model _ ->
-            Sub.map SearchMsg <| AppSearch.subscriptions model
+                SearchModel model ->
+                    Sub.map SearchMsg <| AppSearch.subscriptions model
 
 
 mainUpdate : MainMsg -> MainModel -> ( MainModel, Cmd MainMsg )
@@ -106,6 +120,14 @@ mainUpdate msg mainModel =
             -- remove
             ( mainModel, Navigation.back 1 )
 
+        ToggleMenu ->
+            case mainModel of
+                Page pagedModel common ->
+                    ( Page pagedModel { common | menu = Menu.toggle common.menu }, Cmd.none )
+
+                _ ->
+                    ( mainModel, Cmd.none )
+
         _ ->
             case mainModel of
                 InitializingVR route _ settings ->
@@ -117,75 +139,82 @@ mainUpdate msg mainModel =
                         _ ->
                             Debug.crash "map is not initialized yet"
 
-                HomeModel model settings ->
-                    case msg of
-                        HomeMsg msg ->
+                Page pagedModel common ->
+                    case pagedModel of
+                        HomeModel homeModel ->
                             case msg of
-                                AppHome.FacilityClicked facilityId ->
-                                    ( HomeModel model settings, navigateFacility facilityId )
+                                HomeMsg msg ->
+                                    updatePagedModel HomeModel common <|
+                                        case msg of
+                                            AppHome.FacilityClicked facilityId ->
+                                                ( homeModel, navigateFacility facilityId )
 
-                                AppHome.ServiceClicked serviceId ->
-                                    ( HomeModel model settings, navigateSearchService serviceId )
+                                            AppHome.ServiceClicked serviceId ->
+                                                ( homeModel, navigateSearchService serviceId )
 
-                                AppHome.LocationClicked locationId ->
-                                    ( HomeModel model settings, navigateSearchLocation locationId )
+                                            AppHome.LocationClicked locationId ->
+                                                ( homeModel, navigateSearchLocation locationId )
 
-                                AppHome.Search q ->
-                                    ( HomeModel model settings, navigateSearchQuery q )
+                                            AppHome.Search q ->
+                                                ( homeModel, navigateSearchQuery q )
 
-                                AppHome.Private _ ->
-                                    wrapHome settings (AppHome.update settings msg model)
+                                            AppHome.Private _ ->
+                                                mapCmd HomeMsg <| AppHome.update common.settings msg homeModel
 
-                        _ ->
-                            Debug.crash "unexpected message"
+                                _ ->
+                                    Debug.crash "unexpected message"
 
-                FacilityDetailsModel model settings context ->
-                    case msg of
-                        FacilityDetailsMsg msg ->
+                        FacilityDetailsModel facilityModel context ->
                             case msg of
-                                AppFacilityDetails.Close ->
-                                    ( mainModel
-                                    , case context of
-                                        FromSearch searchModel ->
-                                            navigateSearch searchModel.query
+                                FacilityDetailsMsg msg ->
+                                    case msg of
+                                        AppFacilityDetails.Close ->
+                                            ( mainModel
+                                            , case context of
+                                                FromSearch searchModel ->
+                                                    navigateSearch searchModel.query
+
+                                                _ ->
+                                                    navigateHome
+                                            )
+
+                                        AppFacilityDetails.FacilityClicked facilityId ->
+                                            ( Page (FacilityDetailsModel facilityModel context) common, navigateFacility facilityId )
 
                                         _ ->
-                                            navigateHome
-                                    )
-
-                                AppFacilityDetails.FacilityClicked facilityId ->
-                                    ( FacilityDetailsModel model settings context, navigateFacility facilityId )
+                                            mapTCmd
+                                                (\m -> Page (FacilityDetailsModel m context) common)
+                                                FacilityDetailsMsg
+                                                (AppFacilityDetails.update common.settings msg facilityModel)
 
                                 _ ->
-                                    wrapFacilityDetails settings context (AppFacilityDetails.update settings msg model)
+                                    Debug.crash "unexpected message"
 
-                        _ ->
-                            Debug.crash "unexpected message"
-
-                SearchModel model settings ->
-                    case msg of
-                        SearchMsg msg ->
+                        SearchModel searchModel ->
                             case msg of
-                                AppSearch.Search s ->
-                                    ( SearchModel model settings, navigateSearch s )
+                                SearchMsg msg ->
+                                    updatePagedModel SearchModel common <|
+                                        case msg of
+                                            AppSearch.Search s ->
+                                                ( searchModel, navigateSearch s )
 
-                                AppSearch.FacilityClicked facilityId ->
-                                    ( SearchModel model settings, navigateFacility facilityId )
+                                            AppSearch.FacilityClicked facilityId ->
+                                                ( searchModel, navigateFacility facilityId )
 
-                                AppSearch.ServiceClicked serviceId ->
-                                    ( SearchModel model settings, navigateSearchService serviceId )
+                                            AppSearch.ServiceClicked serviceId ->
+                                                ( searchModel, navigateSearchService serviceId )
 
-                                AppSearch.LocationClicked locationId ->
-                                    ( SearchModel model settings, navigateSearchLocation locationId )
+                                            AppSearch.LocationClicked locationId ->
+                                                ( searchModel, navigateSearchLocation locationId )
 
-                                AppSearch.ClearSearch ->
-                                    ( mainModel, navigateHome )
+                                            AppSearch.ClearSearch ->
+                                                ( searchModel, navigateHome )
+
+                                            _ ->
+                                                mapCmd SearchMsg <| AppSearch.update common.settings msg searchModel
 
                                 _ ->
-                                    wrapSearch settings (AppSearch.update settings msg model)
-
-                        _ ->
-                            Debug.crash "unexpected message"
+                                    Debug.crash "unexpected message"
 
                 _ ->
                     ( mainModel, Cmd.none )
@@ -202,60 +231,60 @@ mainUrlUpdate result mainModel =
                 viewport =
                     (mapViewport mainModel)
 
-                settings =
-                    (getSettings mainModel)
-
                 userLocation =
                     (getUserLocation mainModel)
+
+                common =
+                    { settings = getSettings mainModel, menu = Menu.Closed }
             in
                 case Routing.routeFromResult result of
                     RootRoute ->
-                        wrapHome settings (AppHome.init settings viewport userLocation)
+                        updatePagedModel HomeModel common <|
+                            mapCmd HomeMsg <|
+                                AppHome.init common.settings viewport userLocation
 
                     FacilityRoute facilityId ->
                         let
                             context =
                                 case mainModel of
-                                    SearchModel searchModel _ ->
+                                    Page (SearchModel searchModel) _ ->
                                         FromSearch searchModel
 
-                                    FacilityDetailsModel _ _ previousContext ->
+                                    Page (FacilityDetailsModel _ previousContext) _ ->
                                         previousContext
 
                                     _ ->
                                         FromUnkown
                         in
-                            wrapFacilityDetails settings context (AppFacilityDetails.init viewport userLocation facilityId)
+                            updatePagedModel (\m -> FacilityDetailsModel m context) common <|
+                                mapCmd FacilityDetailsMsg <|
+                                    AppFacilityDetails.init viewport userLocation facilityId
 
                     SearchRoute searchSpec ->
-                        wrapSearch settings <|
-                            case mainModel of
-                                FacilityDetailsModel _ _ (FromSearch searchModel) ->
-                                    if searchModel.query == searchSpec then
-                                        ( searchModel, AppSearch.restoreCmd )
-                                    else
-                                        AppSearch.init settings searchSpec viewport userLocation
+                        updatePagedModel SearchModel common <|
+                            mapCmd SearchMsg <|
+                                case mainModel of
+                                    Page (FacilityDetailsModel _ (FromSearch searchModel)) _ ->
+                                        if searchModel.query == searchSpec then
+                                            ( searchModel, AppSearch.restoreCmd )
+                                        else
+                                            AppSearch.init common.settings searchSpec viewport userLocation
 
-                                _ ->
-                                    AppSearch.init settings searchSpec viewport userLocation
+                                    _ ->
+                                        AppSearch.init common.settings searchSpec viewport userLocation
 
                     _ ->
                         Debug.crash "route not handled"
 
 
-wrapHome : Settings -> ( AppHome.Model, Cmd AppHome.Msg ) -> ( MainModel, Cmd MainMsg )
-wrapHome settings =
-    mapTCmd (\m -> HomeModel m settings) HomeMsg
+updatePagedModel : (a -> PagedModel) -> CommonPageState -> ( a, Cmd MainMsg ) -> ( MainModel, Cmd MainMsg )
+updatePagedModel wmodel common t =
+    mapFst (\m -> Page (wmodel m) common) t
 
 
-wrapFacilityDetails : Settings -> FacilityDetailsContext -> ( AppFacilityDetails.Model, Cmd AppFacilityDetails.Msg ) -> ( MainModel, Cmd MainMsg )
-wrapFacilityDetails settings context =
-    mapTCmd (\m -> FacilityDetailsModel m settings context) FacilityDetailsMsg
-
-
-wrapSearch : Settings -> ( AppSearch.Model, Cmd AppSearch.Msg ) -> ( MainModel, Cmd MainMsg )
-wrapSearch settings =
-    mapTCmd (\m -> SearchModel m settings) SearchMsg
+mapCmd : (a -> MainMsg) -> ( m, Cmd a ) -> ( m, Cmd MainMsg )
+mapCmd =
+    mapTCmd identity
 
 
 mapViewport : MainModel -> MapViewport
@@ -267,14 +296,16 @@ mapViewport mainModel =
         InitializedVR mapViewport _ ->
             mapViewport
 
-        HomeModel model _ ->
-            AppHome.mapViewport model
+        Page pagedModel _ ->
+            case pagedModel of
+                HomeModel model ->
+                    AppHome.mapViewport model
 
-        FacilityDetailsModel model _ _ ->
-            AppFacilityDetails.mapViewport model
+                FacilityDetailsModel model _ ->
+                    AppFacilityDetails.mapViewport model
 
-        SearchModel model _ ->
-            AppSearch.mapViewport model
+                SearchModel model ->
+                    AppSearch.mapViewport model
 
 
 getSettings : MainModel -> Settings
@@ -286,27 +317,23 @@ getSettings mainModel =
         InitializedVR mapViewport settings ->
             settings
 
-        HomeModel model settings ->
-            settings
-
-        FacilityDetailsModel model settings _ ->
-            settings
-
-        SearchModel model settings ->
-            settings
+        Page _ common ->
+            common.settings
 
 
 getUserLocation : MainModel -> UserLocation.Model
 getUserLocation mainModel =
     case mainModel of
-        HomeModel model _ ->
-            AppHome.userLocation model
+        Page pagedModel _ ->
+            case pagedModel of
+                HomeModel model ->
+                    AppHome.userLocation model
 
-        FacilityDetailsModel model _ _ ->
-            AppFacilityDetails.userLocation model
+                FacilityDetailsModel model _ ->
+                    AppFacilityDetails.userLocation model
 
-        SearchModel model _ ->
-            AppSearch.userLocation model
+                SearchModel model ->
+                    AppSearch.userLocation model
 
         _ ->
             UserLocation.init
@@ -315,43 +342,45 @@ getUserLocation mainModel =
 mainView : MainModel -> Html MainMsg
 mainView mainModel =
     case mainModel of
-        HomeModel model settings ->
-            mapView HomeMsg <| AppHome.view model
+        Page pagedModel common ->
+            case pagedModel of
+                HomeModel pagedModel ->
+                    mapView HomeMsg common.settings common.menu <| AppHome.view pagedModel
 
-        FacilityDetailsModel model settings _ ->
-            mapView FacilityDetailsMsg <| AppFacilityDetails.view model
+                FacilityDetailsModel pagedModel _ ->
+                    mapView FacilityDetailsMsg common.settings common.menu <| AppFacilityDetails.view pagedModel
 
-        SearchModel model settings ->
-            mapView SearchMsg <| AppSearch.view model
+                SearchModel pagedModel ->
+                    mapView SearchMsg common.settings common.menu <| AppSearch.view pagedModel
 
-        InitializingVR _ _ _ ->
-            mapView identity { headerAttributes = [], content = [], toolbar = [], bottom = [], modal = [] }
+        InitializingVR _ _ settings ->
+            mapView identity settings Menu.Closed { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
 
-        InitializedVR _ _ ->
-            mapView identity { headerAttributes = [], content = [], toolbar = [], bottom = [], modal = [] }
+        InitializedVR _ settings ->
+            mapView identity settings Menu.Closed { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
 
 
-mapView : (a -> MainMsg) -> Shared.MapView a -> Html MainMsg
-mapView wmsg viewContent =
+mapView : (a -> MainMsg) -> Settings -> Menu.Model -> Shared.MapView a -> Html MainMsg
+mapView wmsg settings menuModel viewContent =
     Shared.layout <|
-        Html.App.map wmsg
-            (div
-                []
-                ([ Shared.controlStack
-                    ((div viewContent.headerAttributes [ Shared.header ]) :: viewContent.content)
-                 ]
-                    ++ (if List.isEmpty viewContent.bottom then
-                            []
-                        else
-                            [ div [ id "bottom-action", class "z-depth-1" ] viewContent.bottom ]
-                       )
-                    ++ [ div [ class "map-toolbar" ] viewContent.toolbar ]
-                    ++ (if List.isEmpty viewContent.modal then
-                            []
-                        else
-                            [ div [ id "modal", class "modal open" ] viewContent.modal ]
-                       )
+        div
+            []
+            ([ Shared.controlStack
+                ((div [ class viewContent.headerClass ] [ Shared.header [ Menu.anchor ToggleMenu ] ])
+                    :: (Menu.orContent settings menuModel (Shared.lmap wmsg viewContent.content))
                 )
+             ]
+                ++ (if List.isEmpty viewContent.bottom then
+                        []
+                    else
+                        [ div [ id "bottom-action", class "z-depth-1" ] (Shared.lmap wmsg viewContent.bottom) ]
+                   )
+                ++ [ div [ class "map-toolbar" ] (Shared.lmap wmsg viewContent.toolbar) ]
+                ++ (if List.isEmpty viewContent.modal then
+                        []
+                    else
+                        [ div [ id "modal", class "modal open" ] (Shared.lmap wmsg viewContent.modal) ]
+                   )
             )
 
 
