@@ -1,4 +1,4 @@
-module Menu exposing (Model(..), toggle, anchor, menuContent, orContent)
+module Menu exposing (Model(..), Item(..), toggle, anchor, menuContent, orContent)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -9,6 +9,11 @@ import Models exposing (Settings)
 type Model
     = Open
     | Closed
+
+
+type Item
+    = Map
+    | ApiDoc
 
 
 toggle model =
@@ -25,32 +30,42 @@ anchor msg =
     a [ href "#", Shared.onClick msg, class "right" ] [ icon "menu" ]
 
 
-menuContent : Settings -> Html a
-menuContent settings =
-    div [ class "menu" ]
-        [ ul []
-            [ li []
-                [ a [ href "/", class "active" ]
-                    [ icon "map"
-                    , text "Map"
+menuContent : Settings -> Item -> Html a
+menuContent settings active =
+    let
+        isActive item =
+            class <| Shared.classNames [ ( "active", active == item ) ]
+    in
+        div [ class "menu" ]
+            [ ul []
+                [ li []
+                    [ a [ href "/", isActive Map ]
+                        [ icon "map"
+                        , text "Map"
+                        ]
                     ]
-                ]
-            , hr [] []
-            , li []
-                [ a [ href <| "mailto:" ++ settings.contactEmail ]
-                    [ icon "email"
-                    , text "Contact"
+                , li []
+                    [ a [ href "/docs", isActive ApiDoc ]
+                        [ icon "code"
+                        , text "API Docs"
+                        ]
+                    ]
+                , hr [] []
+                , li []
+                    [ a [ href <| "mailto:" ++ settings.contactEmail ]
+                        [ icon "email"
+                        , text "Contact"
+                        ]
                     ]
                 ]
             ]
-        ]
 
 
-orContent : Settings -> Model -> List (Html a) -> List (Html a)
-orContent settings model content =
+orContent : Settings -> Item -> Model -> List (Html a) -> List (Html a)
+orContent settings active model content =
     case model of
         Closed ->
             content
 
         Open ->
-            [ menuContent settings ]
+            [ menuContent settings active ]

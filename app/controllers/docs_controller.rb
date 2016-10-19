@@ -1,7 +1,7 @@
-class DocsController < ActionController::Base
+class DocsController < ApplicationController
   protect_from_forgery with: :exception
 
   def index
-    render :index, layout: 'application'
+    render :index, layout: 'content'
   end
 end
