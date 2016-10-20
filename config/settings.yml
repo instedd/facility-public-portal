@@ -5,3 +5,7 @@ smtp_settings:
   port: 1025
   user_name: smtp
   password: smtp
+initial_position:
+  lat: 8.979787
+  lng: 38.758917
+user_position: fake

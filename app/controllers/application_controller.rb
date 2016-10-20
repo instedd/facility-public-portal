@@ -20,8 +20,8 @@ class ApplicationController < ActionController::Base
 
   def set_js_flags
     @js_flags = {
-      "initialPosition" => [8.979787, 38.758917],
-      "fakeUserPosition" => Rails.env.development? || !ENV['FAKE_USER_POSITION'].blank?,
+      "initialPosition" => [Settings.initial_position.lat, Settings.initial_position.lng],
+      "fakeUserPosition" => (params[:user_position] || Settings.user_position) == "fake",
       "contactEmail" => Settings.report_email_to
     }
   end
