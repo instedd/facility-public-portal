@@ -7,6 +7,7 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Models exposing (MapViewport)
 import String
+import Debounce
 
 
 type alias Config =
@@ -14,12 +15,14 @@ type alias Config =
 
 
 type alias Model =
-    { query : String, suggestions : Maybe (List Models.Suggestion) }
+    { query : String, suggestions : Maybe (List Models.Suggestion), d : Debounce.State }
 
 
 type PrivateMsg
     = Input String
     | ApiSug Api.SuggestionsMsg
+    | FetchSuggestions
+    | Deb (Debounce.Msg Msg)
 
 
 type Msg
@@ -42,12 +45,12 @@ empty =
 
 init : String -> Model
 init query =
-    { query = query, suggestions = Nothing }
+    { query = query, suggestions = Nothing, d = Debounce.init }
 
 
-searchSuggestions : Config -> String -> ( Model, Cmd Msg )
-searchSuggestions config query =
-    ( { query = query, suggestions = Nothing }, Api.getSuggestions (Private << ApiSug) (Just config.mapViewport.center) query )
+searchSuggestions : Config -> String -> Model -> ( Model, Cmd Msg )
+searchSuggestions config query model =
+    ( { model | query = query, suggestions = Nothing }, Api.getSuggestions (Private << ApiSug) (Just config.mapViewport.center) query )
 
 
 update : Config -> Msg -> Model -> ( Model, Cmd Msg )
@@ -59,7 +62,10 @@ update config msg model =
                     if query == "" then
                         ( empty, Cmd.none )
                     else
-                        searchSuggestions config query
+                        ( { model | query = query, suggestions = Nothing }, debCmd (Private FetchSuggestions) )
+
+                FetchSuggestions ->
+                    searchSuggestions config model.query model
 
                 ApiSug msg ->
                     case msg of
@@ -74,9 +80,21 @@ update config msg model =
                             -- TODO
                             ( model, Cmd.none )
 
+                Deb a ->
+                    Debounce.update cfg a model
+
         _ ->
             -- public events
             ( model, Cmd.none )
+
+
+cfg : Debounce.Config Model Msg
+cfg =
+    Debounce.config .d (\model s -> { model | d = s }) (Private << Deb) 200
+
+
+debCmd =
+    Debounce.debounceCmd cfg
 
 
 viewInput : Model -> Html Msg
