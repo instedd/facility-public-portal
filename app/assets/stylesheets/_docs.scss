@@ -1,7 +1,7 @@
 body.docs {
   background: $grey-background;
 
-  main {
+  main, footer {
     margin-left: 300px;
   }
 
@@ -93,8 +93,13 @@ body.docs {
     }
   }
 
+  footer .content {
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+
   @media all and(max-width: 992px) {
-    main {
+    main, footer {
       margin-left: 0;
     }
     .content {
