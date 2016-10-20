@@ -151,5 +151,5 @@ suggestion s =
                 [ icon "location_on"
                 , span [ class "title" ] [ text name ]
                 , p [ class "sub" ]
-                    [ text parentName ]
+                    [ text <| Maybe.withDefault "" parentName ]
                 ]

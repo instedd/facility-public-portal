@@ -63,7 +63,7 @@ location =
     decode Location
         |> required "id" int
         |> required "name" string
-        |> required "parent_name" string
+        |> optional "parent_name" (nullable string) Nothing
 
 
 latLng : Decoder LatLng

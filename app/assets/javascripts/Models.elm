@@ -65,7 +65,7 @@ type alias Service =
 type alias Location =
     { id : Int
     , name : String
-    , parentName : String
+    , parentName : Maybe String
     }
 
 
