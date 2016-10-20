@@ -394,14 +394,11 @@ facilityDetail cssClasses now facility =
                         |> Maybe.map (\date -> String.concat [ "Last updated ", Utils.timeAgo date date, " ago" ])
                         |> Maybe.withDefault ""
 
-        entry icon value =
-            value |> Maybe.withDefault "Unavailable" |> (,) icon
-
         contactInfo =
-            [ entry "local_post_office" facility.contactEmail
-            , entry "local_phone" facility.contactPhone
-              -- , entry "public" facility.url
-              -- , entry "directions" facility.address
+            [ contactEntry "local_post_office" "mailto:" facility.contactEmail
+            , contactEntry "local_phone" "tel:" facility.contactPhone
+              -- , contactEntry "public" ... facility.url
+              -- , contactEntry "directions" ... facility.address
             ]
     in
         div [ classList <| ( "facilityDetail", True ) :: cssClasses ]
@@ -429,24 +426,43 @@ facilityDetail cssClasses now facility =
             ]
 
 
-facilityContactDetails : List ( String, String ) -> Html Msg
-facilityContactDetails attributes =
+contactEntry : String -> String -> Maybe String -> Html a
+contactEntry iconName scheme value =
     let
-        item ( iconName, information ) =
-            li [] [ Shared.icon iconName, span [] [ text information ] ]
+        uriFriendly =
+            if scheme == "tel:" then
+                String.filter (\c -> c /= ' ' && c /= '-')
+            else
+                identity
+
+        uri =
+            Maybe.map (\v -> scheme ++ (uriFriendly v)) value
+
+        label =
+            span [] [ text <| Maybe.withDefault "Unavailable" value ]
     in
-        ul [] <|
-            (List.map item attributes
-                ++ [ li [ class "hide-on-large-only" ]
-                        [ Shared.icon "location_on"
-                        , a
-                            [ href "#"
-                            , Shared.onClick (Private ToggleMobileFocus)
-                            ]
-                            [ text "View on map" ]
-                        ]
-                   ]
-            )
+        case uri of
+            Nothing ->
+                li [] [ Shared.icon iconName, label ]
+
+            Just uri ->
+                li [] [ a [ href uri ] [ Shared.icon iconName, label ] ]
+
+
+viewOnMapEntry : Html Msg
+viewOnMapEntry =
+    li [ class "hide-on-large-only" ]
+        [ a
+            [ href "#"
+            , Shared.onClick (Private ToggleMobileFocus)
+            ]
+            [ Shared.icon "location_on", span [] [ text "View on map" ] ]
+        ]
+
+
+facilityContactDetails : List (Html Msg) -> Html Msg
+facilityContactDetails contactInfo =
+    ul [] (viewOnMapEntry :: contactInfo)
 
 
 facilityActions : Html Msg
