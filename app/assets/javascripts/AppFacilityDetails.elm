@@ -405,7 +405,7 @@ facilityDetail cssClasses now facility =
             [ div [ class "title" ]
                 [ span [ class "name" ]
                     [ text facility.name
-                    , span [ class "sub" ] [ text lastUpdatedSub ]
+                    , span [ class "sub" ] [ text facility.facilityType ]
                     ]
                 , i
                     [ class "material-icons right", Events.onClick Close ]
