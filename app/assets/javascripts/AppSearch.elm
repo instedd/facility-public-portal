@@ -11,10 +11,11 @@ import Shared exposing (MapView, icon, classNames)
 import Utils exposing (mapTCmd)
 import UserLocation
 import Suggest
+import Debounce
 
 
 type alias Model =
-    { suggest : Suggest.Model, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult, mobileFocusMap : Bool }
+    { suggest : Suggest.Model, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult, mobileFocusMap : Bool, d : Debounce.State }
 
 
 type PrivateMsg
@@ -25,6 +26,8 @@ type PrivateMsg
     | MapMsg Map.Msg
     | SuggestMsg Suggest.Msg
     | ToggleMobileFocus
+    | Deb (Debounce.Msg Msg)
+    | PerformSearch
 
 
 type Msg
@@ -43,7 +46,7 @@ restoreCmd =
 
 init : Settings -> SearchSpec -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init s query mapViewport userLocation =
-    { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing, mobileFocusMap = True }
+    { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing, mobileFocusMap = True, d = Debounce.init }
         ! [ Api.search (Private << ApiSearch) { query | latLng = Just mapViewport.center }
           , restoreCmd
           ]
@@ -55,14 +58,17 @@ update s msg model =
         Private msg ->
             case msg of
                 MapMsg (Map.MapViewportChanged mapViewport) ->
+                    ( { model | mapViewport = mapViewport }, debCmd (Private PerformSearch) )
+
+                PerformSearch ->
                     let
                         query =
                             model.query
 
                         loadMore =
-                            Api.search (Private << ApiSearchMore) { query | latLng = Just mapViewport.center }
+                            Api.search (Private << ApiSearchMore) { query | latLng = Just model.mapViewport.center }
                     in
-                        ( { model | mapViewport = mapViewport }, loadMore )
+                        ( model, loadMore )
 
                 MapMsg _ ->
                     ( model, Cmd.none )
@@ -127,9 +133,21 @@ update s msg model =
                 ToggleMobileFocus ->
                     ( { model | mobileFocusMap = (not model.mobileFocusMap) }, Cmd.none )
 
+                Deb a ->
+                    Debounce.update cfg a model
+
         _ ->
             -- public events
             ( model, Cmd.none )
+
+
+cfg : Debounce.Config Model Msg
+cfg =
+    Debounce.config .d (\model s -> { model | d = s }) (Private << Deb) 750
+
+
+debCmd =
+    Debounce.debounceCmd cfg
 
 
 wrapSuggest : Model -> ( Suggest.Model, Cmd Suggest.Msg ) -> ( Model, Cmd Msg )
