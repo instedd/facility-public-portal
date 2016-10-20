@@ -74,6 +74,7 @@ class Indexing
         location[:facility_count] += 1
 
         services = services_by_facility[f[:id]] || []
+        services.sort_by! { |s| s[:name] }
         services.each { |s| s[:facility_count] +=1 }
 
         priority = facility_types[f[:facility_type]][:priority] rescue 0
