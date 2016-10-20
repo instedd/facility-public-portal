@@ -3,6 +3,8 @@
 @import 'leaflet.markercluster';
 @import 'variables';
 @import 'docs';
+@import 'facility_details';
+@import 'modal';
 
 
 html, body, #container, #elm, #map {
@@ -297,155 +299,16 @@ input[type="checkbox"]:checked + label:before {
   }
 }
 
-.facilityDetail {
-  border-top: 1px solid $light-blue;
-
-  div {
-    padding: 10px 10px 8px 18px;
-  }
-
-  .detailSection + .detailSection {
-    border-top: 1px solid $grey3;
-  }
-
-  a {
-    color: $blue;
-    &:hover {
-      color: $light-blue;
-    }
-  }
-
-  .title {
-    display: flex;
-    align-items: center;
-
-    background: $blue;
-    color: white;
-    font-size: 20px;
-    padding-bottom: 8px;
-
-    .name {
-      flex: 1;
-
-      .sub {
-        display: block;
-        color: $grey2;
-        font-size: 10pt;
-      }
-    }
-
-    i {
-      cursor: default;
-      color: $grey2;
-    }
-  }
-
-  .content {
-    margin: 0;
-    padding: 0;
-    i { margin-right: 15px; }
-
-    .detailSection {
-      padding: 20px;
-      &.pic {
-        margin: 0;
-        padding: 0;
-        height: 217px;
-        text-align: center;
-        img {
-          height: 100%;
-        }
-      }
-      &.contact {
-        color: $blue;
-        font-size: 12pt;
-      }
-
-      ul {
-        margin: 0;
-        li {
-          display: flex;
-          align-items: center;
-          margin-bottom: 13px;
-        }
-        li:last-child {
-          margin-bottom: 0;
-        }
-      }
-
-      &.actions {
-        font-size: 12pt;
-        a {
-          color: $color_mountain_mist_approx;
-          text-transform: uppercase;
-          cursor: pointer;
-        }
-        i {
-          vertical-align: top;
-          bottom: 1px;
-          position: relative;
-        }
-      }
-    }
-  }
-
-  .noData {
-    padding-left: 0;
-    color: $color_mountain_mist_approx;
-  }
-
-  .services {
-    padding: 10px 18px 0 18px;
-    span {
-      text-transform: uppercase;
-      font-weight: bold;
-      font-size: 15.5px;
-      color: $color_mountain_mist_approx;
-    }
-    li {
-      margin-top: 8px;
-    }
-  }
-}
-
-.modal.open {
-  z-index: 1003;
-  display: block;
-  opacity: 1;
-  transform: scaleX(1);
-  top: 20%;
-  position: absolute;
-  margin: 0 auto;
-  max-height: 80%;
-  width: 400px;
-
-  .modal-content {
-    padding: 0;
-
-    .header {
-      padding: 24px;
-      background-color: $color_mountain_mist_approx;
-      color: white;
-      font-size: 20px;
-      i {
-        color: $grey3;
-        top: 4px;
-        position: relative;
-        cursor: pointer;
-      }
-    }
-
-    .body {
-      padding: 24px;
-      label {
-        color: black;
-      }
-    }
-  }
-}
-
 #bottom-action {
   display: none;
+}
+
+
+.leaflet-popup-content-wrapper {
+  border-radius: 3px;
+  font-size: 15px;
+  font-weight: bold;
+  font-family: 'Roboto', sans-serif;
 }
 
 // same media query as fitContent
@@ -504,12 +367,4 @@ input[type="checkbox"]:checked + label:before {
   .facilityDetail .title {
     height: 72px;
   }
-}
-
-
-.leaflet-popup-content-wrapper {
-  border-radius: 3px;
-  font-size: 15px;
-  font-weight: bold;
-  font-family: 'Roboto', sans-serif;
 }
