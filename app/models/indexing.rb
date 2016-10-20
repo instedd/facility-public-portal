@@ -83,6 +83,7 @@ class Indexing
           source_id: f[:id],
           contact_phone: f[:contact_phone] && f[:contact_phone].to_s,
           priority: priority,
+          name: f[:name].gsub(/\u00A0/,"").strip,
 
           position: {
             lat: f[:lat],
