@@ -345,7 +345,7 @@ mainView mainModel =
         Page pagedModel common ->
             let
                 withScale =
-                    prependToolbar (scaleControlView (Debug.log "scale" (mapViewport mainModel).scale))
+                    prependToolbar (scaleControlView (mapViewport mainModel).scale)
             in
                 case pagedModel of
                     HomeModel pagedModel ->
