@@ -352,9 +352,8 @@ input[type="checkbox"]:checked + label:before {
     }
   }
 
-  #bottom-action + .map-toolbar {
-    position: relative;
-    bottom: 45px;
+  #bottom-action + #map-toolbar {
+    bottom: 65px;
   }
 
   .nav-back {
