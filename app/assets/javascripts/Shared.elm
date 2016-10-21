@@ -7,6 +7,7 @@ import Html.Events as Events
 import Json.Decode
 import Models
 import String
+import I18n exposing (..)
 
 
 type alias LHtml a =
@@ -70,7 +71,7 @@ searchBar userInput submitMsg inputMsg trailing =
             [ Html.form [ action "#", method "GET", autocomplete False, Events.onSubmit submitMsg ]
                 [ input
                     [ type' "search"
-                    , placeholder "Search health facilities"
+                    , placeholder <| t SearchHealthFacility
                     , value userInput
                     , Events.onInput inputMsg
                     ]
