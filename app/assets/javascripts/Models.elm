@@ -7,7 +7,11 @@ import String
 
 
 type alias Settings =
-    { fakeLocation : Maybe LatLng, contactEmail : String }
+    { fakeLocation : Maybe LatLng
+    , contactEmail : String
+    , locale : String
+    , locales : List ( String, String )
+    }
 
 
 type Route

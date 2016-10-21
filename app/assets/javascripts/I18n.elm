@@ -5,6 +5,9 @@ import Native.I18n
 
 type TranslationId
     = SearchHealthFacility
+    | Map
+    | ApiDocs
+    | Contact
 
 
 t : TranslationId -> String

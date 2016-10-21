@@ -6,6 +6,11 @@
     <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <%= render 'shared/favicomatic' %>
     <%= csrf_meta_tags %>
+    <script type="text/javascript">
+      I18n = {};
+      I18n.defaultLocale = "<%= I18n.default_locale %>";
+      I18n.locale = "<%= I18n.locale %>";
+    </script>
     <%= javascript_include_tag "application", media: 'all' %>
     <%= stylesheet_link_tag "application", media: 'all' %>
   </head>

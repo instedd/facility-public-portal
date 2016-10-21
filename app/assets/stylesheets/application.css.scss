@@ -120,6 +120,17 @@ nav .nav-wrapper {
       height: 4px;
     }
   }
+
+  .locales {
+    margin-right: 8px;
+    a {
+      color: black;
+      margin: 0 3px;
+    }
+    a.active {
+      font-weight: bold;
+    }
+  }
 }
 
 #TopNav {
