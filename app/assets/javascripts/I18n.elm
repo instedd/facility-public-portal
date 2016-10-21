@@ -8,6 +8,7 @@ type TranslationId
     | Map
     | ApiDocs
     | Contact
+    | FacilitiesCount { count : Int }
 
 
 t : TranslationId -> String

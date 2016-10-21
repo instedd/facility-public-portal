@@ -24,3 +24,4 @@ en:
   map: Map
   api_docs: API Docs
   contact: Contact
+  facilities_count: "%{count} facilities"

@@ -3,3 +3,4 @@ es:
   map: Mapa
   api_docs: Documentación API
   contact: Contacto
+  facilities_count: "%{count} centros de salud"

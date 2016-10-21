@@ -8,6 +8,7 @@ import Html.Events exposing (onClick)
 import Models exposing (MapViewport)
 import String
 import Debounce
+import I18n exposing (..)
 
 
 type alias Config =
@@ -158,7 +159,7 @@ suggestion s =
                 [ icon "label"
                 , span [ class "title" ] [ text name ]
                 , p [ class "sub" ]
-                    [ text <| toString facilityCount ++ " facilities" ]
+                    [ text <| t (FacilitiesCount { count = facilityCount }) ]
                 ]
 
         Models.L { id, name, parentName } ->
