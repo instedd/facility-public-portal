@@ -102,3 +102,13 @@ checkbox htmlId label v msg =
         [ input [ type' "checkbox", id htmlId, checked v, onClick msg ] []
         , Html.label [ for htmlId ] [ text label ]
         ]
+
+
+modalWindow : LHtml a -> LHtml a -> LHtml a -> LHtml a
+modalWindow header body footer =
+    [ div [ class "modal-content" ]
+        [ div [ class "header" ] header
+        , div [ class "body" ] body ]
+    , div [ class "modal-footer" ] footer
+    ]
+

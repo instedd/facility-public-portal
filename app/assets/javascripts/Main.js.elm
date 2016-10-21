@@ -286,10 +286,10 @@ mainUrlUpdate result mainModel =
                                         if searchModel.query == searchSpec then
                                             ( searchModel, AppSearch.restoreCmd )
                                         else
-                                            AppSearch.init common.settings searchSpec viewport userLocation
+                                            AppSearch.init common.settings searchSpec viewport userLocation Nothing
 
                                     _ ->
-                                        AppSearch.init common.settings searchSpec viewport userLocation
+                                        AppSearch.init common.settings searchSpec viewport userLocation Nothing
 
                     NotFoundRoute ->
                         ( withNotice unknownRouteErrorNotice mainModel, navigateHome )

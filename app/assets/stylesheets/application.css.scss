@@ -97,6 +97,12 @@ nav .nav-wrapper {
   .preloader-wrapper {
     margin: 40px auto;
   }
+
+  .footer {
+    padding: 18px;
+    border-top: 1px solid $grey3;
+    a { color: $blue; }
+  }
 }
 
 #map-toolbar {

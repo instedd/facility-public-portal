@@ -15,7 +15,7 @@ import Debounce
 
 
 type alias Model =
-    { suggest : Suggest.Model, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult, mobileFocusMap : Bool, d : Debounce.State }
+    { suggest : Suggest.Model, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult, mobileFocusMap : Bool, d : Debounce.State, advancedSearch : Maybe AdvancedSearch }
 
 
 type PrivateMsg
@@ -28,6 +28,7 @@ type PrivateMsg
     | ToggleMobileFocus
     | Deb (Debounce.Msg Msg)
     | PerformSearch
+    | ToggleAdvancedSearch
 
 
 type Msg
@@ -40,14 +41,18 @@ type Msg
     | UnhandledError
 
 
+type alias AdvancedSearch =
+    { name: String, facilityType: String }
+
+
 restoreCmd : Cmd Msg
 restoreCmd =
     Cmd.batch [ Map.removeHighlightedFacilityMarker, Map.fitContentUsingPadding True ]
 
 
-init : Settings -> SearchSpec -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
-init s query mapViewport userLocation =
-    { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing, mobileFocusMap = True, d = Debounce.init }
+init : Settings -> SearchSpec -> MapViewport -> UserLocation.Model -> Maybe AdvancedSearch -> ( Model, Cmd Msg )
+init s query mapViewport userLocation advancedSearch =
+    { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing, mobileFocusMap = True, d = Debounce.init, advancedSearch = Nothing }
         ! [ Api.search (Private << ApiSearch) { query | latLng = Just mapViewport.center }
           , restoreCmd
           ]
@@ -135,6 +140,12 @@ update s msg model =
                 Deb a ->
                     Debounce.update cfg a model
 
+                ToggleAdvancedSearch ->
+                    if not (isAdvancedSearchOpen model) then
+                        ( { model | advancedSearch = Just { name = "", facilityType = "" } }, Cmd.none )
+                    else
+                        ( { model | advancedSearch = Nothing }, Cmd.none )
+
         _ ->
             -- public events
             ( model, Cmd.none )
@@ -168,6 +179,9 @@ view model =
 
         hideOnSuggestions =
             ( "hide", Suggest.hasSuggestionsToShow model.suggest )
+
+        content =
+            ( "content", True )
     in
         { headerClass = classNames [ hideOnMobileListingFocused ]
         , content =
@@ -176,10 +190,11 @@ view model =
                 [ mobileBackHeader ]
             , suggestionInput model
             , div
-                [ classList [ hideOnSuggestions, hideOnMobileMapFocused ] ]
+                [ classList [ hideOnSuggestions, hideOnMobileMapFocused, content ] ]
                 [ searchResults model ]
             ]
                 ++ suggestionItems model
+                ++ advancedSearchFooter
         , toolbar =
             [ userLocationView model ]
         , bottom =
@@ -187,7 +202,7 @@ view model =
                 [ classList [ hideOnMobileListingFocused ] ]
                 [ mobileFocusToggleView ]
             ]
-        , modal = []
+        , modal = advancedSearchWindow model
         }
 
 
@@ -228,6 +243,43 @@ mobileFocusToggleView =
         [ text "List results" ]
 
 
+advancedSearchFooter : List (Html Msg)
+advancedSearchFooter =
+    [ div
+        [ class "footer" ]
+        [ a [ href "#", Shared.onClick (Private ToggleAdvancedSearch) ] [ text "Advanced Search" ] ]
+    ]
+
+
+isAdvancedSearchOpen : Model -> Bool
+isAdvancedSearchOpen model =
+    case model.advancedSearch of
+        Nothing ->
+            False
+        _ ->
+            True
+
+
+advancedSearchWindow : Model -> List (Html Msg)
+advancedSearchWindow model =
+    if isAdvancedSearchOpen model then
+        Shared.modalWindow
+            [ text "Advanced Search"
+            , a [ href "#", class "right", Shared.onClick (Private ToggleAdvancedSearch) ] [ Shared.icon "close" ]
+            ]
+            [ Html.form [ action "#", method "GET" ]
+                [ text "Facility name"
+                , input [ type' "text" ] []
+                , text "Facility type"
+                , Html.select [] [ Html.option [] [ text "Medium Clinic" ]
+                                , Html.option [] [ text "Referral Hospital" ]
+                                , Html.option [] [ text "Health Post" ] ]
+                ]
+            ]
+            [ a [ href "#", class "btn-flat", Shared.onClick (Private ToggleAdvancedSearch) ] [ text "Search" ] ]
+    else
+        []
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
@@ -263,7 +315,7 @@ searchResults model =
                 Just results ->
                     List.map facilityRow results.items
     in
-        div [ class "collection results content" ] entries
+        div [ class "collection results" ] entries
 
 
 facilityRow : FacilitySummary -> Html Msg
