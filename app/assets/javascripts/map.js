@@ -6,8 +6,8 @@ $(document).ready(function() {
   FPP.mapSettings = {
     maxZoom: 18,
     minZoom: 7,
-    id: 'mapbox/streets-v9',
-    accessToken: 'pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ'
+    id: FPP.settings.mapboxId,
+    accessToken: FPP.settings.mapboxToken
   };
 
   FPP.commands = {

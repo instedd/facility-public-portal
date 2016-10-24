@@ -22,7 +22,9 @@ class ApplicationController < ActionController::Base
     @js_flags = {
       "initialPosition" => [Settings.initial_position.lat, Settings.initial_position.lng],
       "fakeUserPosition" => (params[:user_position] || Settings.user_position) == "fake",
-      "contactEmail" => Settings.report_email_to
+      "contactEmail" => Settings.report_email_to,
+      "mapboxId" => Settings.mapbox_id,
+      "mapboxToken" => Settings.mapbox_token,
     }
   end
 end
