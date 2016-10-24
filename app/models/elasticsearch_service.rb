@@ -50,6 +50,10 @@ class ElasticsearchService
     index_batch 'facility', facilities
   end
 
+  def index_facility_types(facility_types)
+    index_batch 'facility_type', facility_types
+  end
+
   def index_service(service)
     index_document 'service', service
   end
@@ -87,6 +91,10 @@ class ElasticsearchService
 
     if params[:s]
       search_body[:query][:bool][:must] << { match: { service_ids: params[:s] } }
+    end
+
+    if params[:t]
+      search_body[:query][:bool][:must] << { match: { facility_type_id: params[:t] } }
     end
 
     if params[:l]

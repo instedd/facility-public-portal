@@ -10,6 +10,7 @@ class Indexing
     @logger.level = Logger::INFO
 
     @last_facility_id = 0
+    @last_facility_type_id = 0
     @last_service_id = 0
     @last_location_id = 0
   end
@@ -64,8 +65,13 @@ class Indexing
       end
     end
 
+    facility_types = @dataset[:facility_types].map { |t|
+      t = t.to_h.symbolize_keys
+      t[:id] = (@last_facility_type_id += 1)
+      t
+    }.index_by { |type| type[:name] }
+
     logger.info "Indexing facilities"
-    facility_types = @dataset[:facility_types].map { |t| t.to_h.symbolize_keys }.index_by { |type| type[:name] }
 
     @dataset[:facilities].select { |f| validate_facility(f) }.each_slice(100) do |batch|
       index_entries = batch.map do |f|
@@ -77,13 +83,19 @@ class Indexing
         services.sort_by! { |s| s[:name] }
         services.each { |s| s[:facility_count] +=1 }
 
-        priority = facility_types[f[:facility_type]][:priority] rescue 0
+        type = facility_types[f[:facility_type]]
+
+        if !type
+          type = { id: (@last_facility_type_id += 1), name: f[:facility_type], priority: 0 }
+          facility_types[type[:name]] = type
+        end
 
         f.merge({
           id: @last_facility_id += 1,
           source_id: f[:id],
           contact_phone: f[:contact_phone] && f[:contact_phone].to_s,
-          priority: priority,
+          priority: type[:priority],
+          facility_type_id: type[:id],
           name: f[:name].gsub(/\u00A0/,"").strip,
 
           position: {
@@ -104,6 +116,9 @@ class Indexing
 
       @service.index_facility_batch(index_entries)
     end
+
+    logger.info "Indexing facility types"
+    @service.index_facility_types(facility_types.values) unless facility_types.empty?
 
     logger.info "Indexing services"
     services_by_id.values.each_slice(100) do |batch|

@@ -22,11 +22,11 @@ RSpec.describe ElasticsearchService do
                      },
                      {
                         id: "F2",
-                        name: "Abaferet Health Center",
+                        name: "Abaferet Hospital",
                         lat: 10.696144,
                         lng: 38.370941,
                         location_id: "L4",
-                        facility_type: "Health Center",
+                        facility_type: "Primary Hospital",
                         contact_name: "",
                         contact_email: nil,
                         contact_phone: nil,
@@ -48,7 +48,10 @@ RSpec.describe ElasticsearchService do
                      {facility_id: "F2", service_id: "S3"}
                    ],
 
-                   facility_types: [],
+                   facility_types: [
+                     { name: "Health Center", priority: 1 },
+                     { name: "Primary Hospital", priority: 2 },
+                   ],
 
                    locations: [
                      {id: "L1", name: "Ethiopia", parent_id: "-----------------"},
@@ -72,24 +75,31 @@ RSpec.describe ElasticsearchService do
     describe "by service" do
       it "works!" do
         search_assert({ s: 1 }, expected_names: ["1st Wetanibo Balchi"])
-        search_assert({ s: 2 }, expected_names: ["1st Wetanibo Balchi", "Abaferet Health Center"])
-        search_assert({ s: 3 }, expected_names: ["Abaferet Health Center"])
+        search_assert({ s: 2 }, expected_names: ["1st Wetanibo Balchi", "Abaferet Hospital"])
+        search_assert({ s: 3 }, expected_names: ["Abaferet Hospital"])
       end
     end
 
     describe "by administrative location" do
       it "works!" do
-        search_assert({ l: 1 }, expected_names: ["1st Wetanibo Balchi","Abaferet Health Center"])
-        search_assert({ l: 2 }, expected_names: ["1st Wetanibo Balchi","Abaferet Health Center"])
+        search_assert({ l: 1 }, expected_names: ["1st Wetanibo Balchi","Abaferet Hospital"])
+        search_assert({ l: 2 }, expected_names: ["1st Wetanibo Balchi","Abaferet Hospital"])
         search_assert({ l: 3 }, expected_names: "1st Wetanibo Balchi")
-        search_assert({ l: 4 }, expected_names: "Abaferet Health Center")
+        search_assert({ l: 4 }, expected_names: "Abaferet Hospital")
+      end
+    end
+
+    describe "by facility type" do
+      it "works!" do
+        search_assert({ t: 1 }, expected_names: ["1st Wetanibo Balchi"])
+        search_assert({ t: 2 }, expected_names: ["Abaferet Hospital"])
       end
     end
 
     describe "sorting by user location" do
       it "works!" do
-        search_assert({ lat: 8.959169, lng: 38.827452 }, expected_names: ["1st Wetanibo Balchi", "Abaferet Health Center"])
-        search_assert({ lat: 10.622245, lng: 38.646663 }, expected_names: ["Abaferet Health Center", "1st Wetanibo Balchi"])
+        search_assert({ lat: 8.959169, lng: 38.827452 }, expected_names: ["1st Wetanibo Balchi", "Abaferet Hospital"])
+        search_assert({ lat: 10.622245, lng: 38.646663 }, expected_names: ["Abaferet Hospital", "1st Wetanibo Balchi"])
       end
     end
   end
