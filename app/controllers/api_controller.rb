@@ -26,6 +26,10 @@ class ApiController < ActionController::Base
     render json: ElasticsearchService.instance.get_facility(id)
   end
 
+  def facility_types
+    render json: ElasticsearchService.instance.get_facility_types
+  end
+
   private
 
   def search_params

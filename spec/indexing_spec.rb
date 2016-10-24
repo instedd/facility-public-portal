@@ -142,9 +142,7 @@ RSpec.describe Indexing do
 
     describe "facility types" do
       it "indexes facility types in the facility_types table" do
-        dataset = {facilities: [
-                     {id: "F1", name: "FOO", lat: 10.696144, lng: 38.370941, location_id: "L1", facility_type: "Health Center"}
-                   ],
+        dataset = {facilities: [],
                    services: [],
                    facilities_services: [],
                    locations: [{id: "L1", name: "Ethiopia", parent_id: "-----------------"},],

@@ -17,7 +17,7 @@ module Helpers
 
   def index_dataset(dataset)
     dataset = dataset.map_values { |records| records.map(&:with_indifferent_access) }
-    process = Indexing.new(dataset, @service)
+    process = Indexing.new(dataset, elasticsearch_service)
     process.logger.level = :unknown
     process.run
 

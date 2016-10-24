@@ -5,6 +5,7 @@ Rails.application.routes.draw do
     get 'search', to: 'api#search'
     get 'suggest', to: 'api#suggest'
     get 'facilities/:id', to: 'api#get_facility'
+    get 'facility_types', to: 'api#facility_types'
   end
 
   post 'facilities/:id/report', to: 'application#report_facility'

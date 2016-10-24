@@ -129,6 +129,11 @@ class ElasticsearchService
     end
   end
 
+  def get_facility_types
+    result = client.search({index: @index_name, type: 'facility_type'})
+    result["hits"]["hits"].map { |h| h["_source"] }
+  end
+
   def get_facility(id)
     result = client.search({
       index: @index_name,
@@ -188,6 +193,10 @@ class ElasticsearchService
   def self.instance
     @@instance ||= self.new(ENV['ELASTICSEARCH_URL'] || 'localhost',
                             ENV['ELASTICSEARCH_INDEX'] || 'fpp')
+  end
+
+  def self.instance=(instance)
+    @@instance = instance
   end
 
   def self.client
