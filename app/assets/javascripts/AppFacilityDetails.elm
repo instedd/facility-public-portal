@@ -17,6 +17,7 @@ import UserLocation
 import Http
 import Json.Decode as Decode
 import Json.Encode exposing (..)
+import I18n exposing (..)
 
 
 type Model
@@ -169,7 +170,7 @@ reportWindow model =
     if isReportWindowOpen model then
         [ div [ class "modal-content" ]
             [ div [ class "header" ]
-                [ text "Report an issue"
+                [ text <| t ReportAnIssue
                 , a [ href "#", class "right", Shared.onClick (Private ToggleFacilityReport) ] [ Shared.icon "close" ]
                 ]
             , div [ class "body" ]
@@ -470,5 +471,5 @@ facilityActions =
     a
         [ href "#", Shared.onClick (Private ToggleFacilityReport) ]
         [ Shared.icon "report"
-        , text "Report an issue"
+        , text <| t ReportAnIssue
         ]

@@ -9,6 +9,7 @@ type TranslationId
     | ApiDocs
     | Contact
     | FacilitiesCount { count : Int }
+    | ReportAnIssue
 
 
 t : TranslationId -> String

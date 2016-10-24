@@ -4,3 +4,4 @@ es:
   api_docs: Documentación API
   contact: Contacto
   facilities_count: "%{count} centros de salud"
+  report_an_issue: Reportar un problema
