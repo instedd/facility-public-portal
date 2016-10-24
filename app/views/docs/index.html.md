@@ -9,7 +9,7 @@ The suggest endpoint allows discovery in a human friendly manner. A response wil
 
 No paging is supported in this endpoint.
 
-_`GET /api/suggest`_
+*`GET /api/suggest`*
 
 ### Parameters
 
@@ -60,23 +60,25 @@ $ curl 'vitalwave.instedd.org/api/suggest?q=ur&lat=8.979780521754858&lng=38.7589
 The search endpoint allows filtering the facilities based on certain criteria:
 
 * full text search
-* location based search
 * services based search
+* location based search
+* type based search
 
 If provided, results will be returned ordered by a geolocation coordinate.
 
 Paging is supported to interate the whole results.
 
 
-_`GET /api/search`_
+*`GET /api/search`*
 
 ### Parameters
 
 | Name | Type | Description |
 |---|---|---|
 | q | string | Text to be searched. |
-| s | integer | service id that must be handle by the informed facility. |
+| s | integer | service id that must be handled by the informed facility. |
 | l | integer | location id where the informed facility should belong to. |
+| t | integer | facility type id of the informed facility. |
 | lat | float | Lat/Lng coordinates used to prioritize the results.  |
 | lng | float | Lat/Lng coordinates used to prioritize the results.  |
 | size | integer | amount of facilities to be informed per page (default 50) |
@@ -162,7 +164,7 @@ Items in search result contains fields that describe the facility in the same wa
 
 Given an `id` of a facility the details endpoint allows getting all the known information of a facility.
 
-_`GET /api/facilities/:id`_
+*`GET /api/facilities/:id`*
 
 ### Sample
 
@@ -192,4 +194,37 @@ $ curl 'vitalwave.instedd.org/api/facilities/85'
     /* ... stripped content ... */
   ],
 }
+```
+
+## Faciliy Types
+
+The facility types endpoint allows listing the types of all facilities.
+
+*`GET /api/facility_types`*
+
+### Sample
+```
+$ curl 'vitalwave.instedd.org/api/facility_types'
+[
+  {
+    "id": 1,
+    "name": "Health Center",
+    "priority": 1
+  },
+  {
+    "id": 2,
+    "name": "Primary Hospital",
+    "priority": 2
+  },
+  {
+    "id": 3,
+    "name": "General Hospital",
+    "priority": 3
+  },
+  {
+    "id": 4,
+    "name": "Referral Hospital",
+    "priority": 4
+  }
+]
 ```

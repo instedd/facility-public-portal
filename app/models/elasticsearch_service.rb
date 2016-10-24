@@ -130,7 +130,7 @@ class ElasticsearchService
   end
 
   def get_facility_types
-    result = client.search({index: @index_name, type: 'facility_type'})
+    result = client.search({index: @index_name, type: 'facility_type', body: { sort: { id: { order: "asc" } } }})
     result["hits"]["hits"].map { |h| h["_source"] }
   end
 
