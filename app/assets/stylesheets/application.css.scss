@@ -186,10 +186,6 @@ nav .nav-wrapper {
   }
 }
 
-.spinner-blue-only {
-  border-color: $blue;
-}
-
 .location {
   #location-spinner {
     line-height: 48px;
@@ -268,10 +264,6 @@ nav .nav-wrapper {
       }
     }
   }
-}
-
-.btn-flat {
-  color: $blue;
 }
 
 input[type="checkbox"]:checked + label:before {

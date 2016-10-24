@@ -180,6 +180,9 @@ view model =
         hideOnSuggestions =
             ( "hide", Suggest.hasSuggestionsToShow model.suggest )
 
+        showOnSuggestions =
+            ( "hide", not (Suggest.hasSuggestionsToShow model.suggest) )
+
         content =
             ( "content", True )
     in
@@ -194,7 +197,7 @@ view model =
                 [ searchResults model ]
             ]
                 ++ suggestionItems model
-                ++ advancedSearchFooter
+                ++ [ div [ classList [ showOnSuggestions ] ] [ advancedSearchFooter ] ]
         , toolbar =
             [ userLocationView model ]
         , bottom =
@@ -229,6 +232,7 @@ suggestionInput model =
 
 suggestionItems model =
     (List.map (Html.App.map (Private << SuggestMsg)) (Suggest.viewSuggestions model.suggest))
+    --++ advancedSearchFooter
 
 
 userLocationView model =
@@ -243,12 +247,11 @@ mobileFocusToggleView =
         [ text "List results" ]
 
 
-advancedSearchFooter : List (Html Msg)
 advancedSearchFooter =
-    [ div
+    div
         [ class "footer" ]
         [ a [ href "#", Shared.onClick (Private ToggleAdvancedSearch) ] [ text "Advanced Search" ] ]
-    ]
+
 
 
 isAdvancedSearchOpen : Model -> Bool
@@ -268,13 +271,13 @@ advancedSearchWindow model =
             , a [ href "#", class "right", Shared.onClick (Private ToggleAdvancedSearch) ] [ Shared.icon "close" ]
             ]
             [ Html.form [ action "#", method "GET" ]
-                [ text "Facility name"
-                , input [ type' "text" ] []
-                , text "Facility type"
-                , Html.select [] [ Html.option [] [ text "Medium Clinic" ]
+                [ div [ class "modal-label" ] [ text "Facility name" ]
+                , div [ class "modal-input" ] [ input [ type' "text" ] [] ]
+                , div [ class "modal-label" ] [ text "Facility type" ]
+                , div [ class "modal-input" ] [ Html.select [] [ Html.option [] [ text "Medium Clinic" ]
                                 , Html.option [] [ text "Referral Hospital" ]
                                 , Html.option [] [ text "Health Post" ] ]
-                ]
+                ] ]
             ]
             [ a [ href "#", class "btn-flat", Shared.onClick (Private ToggleAdvancedSearch) ] [ text "Search" ] ]
     else

@@ -34,6 +34,19 @@
       label {
         color: black;
       }
+
+      .modal-input {
+        width: 60%;
+        display: inline-block;
+      }
+      .modal-label {
+        width: 40%;
+        float: left;
+        display: inline-block;
+        height: 3rem;
+        padding: 13px 0;
+        color: $color_mountain_mist_approx;
+      }
     }
   }
 }
