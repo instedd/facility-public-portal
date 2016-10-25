@@ -1,4 +1,4 @@
-module Routing exposing (parser, navigate, routeFromResult)
+module Routing exposing (parser, navigate, routeFromResult, routeToPath)
 
 import Dict exposing (Dict)
 import Http
@@ -17,22 +17,23 @@ parser =
 
 navigate : Route -> Cmd msg
 navigate route =
-    let
-        url =
-            case route of
-                RootRoute ->
-                    "/"
+    Navigation.newUrl <| routeToPath route
 
-                SearchRoute params ->
-                    path "/search" params
 
-                FacilityRoute id ->
-                    "/facilities/" ++ (toString id)
+routeToPath : Route -> String
+routeToPath route =
+    case route of
+        RootRoute ->
+            "/"
 
-                NotFoundRoute ->
-                    "/not-found"
-    in
-        Navigation.newUrl url
+        SearchRoute params ->
+            path "/search" params
+
+        FacilityRoute id ->
+            "/facilities/" ++ (toString id)
+
+        NotFoundRoute ->
+            "/not-found"
 
 
 routeFromResult : Result String Route -> Route
@@ -65,36 +66,6 @@ matchers =
             , format makeSearchRoute (s "search")
             , format makeFacilityRoute (s "facilities" </> int)
             ]
-
-
-parseQuery : String -> Dict String String
-parseQuery query =
-    query
-        -- "?a=foo&b=bar&baz"
-        |>
-            String.dropLeft 1
-        -- "a=foo&b=bar&baz"
-        |>
-            String.split "&"
-        -- ["a=foo","b=bar","baz"]
-        |>
-            List.map parseParam
-        -- [[("a", "foo")], [("b", "bar")], []]
-        |>
-            List.concat
-        -- [("a", "foo"), ("b", "bar")]
-        |>
-            Dict.fromList
-
-
-parseParam : String -> List ( String, String )
-parseParam s =
-    case String.split "=" s of
-        k :: v :: [] ->
-            [ ( k, Http.uriDecode v ) ]
-
-        _ ->
-            []
 
 
 locationParser : Navigation.Location -> Result String Route

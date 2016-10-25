@@ -46,7 +46,7 @@ type MainModel
 
 
 type alias CommonPageState =
-    { settings : Settings, menu : Menu.Model, notice : Maybe Notice }
+    { settings : Settings, menu : Menu.Model, route : Route, notice : Maybe Notice }
 
 
 type PagedModel
@@ -249,10 +249,13 @@ mainUrlUpdate result mainModel =
                 userLocation =
                     (getUserLocation mainModel)
 
+                route =
+                    Routing.routeFromResult result
+
                 common =
-                    { settings = getSettings mainModel, menu = Menu.Closed, notice = notice mainModel }
+                    { settings = getSettings mainModel, menu = Menu.Closed, route = route, notice = notice mainModel }
             in
-                case Routing.routeFromResult result of
+                case route of
                     RootRoute ->
                         updatePagedModel HomeModel common <|
                             mapCmd HomeMsg <|
@@ -360,7 +363,7 @@ mainView mainModel =
         Page pagedModel common ->
             let
                 withLocale =
-                    prependToolbar (localeControlView common.settings)
+                    prependToolbar (localeControlView common.settings common.route)
 
                 withScale =
                     prependToolbar (scaleControlView (mapViewport mainModel).scale)
@@ -398,11 +401,14 @@ scaleControlView scale =
         ]
 
 
-localeControlView : Settings -> Html a
-localeControlView settings =
+localeControlView : Settings -> Route -> Html a
+localeControlView settings route =
     let
+        localeUrl lang =
+            Utils.setQuery ( "locale", lang ) (Routing.routeToPath route)
+
         localeAnchor ( key, name ) =
-            Html.a [ Html.Attributes.href ("/?locale=" ++ key), classList [ ( "active", key == settings.locale ) ] ]
+            Html.a [ Html.Attributes.href (localeUrl key), classList [ ( "active", key == settings.locale ) ] ]
                 [ Html.text name ]
     in
         div [ class "locales" ] <|
