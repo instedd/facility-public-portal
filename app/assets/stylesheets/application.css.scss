@@ -5,6 +5,7 @@
 @import 'docs';
 @import 'facility_details';
 @import 'modal';
+@import 'notice';
 
 
 html, body, #container, #elm, #map {
@@ -316,17 +317,6 @@ input[type="checkbox"]:checked + label:before {
   font-size: 15px;
   font-weight: bold;
   font-family: 'Roboto', sans-serif;
-}
-
-#notice {
-  position: absolute;
-  right: 12px;
-  top: 24px;
-  z-index: 4;
-
-  .card-action {
-    a { color: $blue; }
-  }
 }
 
 // same media query as fitContent
