@@ -153,93 +153,83 @@ mainUpdate msg mainModel =
                             Debug.crash "map is not initialized yet"
 
                 Page pagedModel common ->
-                    case pagedModel of
-                        HomeModel homeModel ->
+                    case ( pagedModel, msg ) of
+                        ( HomeModel homeModel, HomeMsg (AppHome.UnhandledError) ) ->
+                            displayErrorNotice pagedModel common
+
+                        ( HomeModel homeModel, HomeMsg msg ) ->
+                            updatePagedModel HomeModel common <|
+                                case msg of
+                                    AppHome.UnhandledError ->
+                                        -- handled above
+                                        ( homeModel, Cmd.none )
+
+                                    AppHome.FacilityClicked facilityId ->
+                                        ( homeModel, navigateFacility facilityId )
+
+                                    AppHome.ServiceClicked serviceId ->
+                                        ( homeModel, navigateSearchService serviceId )
+
+                                    AppHome.LocationClicked locationId ->
+                                        ( homeModel, navigateSearchLocation locationId )
+
+                                    AppHome.Search q ->
+                                        ( homeModel, navigateSearchQuery q )
+
+                                    AppHome.Private _ ->
+                                        mapCmd HomeMsg <| AppHome.update common.settings msg homeModel
+
+                        ( FacilityDetailsModel facilityModel context, FacilityDetailsMsg msg ) ->
                             case msg of
-                                HomeMsg (AppHome.UnhandledError) ->
+                                AppFacilityDetails.UnhandledError ->
                                     displayErrorNotice pagedModel common
 
-                                HomeMsg msg ->
-                                    updatePagedModel HomeModel common <|
-                                        case msg of
-                                            AppHome.UnhandledError ->
-                                                ( homeModel, Cmd.none )
-
-                                            AppHome.FacilityClicked facilityId ->
-                                                ( homeModel, navigateFacility facilityId )
-
-                                            AppHome.ServiceClicked serviceId ->
-                                                ( homeModel, navigateSearchService serviceId )
-
-                                            AppHome.LocationClicked locationId ->
-                                                ( homeModel, navigateSearchLocation locationId )
-
-                                            AppHome.Search q ->
-                                                ( homeModel, navigateSearchQuery q )
-
-                                            AppHome.Private _ ->
-                                                mapCmd HomeMsg <| AppHome.update common.settings msg homeModel
-
-                                _ ->
-                                    Debug.crash "unexpected message"
-
-                        FacilityDetailsModel facilityModel context ->
-                            case msg of
-                                FacilityDetailsMsg msg ->
-                                    case msg of
-                                        AppFacilityDetails.UnhandledError ->
-                                            displayErrorNotice pagedModel common
-
-                                        AppFacilityDetails.Close ->
-                                            ( mainModel
-                                            , case context of
-                                                FromSearch searchModel ->
-                                                    navigateSearch searchModel.query
-
-                                                _ ->
-                                                    navigateHome
-                                            )
-
-                                        AppFacilityDetails.FacilityClicked facilityId ->
-                                            ( Page (FacilityDetailsModel facilityModel context) common, navigateFacility facilityId )
+                                AppFacilityDetails.Close ->
+                                    ( mainModel
+                                    , case context of
+                                        FromSearch searchModel ->
+                                            navigateSearch searchModel.query
 
                                         _ ->
-                                            mapTCmd
-                                                (\m -> Page (FacilityDetailsModel m context) common)
-                                                FacilityDetailsMsg
-                                                (AppFacilityDetails.update common.settings msg facilityModel)
+                                            navigateHome
+                                    )
+
+                                AppFacilityDetails.FacilityClicked facilityId ->
+                                    ( Page (FacilityDetailsModel facilityModel context) common, navigateFacility facilityId )
 
                                 _ ->
-                                    Debug.crash "unexpected message"
+                                    mapTCmd
+                                        (\m -> Page (FacilityDetailsModel m context) common)
+                                        FacilityDetailsMsg
+                                        (AppFacilityDetails.update common.settings msg facilityModel)
 
-                        SearchModel searchModel ->
-                            case msg of
-                                SearchMsg (AppSearch.UnhandledError) ->
-                                    displayErrorNotice pagedModel common
+                        ( SearchModel _, SearchMsg (AppSearch.UnhandledError) ) ->
+                            displayErrorNotice pagedModel common
 
-                                SearchMsg msg ->
-                                    updatePagedModel SearchModel common <|
-                                        case msg of
-                                            AppSearch.Search s ->
-                                                ( searchModel, navigateSearch s )
+                        ( SearchModel searchModel, SearchMsg msg ) ->
+                            updatePagedModel SearchModel common <|
+                                case msg of
+                                    AppSearch.Search s ->
+                                        ( searchModel, navigateSearch s )
 
-                                            AppSearch.FacilityClicked facilityId ->
-                                                ( searchModel, navigateFacility facilityId )
+                                    AppSearch.FacilityClicked facilityId ->
+                                        ( searchModel, navigateFacility facilityId )
 
-                                            AppSearch.ServiceClicked serviceId ->
-                                                ( searchModel, navigateSearchService serviceId )
+                                    AppSearch.ServiceClicked serviceId ->
+                                        ( searchModel, navigateSearchService serviceId )
 
-                                            AppSearch.LocationClicked locationId ->
-                                                ( searchModel, navigateSearchLocation locationId )
+                                    AppSearch.LocationClicked locationId ->
+                                        ( searchModel, navigateSearchLocation locationId )
 
-                                            AppSearch.ClearSearch ->
-                                                ( searchModel, navigateHome )
+                                    AppSearch.ClearSearch ->
+                                        ( searchModel, navigateHome )
 
-                                            _ ->
-                                                mapCmd SearchMsg <| AppSearch.update common.settings msg searchModel
+                                    _ ->
+                                        mapCmd SearchMsg <| AppSearch.update common.settings msg searchModel
 
-                                _ ->
-                                    Debug.crash "unexpected message"
+                        _ ->
+                            -- Ignore out of order messages generated by pages other than the current one.
+                            ( mainModel, Cmd.none )
 
                 _ ->
                     ( mainModel, Cmd.none )
