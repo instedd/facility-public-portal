@@ -1,0 +1,8 @@
+am:
+  search_health_facility: የፍለጋ የጤና ተቋማት
+  map: ካርታ
+  api_docs: የኤ ፒ አይ ሰነዶች
+  contact: እውቂያ
+  services: አገልግሎቶች
+  facilities_count: "%{count} መገልገያዎች"
+  report_an_issue: ችግር ሪፖርት አድርግ
