@@ -24,5 +24,6 @@ en:
   map: Map
   api_docs: API Docs
   contact: Contact
+  services: Services
   facilities_count: "%{count} facilities"
   report_an_issue: Report an issue

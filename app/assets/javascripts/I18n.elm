@@ -7,6 +7,7 @@ type TranslationId
     = SearchHealthFacility
     | Map
     | ApiDocs
+    | Services
     | Contact
     | FacilitiesCount { count : Int }
     | ReportAnIssue
