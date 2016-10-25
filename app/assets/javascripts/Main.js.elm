@@ -9,9 +9,9 @@ import AppHome
 import AppSearch
 import AppFacilityDetails
 import UserLocation
-import Html exposing (Html, div, span)
-import Html.Attributes exposing (id, class, style)
-import Utils exposing (mapFst, mapSnd, mapTCmd)
+import Html exposing (Html, div, span, p, text, a)
+import Html.Attributes exposing (id, class, style, href, attribute)
+import Utils exposing (mapFst, mapSnd, mapTCmd, selectList)
 import Menu
 
 
@@ -37,7 +37,7 @@ type MainModel
     = -- pending map to be initialized from flag
       InitializingVR (Result String Route) LatLng Settings
       -- map initialized pending to determine which view/route to load
-    | InitializedVR MapViewport Settings
+    | InitializedVR MapViewport Settings (Maybe Notice)
     | Page PagedModel CommonPageState
 
 
@@ -68,7 +68,7 @@ type FacilityDetailsContext
 
 
 type alias Notice =
-    String
+    { message : String, refresh : Bool }
 
 
 init : Flags -> Result String Route -> ( MainModel, Cmd MainMsg )
@@ -99,7 +99,7 @@ subscriptions model =
         InitializingVR _ _ _ ->
             Map.mapViewportChanged MapViewportChangedVR
 
-        InitializedVR _ _ ->
+        InitializedVR _ _ _ ->
             Sub.none
 
         Page pagedModel _ ->
@@ -145,7 +145,7 @@ mainUpdate msg mainModel =
                 InitializingVR route _ settings ->
                     case msg of
                         MapViewportChangedVR mapViewport ->
-                            (InitializedVR mapViewport settings)
+                            (InitializedVR mapViewport settings Nothing)
                                 ! [ Routing.navigate (Routing.routeFromResult route) ]
 
                         _ ->
@@ -155,7 +155,7 @@ mainUpdate msg mainModel =
                 Page pagedModel common ->
                     case ( pagedModel, msg ) of
                         ( HomeModel homeModel, HomeMsg (AppHome.UnhandledError) ) ->
-                            withErrorNotice pagedModel common
+                            ( withGenericNotice mainModel, Cmd.none )
 
                         ( HomeModel homeModel, HomeMsg msg ) ->
                             updatePagedModel HomeModel common <|
@@ -182,7 +182,7 @@ mainUpdate msg mainModel =
                         ( FacilityDetailsModel facilityModel context, FacilityDetailsMsg msg ) ->
                             case msg of
                                 AppFacilityDetails.UnhandledError ->
-                                    withErrorNotice pagedModel common
+                                    ( withGenericNotice mainModel, Cmd.none )
 
                                 AppFacilityDetails.Close ->
                                     ( mainModel
@@ -204,7 +204,7 @@ mainUpdate msg mainModel =
                                         (AppFacilityDetails.update common.settings msg facilityModel)
 
                         ( SearchModel _, SearchMsg (AppSearch.UnhandledError) ) ->
-                            withErrorNotice pagedModel common
+                            ( withGenericNotice mainModel, Cmd.none )
 
                         ( SearchModel searchModel, SearchMsg msg ) ->
                             updatePagedModel SearchModel common <|
@@ -250,7 +250,7 @@ mainUrlUpdate result mainModel =
                     (getUserLocation mainModel)
 
                 common =
-                    { settings = getSettings mainModel, menu = Menu.Closed, notice = Nothing }
+                    { settings = getSettings mainModel, menu = Menu.Closed, notice = notice mainModel }
             in
                 case Routing.routeFromResult result of
                     RootRoute ->
@@ -289,7 +289,7 @@ mainUrlUpdate result mainModel =
                                         AppSearch.init common.settings searchSpec viewport userLocation
 
                     NotFoundRoute ->
-                        ( mainModel, navigateHome )
+                        ( withNotice unknownRouteErrorNotice mainModel, navigateHome )
 
 
 updatePagedModel : (a -> PagedModel) -> CommonPageState -> ( a, Cmd MainMsg ) -> ( MainModel, Cmd MainMsg )
@@ -308,7 +308,7 @@ mapViewport mainModel =
         InitializingVR _ _ _ ->
             Debug.crash "mapViewport should not be called before map is initialized"
 
-        InitializedVR mapViewport _ ->
+        InitializedVR mapViewport _ _ ->
             mapViewport
 
         Page pagedModel _ ->
@@ -329,7 +329,7 @@ getSettings mainModel =
         InitializingVR _ _ settings ->
             settings
 
-        InitializedVR mapViewport settings ->
+        InitializedVR mapViewport settings _ ->
             settings
 
         Page _ common ->
@@ -375,8 +375,8 @@ mainView mainModel =
         InitializingVR _ _ settings ->
             mapView identity settings Menu.Closed Nothing { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
 
-        InitializedVR _ settings ->
-            mapView identity settings Menu.Closed Nothing { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
+        InitializedVR _ settings notice ->
+            mapView identity settings Menu.Closed notice { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
 
 
 prependToolbar : Html a -> Shared.MapView a -> Shared.MapView a
@@ -414,10 +414,25 @@ mapView wmsg settings menuModel notice viewContent =
                         [ div [ id "modal", class "modal open" ] (Shared.lmap wmsg viewContent.modal) ]
                    )
                 ++ (notice
-                        |> Maybe.map (\msg -> [ Shared.notice msg DismissNotice ])
+                        |> Maybe.map (\msg -> [ noticePopup msg DismissNotice ])
                         |> Maybe.withDefault []
                    )
             )
+
+
+noticePopup : Notice -> msg -> Html msg
+noticePopup notice dismissMsg =
+    div [ id "notice", class "card" ]
+        [ div [ class "card-content" ]
+            [ p [] [ text notice.message ]
+            ]
+        , div [ class "card-action" ]
+            (selectList
+                [ ( a [ href "#", attribute "onClick" "event.preventDefault(); window.location.reload(true)" ] [ text "Refresh" ], notice.refresh )
+                , ( a [ href "#", Shared.onClick dismissMsg ] [ text "Dismiss" ], True )
+                ]
+            )
+        ]
 
 
 navigateHome : Cmd MainMsg
@@ -454,5 +469,37 @@ navigateBack =
     Navigation.back 1
 
 
-withErrorNotice pagedModel common =
-    ( Page pagedModel { common | notice = Just "Something went wrong. You may want to refresh the application." }, Cmd.none )
+notice : MainModel -> Maybe Notice
+notice mainModel =
+    case mainModel of
+        InitializedVR _ _ notice ->
+            notice
+
+        Page _ common ->
+            common.notice
+
+        InitializingVR _ _ _ ->
+            Nothing
+
+
+unknownRouteErrorNotice : Notice
+unknownRouteErrorNotice =
+    { message = "The requested URL does not exist.", refresh = False }
+
+
+withGenericNotice : MainModel -> MainModel
+withGenericNotice mainModel =
+    withNotice { message = "Something went wrong. You may want to refresh the application.", refresh = True } mainModel
+
+
+withNotice : Notice -> MainModel -> MainModel
+withNotice notice mainModel =
+    case mainModel of
+        InitializedVR mapViewport settings _ ->
+            InitializedVR mapViewport settings (Just notice)
+
+        Page pagedModel common ->
+            Page pagedModel { common | notice = Just notice }
+
+        InitializingVR _ _ _ ->
+            mainModel

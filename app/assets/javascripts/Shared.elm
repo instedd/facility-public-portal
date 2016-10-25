@@ -81,19 +81,6 @@ searchBar userInput submitMsg inputMsg trailing =
         ]
 
 
-notice : String -> msg -> Html msg
-notice msg dismissMsg =
-    div [ id "notice", class "card" ]
-        [ div [ class "card-content" ]
-            [ p [] [ text msg ]
-            ]
-        , div [ class "card-action" ]
-            [ a [ href "#", attribute "onClick" "event.preventDefault(); window.location.reload(true)" ] [ text "Refresh" ]
-            , a [ href "#", onClick dismissMsg ] [ text "Dismiss" ]
-            ]
-        ]
-
-
 icon : String -> Html a
 icon name =
     i [ class "material-icons" ] [ text name ]
