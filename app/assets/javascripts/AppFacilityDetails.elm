@@ -37,9 +37,9 @@ type PrivateMsg
 type Msg
     = Close
     | FacilityClicked Int
-    | UnhandledError
     | Private PrivateMsg
     | FacilityReportMsg FacilityReportResult
+    | UnhandledError
 
 
 type alias FacilityReport =

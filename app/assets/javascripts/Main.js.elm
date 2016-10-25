@@ -156,9 +156,15 @@ mainUpdate msg mainModel =
                     case pagedModel of
                         HomeModel homeModel ->
                             case msg of
+                                HomeMsg (AppHome.UnhandledError) ->
+                                    displayErrorNotice pagedModel common
+
                                 HomeMsg msg ->
                                     updatePagedModel HomeModel common <|
                                         case msg of
+                                            AppHome.UnhandledError ->
+                                                ( homeModel, Cmd.none )
+
                                             AppHome.FacilityClicked facilityId ->
                                                 ( homeModel, navigateFacility facilityId )
 
@@ -182,7 +188,7 @@ mainUpdate msg mainModel =
                                 FacilityDetailsMsg msg ->
                                     case msg of
                                         AppFacilityDetails.UnhandledError ->
-                                            ( Page pagedModel { common | notice = Just genericErrorMessage }, Cmd.none )
+                                            displayErrorNotice pagedModel common
 
                                         AppFacilityDetails.Close ->
                                             ( mainModel
@@ -455,5 +461,5 @@ navigateBack =
     Navigation.back 1
 
 
-genericErrorMessage =
-    "Something went wrong. You may want to refresh the applicaton."
+displayErrorNotice pagedModel common =
+    ( Page pagedModel { common | notice = Just "Something went wrong. You may want to refresh the application." }, Cmd.none )
