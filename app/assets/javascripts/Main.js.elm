@@ -214,6 +214,9 @@ mainUpdate msg mainModel =
 
                         SearchModel searchModel ->
                             case msg of
+                                SearchMsg (AppSearch.UnhandledError) ->
+                                    displayErrorNotice pagedModel common
+
                                 SearchMsg msg ->
                                     updatePagedModel SearchModel common <|
                                         case msg of

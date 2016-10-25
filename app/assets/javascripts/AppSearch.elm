@@ -37,6 +37,7 @@ type Msg
     | Search SearchSpec
     | ClearSearch
     | Private PrivateMsg
+    | UnhandledError
 
 
 restoreCmd : Cmd Msg
@@ -87,9 +88,8 @@ update s msg model =
                         { model | results = Just results }
                             ! [ loadMore, Map.fitContent, addFacilities ]
 
-                ApiSearch _ ->
-                    -- TODO handle error
-                    ( model, Cmd.none )
+                ApiSearch (Api.SearchFailed _) ->
+                    ( model, Utils.performMessage UnhandledError )
 
                 ApiSearchMore (Api.SearchSuccess results) ->
                     let
@@ -106,8 +106,7 @@ update s msg model =
                         model ! [ loadMore, addFacilities ]
 
                 ApiSearchMore _ ->
-                    -- TODO handle error
-                    ( model, Cmd.none )
+                    ( model, Utils.performMessage UnhandledError )
 
                 UserLocationMsg msg ->
                     mapTCmd (\m -> { model | userLocation = m }) (Private << UserLocationMsg) <|
