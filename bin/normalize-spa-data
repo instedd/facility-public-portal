@@ -33,10 +33,44 @@ def write_output(filename, data, headers)
   puts "Writing #{full_filename}"
 
   CSV.open(full_filename, "wb") do |csv|
-    csv << headers
+    csv << csv_headers(headers)
     data.each do |f|
-      csv << headers.map { |h| f[h.to_sym] }
+      csv << headers.flat_map { |h| csv_value(h, f) }
     end
+  end
+end
+
+# if header has name:locale then name:loc1, name:loc2, ... name:locN is returned
+def csv_headers(headers)
+  headers.flat_map { |h|
+    name, locale = h.split ':'
+    if locale.nil?
+      name
+    else
+      Settings.locales.keys.map { |l| "name:#{l}" }
+    end
+  }
+end
+
+# if header has name:locale then name:loc1, name:loc2, ... name:locN values are returned using i18n for translation
+def csv_value(header, source_row)
+  name, locale = header.split ':'
+  raw_value = source_row[name.to_sym]
+  if locale.nil?
+    raw_value
+  else
+    Settings.locales.keys.map { |l| i18n_lookup(raw_value, locale.to_sym, l) }
+  end
+end
+
+$i18n_data = CSV.read(File.join(INPUT_PATH, "i18n.csv"), headers: true, header_converters: :symbol).map { |r| r.to_h }
+
+def i18n_lookup(text, source_lang, dest_lang)
+  if source_lang == dest_lang
+    text
+  else
+    row = $i18n_data.find { |d| d[source_lang] == text }
+    row.try { |row| row[dest_lang] } || "[missing #{dest_lang}: #{text}]"
   end
 end
 
@@ -57,7 +91,7 @@ end
 result = SpaNormalization.new(dataset).run
 
 write_output "facilities.csv", result[:facilities], ["id", "name", "lat", "lng", "location_id", "facility_type", "contact_name", "contact_email", "contact_phone", "last"]
-write_output "services.csv", result[:services], ["id", "name"]
+write_output "services.csv", result[:services], ["id", "name:en"]
 write_output "facilities_services.csv", result[:facilities_services], ["facility_id", "service_id"]
 write_output "facility_types.csv", result[:facility_types], ["name", "priority"]
 write_output "locations.csv", result[:locations], ["id", "name", "parent_id"]

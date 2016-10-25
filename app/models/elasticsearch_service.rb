@@ -145,7 +145,11 @@ class ElasticsearchService
         },
     }})
 
-    api_latlng result["hits"]["hits"].first["_source"]
+    item = result["hits"]["hits"].first["_source"]
+
+    keep_i18n_field item, "service_names"
+
+    api_latlng item
   end
 
   def suggest_services(query)
@@ -155,12 +159,25 @@ class ElasticsearchService
       body: {
         query: {
           match_phrase_prefix: {
-            name: query
+            i18n_key(:name, I18n.locale) => query
           }
         },
     }})
 
-    result["hits"]["hits"].map { |r| r["_source"] }
+    result["hits"]["hits"].map { |r|
+      h = r["_source"]
+      keep_i18n_field h, "name"
+      h
+    }
+  end
+
+  def keep_i18n_field(hash, field)
+    hash[field] = hash[i18n_key(field, I18n.locale)]
+    Settings.locales.to_h.each_key { |lang| hash.delete(i18n_key(field, lang)) }
+  end
+
+  def i18n_key(name, lang)
+    "#{name}:#{lang}"
   end
 
   def suggest_facilities(params)
