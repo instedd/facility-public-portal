@@ -43,7 +43,7 @@ type MainModel
 
 
 type alias CommonPageState =
-    { settings : Settings, menu : Menu.Model }
+    { settings : Settings, menu : Menu.Model, notice : Maybe Notice }
 
 
 type PagedModel
@@ -60,11 +60,16 @@ type MainMsg
     | FacilityDetailsMsg AppFacilityDetails.Msg
     | SearchMsg AppSearch.Msg
     | ToggleMenu
+    | DismissNotice
 
 
 type FacilityDetailsContext
     = FromUnkown
     | FromSearch AppSearch.Model
+
+
+type alias Notice =
+    String
 
 
 init : Flags -> Result String Route -> ( MainModel, Cmd MainMsg )
@@ -128,6 +133,14 @@ mainUpdate msg mainModel =
                 _ ->
                     ( mainModel, Cmd.none )
 
+        DismissNotice ->
+            case mainModel of
+                Page pageModel common ->
+                    ( Page pageModel { common | notice = Nothing }, Cmd.none )
+
+                _ ->
+                    ( mainModel, Cmd.none )
+
         _ ->
             case mainModel of
                 InitializingVR route _ settings ->
@@ -168,6 +181,9 @@ mainUpdate msg mainModel =
                             case msg of
                                 FacilityDetailsMsg msg ->
                                     case msg of
+                                        AppFacilityDetails.UnhandledError ->
+                                            ( Page pagedModel { common | notice = Just genericErrorMessage }, Cmd.none )
+
                                         AppFacilityDetails.Close ->
                                             ( mainModel
                                             , case context of
@@ -235,7 +251,7 @@ mainUrlUpdate result mainModel =
                     (getUserLocation mainModel)
 
                 common =
-                    { settings = getSettings mainModel, menu = Menu.Closed }
+                    { settings = getSettings mainModel, menu = Menu.Closed, notice = Nothing }
             in
                 case Routing.routeFromResult result of
                     RootRoute ->
@@ -349,19 +365,19 @@ mainView mainModel =
             in
                 case pagedModel of
                     HomeModel pagedModel ->
-                        mapView HomeMsg common.settings common.menu <| withScale <| AppHome.view pagedModel
+                        mapView HomeMsg common.settings common.menu common.notice <| withScale <| AppHome.view pagedModel
 
                     FacilityDetailsModel pagedModel _ ->
-                        mapView FacilityDetailsMsg common.settings common.menu <| withScale <| AppFacilityDetails.view pagedModel
+                        mapView FacilityDetailsMsg common.settings common.menu common.notice <| withScale <| AppFacilityDetails.view pagedModel
 
                     SearchModel pagedModel ->
-                        mapView SearchMsg common.settings common.menu <| withScale <| AppSearch.view pagedModel
+                        mapView SearchMsg common.settings common.menu common.notice <| withScale <| AppSearch.view pagedModel
 
         InitializingVR _ _ settings ->
-            mapView identity settings Menu.Closed { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
+            mapView identity settings Menu.Closed Nothing { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
 
         InitializedVR _ settings ->
-            mapView identity settings Menu.Closed { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
+            mapView identity settings Menu.Closed Nothing { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
 
 
 prependToolbar : Html a -> Shared.MapView a -> Shared.MapView a
@@ -377,8 +393,8 @@ scaleControlView scale =
         ]
 
 
-mapView : (a -> MainMsg) -> Settings -> Menu.Model -> Shared.MapView a -> Html MainMsg
-mapView wmsg settings menuModel viewContent =
+mapView : (a -> MainMsg) -> Settings -> Menu.Model -> Maybe Notice -> Shared.MapView a -> Html MainMsg
+mapView wmsg settings menuModel notice viewContent =
     Shared.layout <|
         div
             []
@@ -397,6 +413,10 @@ mapView wmsg settings menuModel viewContent =
                         []
                     else
                         [ div [ id "modal", class "modal open" ] (Shared.lmap wmsg viewContent.modal) ]
+                   )
+                ++ (notice
+                        |> Maybe.map (\msg -> [ Shared.notice msg DismissNotice ])
+                        |> Maybe.withDefault []
                    )
             )
 
@@ -433,3 +453,7 @@ navigateSearch =
 
 navigateBack =
     Navigation.back 1
+
+
+genericErrorMessage =
+    "Something went wrong. You may want to refresh the applicaton."
