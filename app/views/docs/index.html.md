@@ -1,5 +1,19 @@
 # API
 
+## i18n
+
+All api endpoints allows a `locale` parameter to specify the language or locale set to use. This affects the data returned and how to make searches: for example if English or Amharic versions of services' name should be used.
+
+| Value | Locale |
+|---|---|
+| en | English |
+| am | Amharic |
+
+```
+$ curl 'vitalwave.instedd.org/api/facilities/85?locale=en'
+$ curl 'vitalwave.instedd.org/api/facilities/85?locale=am'
+```
+
 ## Discovery
 
 The suggest endpoint allows discovery in a human friendly manner. A response will include facilities, locations and services that match the search criteria.
