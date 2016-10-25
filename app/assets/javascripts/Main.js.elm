@@ -11,7 +11,6 @@ import AppFacilityDetails
 import UserLocation
 import Html exposing (Html, div, span)
 import Html.Attributes exposing (id, class, style)
-import Html.App
 import Utils exposing (mapFst, mapSnd, mapTCmd)
 import Menu
 
@@ -150,12 +149,13 @@ mainUpdate msg mainModel =
                                 ! [ Routing.navigate (Routing.routeFromResult route) ]
 
                         _ ->
-                            Debug.crash "map is not initialized yet"
+                            -- Ignore other actions until map is initialized
+                            ( mainModel, Cmd.none )
 
                 Page pagedModel common ->
                     case ( pagedModel, msg ) of
                         ( HomeModel homeModel, HomeMsg (AppHome.UnhandledError) ) ->
-                            displayErrorNotice pagedModel common
+                            withErrorNotice pagedModel common
 
                         ( HomeModel homeModel, HomeMsg msg ) ->
                             updatePagedModel HomeModel common <|
@@ -182,7 +182,7 @@ mainUpdate msg mainModel =
                         ( FacilityDetailsModel facilityModel context, FacilityDetailsMsg msg ) ->
                             case msg of
                                 AppFacilityDetails.UnhandledError ->
-                                    displayErrorNotice pagedModel common
+                                    withErrorNotice pagedModel common
 
                                 AppFacilityDetails.Close ->
                                     ( mainModel
@@ -204,7 +204,7 @@ mainUpdate msg mainModel =
                                         (AppFacilityDetails.update common.settings msg facilityModel)
 
                         ( SearchModel _, SearchMsg (AppSearch.UnhandledError) ) ->
-                            displayErrorNotice pagedModel common
+                            withErrorNotice pagedModel common
 
                         ( SearchModel searchModel, SearchMsg msg ) ->
                             updatePagedModel SearchModel common <|
@@ -288,8 +288,8 @@ mainUrlUpdate result mainModel =
                                     _ ->
                                         AppSearch.init common.settings searchSpec viewport userLocation
 
-                    _ ->
-                        Debug.crash "route not handled"
+                    NotFoundRoute ->
+                        ( mainModel, navigateHome )
 
 
 updatePagedModel : (a -> PagedModel) -> CommonPageState -> ( a, Cmd MainMsg ) -> ( MainModel, Cmd MainMsg )
@@ -454,5 +454,5 @@ navigateBack =
     Navigation.back 1
 
 
-displayErrorNotice pagedModel common =
+withErrorNotice pagedModel common =
     ( Page pagedModel { common | notice = Just "Something went wrong. You may want to refresh the application." }, Cmd.none )
