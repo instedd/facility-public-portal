@@ -185,6 +185,9 @@ path base params =
                 , params.fType
                     |> Maybe.map (\fType -> [ ( "fType", toString fType ) ])
                     |> Maybe.withDefault []
+                , params.fName
+                    |> Maybe.map (\fName -> [ ( "fName", fName ) ])
+                    |> Maybe.withDefault []
                 ]
     in
         Utils.buildPath base queryParams

@@ -26,7 +26,6 @@ type PrivateMsg
     | ToggleAdvancedSearch
     | SetAdvancedSearchName String
     | SetAdvancedSearchType Int
-    | FullSearch
 
 
 type Msg
@@ -35,6 +34,7 @@ type Msg
     | LocationClicked Int
     | Search String
     | Private PrivateMsg
+    | FullSearch SearchSpec
 
 
 hasSuggestionsToShow : Model -> Bool
@@ -125,8 +125,6 @@ update config msg model =
                     in
                         ( { model | query = query }, Cmd.none )
 
-                FullSearch ->
-                    ( model, Cmd.none )
         _ ->
             -- public events
             ( model, Cmd.none )
@@ -230,6 +228,7 @@ isAdvancedSearchOpen : Model -> Bool
 isAdvancedSearchOpen model =
     model.advanced
 
+
 advancedSearchWindow : Model -> List FacilityType -> List (Html Msg)
 advancedSearchWindow model types =
     let query =
@@ -249,7 +248,7 @@ advancedSearchWindow model types =
                     , div [ class "modal-input" ] [ Html.select [ Shared.onSelect (Private << SetAdvancedSearchType)] (selectOptions types selectedType) ]
                     ]
                 ]
-                [ a [ href "#", class "btn-flat", Shared.onClick (Private FullSearch) ] [ text "Search" ] ]
+                [ a [ href "#", class "btn-flat", Shared.onClick (FullSearch {q = Nothing, s = Nothing, l = Nothing, latLng = Nothing, fName = model.query.fName, fType = model.query.fType }) ] [ text "Search" ] ]
         else
             []
 

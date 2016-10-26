@@ -4,7 +4,7 @@ import Api exposing (emptySearch)
 import Html exposing (..)
 import Html.App
 import Map
-import Models exposing (Settings, MapViewport, LatLng, SearchResult, FacilityType, shouldLoadMore)
+import Models exposing (Settings, MapViewport, LatLng, SearchResult, FacilityType, SearchSpec, shouldLoadMore)
 import Shared exposing (MapView)
 import Utils exposing (mapFst, mapTCmd)
 import UserLocation
@@ -32,6 +32,7 @@ type Msg
     | Search String
     | Private PrivateMsg
     | UnhandledError
+    | FullSearch SearchSpec
 
 
 init : Settings -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
@@ -61,6 +62,9 @@ update s msg model =
 
                         Suggest.Search q ->
                             ( model, Utils.performMessage (Search q) )
+
+                        Suggest.FullSearch search ->
+                            ( model, Utils.performMessage (FullSearch search))
 
                         _ ->
                             wrapSuggest model <| Suggest.update { mapViewport = model.mapViewport } msg model.suggest
