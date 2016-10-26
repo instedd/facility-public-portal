@@ -6,7 +6,7 @@ import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
-import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, FacilitySummary, shouldLoadMore)
+import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, FacilitySummary, FacilityType, shouldLoadMore)
 import Shared exposing (MapView, icon, classNames)
 import Utils exposing (mapTCmd)
 import UserLocation
@@ -15,7 +15,7 @@ import Debounce
 
 
 type alias Model =
-    { suggest : Suggest.Model, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult, mobileFocusMap : Bool, d : Debounce.State, advancedSearch : Maybe AdvancedSearch }
+    { suggest : Suggest.Model, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult, mobileFocusMap : Bool, d : Debounce.State, facilityTypes: List FacilityType }
 
 
 type PrivateMsg
@@ -28,7 +28,6 @@ type PrivateMsg
     | ToggleMobileFocus
     | Deb (Debounce.Msg Msg)
     | PerformSearch
-    | ToggleAdvancedSearch
 
 
 type Msg
@@ -41,18 +40,14 @@ type Msg
     | UnhandledError
 
 
-type alias AdvancedSearch =
-    { name: String, facilityType: String }
-
-
 restoreCmd : Cmd Msg
 restoreCmd =
     Cmd.batch [ Map.removeHighlightedFacilityMarker, Map.fitContentUsingPadding True ]
 
 
-init : Settings -> SearchSpec -> MapViewport -> UserLocation.Model -> Maybe AdvancedSearch -> ( Model, Cmd Msg )
-init s query mapViewport userLocation advancedSearch =
-    { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing, mobileFocusMap = True, d = Debounce.init, advancedSearch = Nothing }
+init : Settings -> SearchSpec -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
+init s query mapViewport userLocation =
+    { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing, mobileFocusMap = True, d = Debounce.init, facilityTypes = s.facilityTypes }
         ! [ Api.search (Private << ApiSearch) { query | latLng = Just mapViewport.center }
           , restoreCmd
           ]
@@ -129,7 +124,7 @@ update s msg model =
                             ( model, Utils.performMessage (LocationClicked locationId) )
 
                         Suggest.Search q ->
-                            ( model, Utils.performMessage (Search <| { q = Just q, s = Nothing, l = Nothing, latLng = Nothing }) )
+                            ( model, Utils.performMessage (Search <| { q = Just q, s = Nothing, l = Nothing, latLng = Nothing, fType = Nothing }) )
 
                         _ ->
                             wrapSuggest model <| Suggest.update { mapViewport = model.mapViewport } msg model.suggest
@@ -139,12 +134,6 @@ update s msg model =
 
                 Deb a ->
                     Debounce.update cfg a model
-
-                ToggleAdvancedSearch ->
-                    if not (isAdvancedSearchOpen model) then
-                        ( { model | advancedSearch = Just { name = "", facilityType = "" } }, Cmd.none )
-                    else
-                        ( { model | advancedSearch = Nothing }, Cmd.none )
 
         _ ->
             -- public events
@@ -197,7 +186,6 @@ view model =
                 [ searchResults model ]
             ]
                 ++ suggestionItems model
-                ++ [ div [ classList [ showOnSuggestions ] ] [ advancedSearchFooter ] ]
         , toolbar =
             [ userLocationView model ]
         , bottom =
@@ -205,7 +193,7 @@ view model =
                 [ classList [ hideOnMobileListingFocused ] ]
                 [ mobileFocusToggleView ]
             ]
-        , modal = advancedSearchWindow model
+        , modal = List.map (Html.App.map (Private << SuggestMsg)) (Suggest.advancedSearchWindow model.suggest model.facilityTypes)
         }
 
 
@@ -232,7 +220,6 @@ suggestionInput model =
 
 suggestionItems model =
     (List.map (Html.App.map (Private << SuggestMsg)) (Suggest.viewSuggestions model.suggest))
-    --++ advancedSearchFooter
 
 
 userLocationView model =
@@ -246,42 +233,6 @@ mobileFocusToggleView =
         ]
         [ text "List results" ]
 
-
-advancedSearchFooter =
-    div
-        [ class "footer" ]
-        [ a [ href "#", Shared.onClick (Private ToggleAdvancedSearch) ] [ text "Advanced Search" ] ]
-
-
-
-isAdvancedSearchOpen : Model -> Bool
-isAdvancedSearchOpen model =
-    case model.advancedSearch of
-        Nothing ->
-            False
-        _ ->
-            True
-
-
-advancedSearchWindow : Model -> List (Html Msg)
-advancedSearchWindow model =
-    if isAdvancedSearchOpen model then
-        Shared.modalWindow
-            [ text "Advanced Search"
-            , a [ href "#", class "right", Shared.onClick (Private ToggleAdvancedSearch) ] [ Shared.icon "close" ]
-            ]
-            [ Html.form [ action "#", method "GET" ]
-                [ div [ class "modal-label" ] [ text "Facility name" ]
-                , div [ class "modal-input" ] [ input [ type' "text" ] [] ]
-                , div [ class "modal-label" ] [ text "Facility type" ]
-                , div [ class "modal-input" ] [ Html.select [] [ Html.option [] [ text "Medium Clinic" ]
-                                , Html.option [] [ text "Referral Hospital" ]
-                                , Html.option [] [ text "Health Post" ] ]
-                ] ]
-            ]
-            [ a [ href "#", class "btn-flat", Shared.onClick (Private ToggleAdvancedSearch) ] [ text "Search" ] ]
-    else
-        []
 
 subscriptions : Model -> Sub Msg
 subscriptions model =

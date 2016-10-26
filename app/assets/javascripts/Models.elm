@@ -11,6 +11,7 @@ type alias Settings =
     , contactEmail : String
     , locale : String
     , locales : List ( String, String )
+    , facilityTypes : List FacilityType
     }
 
 
@@ -26,6 +27,8 @@ type alias SearchSpec =
     , s : Maybe Int
     , l : Maybe Int
     , latLng : Maybe LatLng
+    , fType : Maybe Int
+    , fName : Maybe String
     }
 
 
@@ -48,6 +51,11 @@ type alias Facility =
     , lastUpdated : Maybe Date
     }
 
+
+type alias FacilityType =
+    { id: Int
+    , name: String
+    }
 
 type alias FacilitySummary =
     { id : Int
@@ -174,6 +182,9 @@ path base params =
                 , params.latLng
                     |> Maybe.map (\( lat, lng ) -> [ ( "lat", toString lat ), ( "lng", toString lng ) ])
                     |> Maybe.withDefault []
+                , params.fType
+                    |> Maybe.map (\fType -> [ ( "fType", toString fType ) ])
+                    |> Maybe.withDefault []
                 ]
     in
         Utils.buildPath base queryParams
@@ -191,6 +202,11 @@ specFromParams params =
         Dict.get "l" params
             &> (String.toInt >> Result.toMaybe)
     , latLng = paramsLatLng params
+    , fType =
+        Dict.get "fType" params
+            &> (String.toInt >> Result.toMaybe)
+    , fName =
+        Dict.get "fName" params
     }
 
 

@@ -23,6 +23,7 @@ type alias Flags =
     , contactEmail : String
     , locale : String
     , locales : List ( String, String )
+    , facilityTypes : List (FacilityType)
     }
 
 
@@ -88,6 +89,7 @@ init flags route =
             , contactEmail = flags.contactEmail
             , locale = flags.locale
             , locales = flags.locales
+            , facilityTypes = flags.facilityTypes
             }
 
         model =
@@ -286,10 +288,10 @@ mainUrlUpdate result mainModel =
                                         if searchModel.query == searchSpec then
                                             ( searchModel, AppSearch.restoreCmd )
                                         else
-                                            AppSearch.init common.settings searchSpec viewport userLocation Nothing
+                                            AppSearch.init common.settings searchSpec viewport userLocation
 
                                     _ ->
-                                        AppSearch.init common.settings searchSpec viewport userLocation Nothing
+                                        AppSearch.init common.settings searchSpec viewport userLocation
 
                     NotFoundRoute ->
                         ( withNotice unknownRouteErrorNotice mainModel, navigateHome )
@@ -465,17 +467,17 @@ navigateFacility =
 
 navigateSearchService : Int -> Cmd MainMsg
 navigateSearchService =
-    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Nothing, latLng = Nothing, s = Just id })
+    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Nothing, latLng = Nothing, s = Just id, fType = Nothing, fName = Nothing })
 
 
 navigateSearchLocation : Int -> Cmd MainMsg
 navigateSearchLocation =
-    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Just id, latLng = Nothing, s = Nothing })
+    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Just id, latLng = Nothing, s = Nothing, fType = Nothing, fName = Nothing })
 
 
 navigateSearchQuery : String -> Cmd MainMsg
 navigateSearchQuery =
-    Utils.performMessage << Navigate << (\q -> SearchRoute { q = Just q, l = Nothing, latLng = Nothing, s = Nothing })
+    Utils.performMessage << Navigate << (\q -> SearchRoute { q = Just q, l = Nothing, latLng = Nothing, s = Nothing, fType = Nothing, fName = Nothing })
 
 
 navigateSearch : SearchSpec -> Cmd MainMsg

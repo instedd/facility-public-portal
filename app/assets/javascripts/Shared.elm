@@ -9,7 +9,6 @@ import Models
 import String
 import I18n exposing (..)
 
-
 type alias LHtml a =
     List (Html a)
 
@@ -112,3 +111,12 @@ modalWindow header body footer =
     , div [ class "modal-footer" ] footer
     ]
 
+
+targetSelectedIndex : Json.Decode.Decoder Int
+targetSelectedIndex =
+    Json.Decode.at [ "target", "selectedIndex" ] Json.Decode.int
+
+
+onSelect : (Int -> msg) -> Html.Attribute msg
+onSelect msg =
+    Events.on "change" (Json.Decode.map msg targetSelectedIndex)
