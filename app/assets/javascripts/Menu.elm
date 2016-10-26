@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Shared exposing (icon)
 import Models exposing (Settings)
+import I18n exposing (..)
 
 
 type Model
@@ -41,20 +42,20 @@ menuContent settings active =
                 [ li []
                     [ a [ href "/", isActive Map ]
                         [ icon "map"
-                        , text "Map"
+                        , text <| t I18n.Map
                         ]
                     ]
                 , li []
                     [ a [ href "/docs", isActive ApiDoc ]
                         [ icon "code"
-                        , text "API Docs"
+                        , text <| t I18n.ApiDocs
                         ]
                     ]
                 , hr [] []
                 , li []
                     [ a [ href <| "mailto:" ++ settings.contactEmail ]
                         [ icon "email"
-                        , text "Contact"
+                        , text <| t I18n.Contact
                         ]
                     ]
                 ]

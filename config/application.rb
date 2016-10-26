@@ -12,5 +12,8 @@ module FPP
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
     config.middleware.use Rack::Deflater
+
+    config.i18n.default_locale = Settings.default_locale.to_sym
+    config.i18n.available_locales = Settings.locales.keys
   end
 end

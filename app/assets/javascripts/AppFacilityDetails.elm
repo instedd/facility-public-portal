@@ -17,6 +17,7 @@ import UserLocation
 import Http
 import Json.Decode as Decode
 import Json.Encode exposing (..)
+import I18n exposing (..)
 
 
 type Model
@@ -169,7 +170,7 @@ reportWindow model =
     if isReportWindowOpen model then
         [ div [ class "modal-content" ]
             [ div [ class "header" ]
-                [ text "Report an issue"
+                [ text <| t ReportAnIssue
                 , a [ href "#", class "right", Shared.onClick (Private ToggleFacilityReport) ] [ Shared.icon "close" ]
                 ]
             , div [ class "body" ]
@@ -416,7 +417,7 @@ facilityDetail cssClasses now facility =
                 , div [ class "detailSection actions" ] [ facilityActions ]
                 , div [ class "detailSection contact" ] [ facilityContactDetails contactInfo ]
                 , div [ class "detailSection services" ]
-                    [ span [] [ text "Services" ]
+                    [ span [] [ text <| t Services ]
                     , if List.isEmpty facility.services then
                         div [ class "noData" ] [ text "There is currently no information about services provided by this facility." ]
                       else
@@ -470,5 +471,5 @@ facilityActions =
     a
         [ href "#", Shared.onClick (Private ToggleFacilityReport) ]
         [ Shared.icon "report"
-        , text "Report an issue"
+        , text <| t ReportAnIssue
         ]

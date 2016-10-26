@@ -9,6 +9,8 @@ import Html.App
 
 type alias Flags =
     { contactEmail : String
+    , locale : String
+    , locales : List ( String, String )
     }
 
 
@@ -23,7 +25,13 @@ main =
 
 
 init flags =
-    ( { fakeLocation = Nothing, contactEmail = flags.contactEmail }, Cmd.none )
+    ( { fakeLocation = Nothing
+      , contactEmail = flags.contactEmail
+      , locale = flags.locale
+      , locales = flags.locales
+      }
+    , Cmd.none
+    )
 
 
 update msg model =

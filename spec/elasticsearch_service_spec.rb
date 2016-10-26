@@ -35,9 +35,9 @@ RSpec.describe ElasticsearchService do
                    ],
 
                    services: [
-                     { id: "S1", name: "service1" },
-                     { id: "S2", name: "service2" },
-                     { id: "S3", name: "service3" }
+                     { id: "S1", "name:en": "service1" },
+                     { id: "S2", "name:en": "service2" },
+                     { id: "S3", "name:en": "service3" }
                    ],
 
                    facilities_services: [

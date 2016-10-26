@@ -14,4 +14,6 @@
 //= require jquery_ujs
 //= require leaflet
 //= require leaflet.markercluster
+//= require i18n
+//= require i18n/translations
 //= require_tree .

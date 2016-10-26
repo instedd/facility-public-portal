@@ -10,7 +10,8 @@ import AppSearch
 import AppFacilityDetails
 import UserLocation
 import Html exposing (Html, div, span, p, text, a)
-import Html.Attributes exposing (id, class, style, href, attribute)
+import Html.Attributes exposing (id, class, style, href, attribute, classList)
+import Html.App
 import Utils exposing (mapFst, mapSnd, mapTCmd)
 import Menu
 import SelectList exposing (..)
@@ -20,6 +21,8 @@ type alias Flags =
     { fakeUserPosition : Bool
     , initialPosition : LatLng
     , contactEmail : String
+    , locale : String
+    , locales : List ( String, String )
     }
 
 
@@ -43,7 +46,7 @@ type MainModel
 
 
 type alias CommonPageState =
-    { settings : Settings, menu : Menu.Model, notice : Maybe Notice }
+    { settings : Settings, menu : Menu.Model, route : Route, notice : Maybe Notice }
 
 
 type PagedModel
@@ -83,6 +86,8 @@ init flags route =
                     Nothing
                 )
             , contactEmail = flags.contactEmail
+            , locale = flags.locale
+            , locales = flags.locales
             }
 
         model =
@@ -244,10 +249,13 @@ mainUrlUpdate result mainModel =
                 userLocation =
                     (getUserLocation mainModel)
 
+                route =
+                    Routing.routeFromResult result
+
                 common =
-                    { settings = getSettings mainModel, menu = Menu.Closed, notice = notice mainModel }
+                    { settings = getSettings mainModel, menu = Menu.Closed, route = route, notice = notice mainModel }
             in
-                case Routing.routeFromResult result of
+                case route of
                     RootRoute ->
                         updatePagedModel HomeModel common <|
                             mapCmd HomeMsg <|
@@ -354,18 +362,24 @@ mainView mainModel =
     case mainModel of
         Page pagedModel common ->
             let
+                withLocale =
+                    prependToolbar (localeControlView common.settings common.route)
+
                 withScale =
                     prependToolbar (scaleControlView (mapViewport mainModel).scale)
+
+                withControls =
+                    withLocale << withScale
             in
                 case pagedModel of
                     HomeModel pagedModel ->
-                        mapView HomeMsg common.settings common.menu common.notice <| withScale <| AppHome.view pagedModel
+                        mapView HomeMsg common.settings common.menu common.notice <| withControls <| AppHome.view pagedModel
 
                     FacilityDetailsModel pagedModel _ ->
-                        mapView FacilityDetailsMsg common.settings common.menu common.notice <| withScale <| AppFacilityDetails.view pagedModel
+                        mapView FacilityDetailsMsg common.settings common.menu common.notice <| withControls <| AppFacilityDetails.view pagedModel
 
                     SearchModel pagedModel ->
-                        mapView SearchMsg common.settings common.menu common.notice <| withScale <| AppSearch.view pagedModel
+                        mapView SearchMsg common.settings common.menu common.notice <| withControls <| AppSearch.view pagedModel
 
         InitializingVR _ _ settings ->
             mapView identity settings Menu.Closed Nothing { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
@@ -385,6 +399,20 @@ scaleControlView scale =
         [ span [] [ Html.text scale.label ]
         , div [ class "line", style [ ( "width", (toString scale.width) ++ "px" ) ] ] []
         ]
+
+
+localeControlView : Settings -> Route -> Html a
+localeControlView settings route =
+    let
+        localeUrl lang =
+            Utils.setQuery ( "locale", lang ) (Routing.routeToPath route)
+
+        localeAnchor ( key, name ) =
+            Html.a [ Html.Attributes.href (localeUrl key), classList [ ( "active", key == settings.locale ) ] ]
+                [ Html.text name ]
+    in
+        div [ class "locales" ] <|
+            List.map localeAnchor settings.locales
 
 
 mapView : (a -> MainMsg) -> Settings -> Menu.Model -> Maybe Notice -> Shared.MapView a -> Html MainMsg

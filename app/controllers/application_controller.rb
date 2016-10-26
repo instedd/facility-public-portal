@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
+  before_filter :set_locale
 
   skip_before_action :verify_authenticity_token, only: :report_facility
   before_action :set_js_flags
@@ -18,6 +19,16 @@ class ApplicationController < ActionController::Base
 
   protected
 
+  def set_locale
+    begin
+      # if params or cookies are broken let's go with the default_locale
+      I18n.locale = params[:locale] || cookies[:locale] || http_accept_language.compatible_language_from(I18n.available_locales)
+    rescue
+      I18n.locale = I18n.default_locale
+    end
+    cookies[:locale] = I18n.locale
+  end
+
   def set_js_flags
     @js_flags = {
       "initialPosition" => [Settings.initial_position.lat, Settings.initial_position.lng],
@@ -25,6 +36,8 @@ class ApplicationController < ActionController::Base
       "contactEmail" => Settings.report_email_to,
       "mapboxId" => Settings.mapbox_id,
       "mapboxToken" => Settings.mapbox_token,
+      "locales" => Settings.locales,
+      "locale" => I18n.locale,
     }
   end
 end

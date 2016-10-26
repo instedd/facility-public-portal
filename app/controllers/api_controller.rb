@@ -1,5 +1,6 @@
 class ApiController < ActionController::Base
   protect_from_forgery with: :exception
+  before_filter :set_locale
 
   def search
     search_result = ElasticsearchService.instance.search_facilities(search_params)
@@ -34,5 +35,14 @@ class ApiController < ActionController::Base
 
   def search_params
     params.permit(:q, :s, :l, :lat, :lng, :size, :from)
+  end
+
+  def set_locale
+    begin
+      # if params or cookies are broken let's go with the default_locale
+      I18n.locale = params[:locale] || cookies[:locale] || http_accept_language.compatible_language_from(I18n.available_locales)
+    rescue
+      I18n.locale = I18n.default_locale
+    end
   end
 end

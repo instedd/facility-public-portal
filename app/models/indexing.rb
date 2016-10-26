@@ -90,7 +90,7 @@ class Indexing
           facility_types[type[:name]] = type
         end
 
-        f.merge({
+        f = f.merge({
           id: @last_facility_id += 1,
           source_id: f[:id],
           contact_phone: f[:contact_phone] && f[:contact_phone].to_s,
@@ -104,7 +104,6 @@ class Indexing
           },
 
           service_ids: services.map { |s| s[:id] },
-          service_names: services.map { |s| s[:name] },
 
           adm: location[:path_names],
           adm_ids: location[:path_ids],
@@ -112,6 +111,12 @@ class Indexing
           report_to: nil, # TODO
           last_updated: nil # TODO
         })
+
+        Settings.locales.to_h.each_key do |lang|
+          f["service_names:#{lang}".to_sym] = services.map { |s| s["name:#{lang}".to_sym] }.sort!
+        end
+
+        f
       end
 
       @service.index_facility_batch(index_entries)

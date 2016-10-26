@@ -20,4 +20,10 @@
 # available at http://guides.rubyonrails.org/i18n.html.
 
 en:
-  hello: "Hello world"
+  search_health_facility: Search health facilities
+  map: Map
+  api_docs: API Docs
+  contact: Contact
+  services: Services
+  facilities_count: "%{count} facilities"
+  report_an_issue: Report an issue
