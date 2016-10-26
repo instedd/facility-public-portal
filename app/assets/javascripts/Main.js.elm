@@ -397,11 +397,11 @@ mapView wmsg settings menuModel notice viewContent =
                         ((div [ class viewContent.headerClass ] [ Shared.header [ Menu.anchor ToggleMenu ] ])
                             :: (Menu.orContent settings Menu.Map menuModel (Shared.lmap wmsg viewContent.content))
                         )
-                , condition (List.isEmpty viewContent.bottom) <|
+                , unless (List.isEmpty viewContent.bottom) <|
                     div [ id "bottom-action", class "z-depth-1" ] (Shared.lmap wmsg viewContent.bottom)
                 , include <|
                     div [ id "map-toolbar", class "z-depth-1" ] (Shared.lmap wmsg viewContent.toolbar)
-                , condition (List.isEmpty viewContent.modal) <|
+                , unless (List.isEmpty viewContent.modal) <|
                     div [ id "modal", class "modal open" ] (Shared.lmap wmsg viewContent.modal)
                 , maybe <|
                     Maybe.map noticePopup notice
@@ -416,8 +416,10 @@ noticePopup notice =
             ]
         , div [ class "card-action" ]
             (select
-                [ condition notice.refresh <| (a [ href "#", attribute "onClick" "event.preventDefault(); window.location.reload(true)" ] [ text "Refresh" ])
-                , include <| (a [ href "#", Shared.onClick DismissNotice ] [ text "Dismiss" ])
+                [ iff notice.refresh <|
+                    (a [ href "#", attribute "onClick" "event.preventDefault(); window.location.reload(true)" ] [ text "Refresh" ])
+                , include <|
+                    (a [ href "#", Shared.onClick DismissNotice ] [ text "Dismiss" ])
                 ]
             )
         ]

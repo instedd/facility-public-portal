@@ -21,12 +21,17 @@ select =
         []
 
 
-condition : Bool -> a -> Item a
-condition include x =
+iff : Bool -> a -> Item a
+iff include x =
     if include then
         Just x
     else
         Nothing
+
+
+unless : Bool -> a -> Item a
+unless exclude x =
+    iff (not exclude) x
 
 
 maybe : Maybe a -> Item a
