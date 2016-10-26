@@ -108,6 +108,11 @@ last l =
     List.head <| List.reverse l
 
 
+singleton : a -> List a
+singleton x =
+    [ x ]
+
+
 selectList : List ( a, Bool ) -> List a
 selectList =
     List.foldr

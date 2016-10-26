@@ -11,7 +11,7 @@ import AppFacilityDetails
 import UserLocation
 import Html exposing (Html, div, span, p, text, a)
 import Html.Attributes exposing (id, class, style, href, attribute)
-import Utils exposing (mapFst, mapSnd, mapTCmd, selectList)
+import Utils exposing (mapFst, mapSnd, mapTCmd, selectList, singleton)
 import Menu
 
 
@@ -133,12 +133,7 @@ mainUpdate msg mainModel =
                     ( mainModel, Cmd.none )
 
         DismissNotice ->
-            case mainModel of
-                Page pageModel common ->
-                    ( Page pageModel { common | notice = Nothing }, Cmd.none )
-
-                _ ->
-                    ( mainModel, Cmd.none )
+            ( withoutNotice mainModel, Cmd.none )
 
         _ ->
             case mainModel of
@@ -414,14 +409,14 @@ mapView wmsg settings menuModel notice viewContent =
                         [ div [ id "modal", class "modal open" ] (Shared.lmap wmsg viewContent.modal) ]
                    )
                 ++ (notice
-                        |> Maybe.map (\msg -> [ noticePopup msg DismissNotice ])
+                        |> Maybe.map (noticePopup >> singleton)
                         |> Maybe.withDefault []
                    )
             )
 
 
-noticePopup : Notice -> msg -> Html msg
-noticePopup notice dismissMsg =
+noticePopup : Notice -> Html MainMsg
+noticePopup notice =
     div [ id "notice", class "card" ]
         [ div [ class "card-content" ]
             [ p [] [ text notice.message ]
@@ -429,7 +424,7 @@ noticePopup notice dismissMsg =
         , div [ class "card-action" ]
             (selectList
                 [ ( a [ href "#", attribute "onClick" "event.preventDefault(); window.location.reload(true)" ] [ text "Refresh" ], notice.refresh )
-                , ( a [ href "#", Shared.onClick dismissMsg ] [ text "Dismiss" ], True )
+                , ( a [ href "#", Shared.onClick DismissNotice ] [ text "Dismiss" ], True )
                 ]
             )
         ]
@@ -500,6 +495,19 @@ withNotice notice mainModel =
 
         Page pagedModel common ->
             Page pagedModel { common | notice = Just notice }
+
+        InitializingVR _ _ _ ->
+            mainModel
+
+
+withoutNotice : MainModel -> MainModel
+withoutNotice mainModel =
+    case mainModel of
+        InitializedVR mapViewport settings _ ->
+            InitializedVR mapViewport settings Nothing
+
+        Page pagedModel common ->
+            Page pagedModel { common | notice = Nothing }
 
         InitializingVR _ _ _ ->
             mainModel
