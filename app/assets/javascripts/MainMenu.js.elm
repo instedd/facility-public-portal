@@ -29,6 +29,7 @@ init flags =
       , contactEmail = flags.contactEmail
       , locale = flags.locale
       , locales = flags.locales
+      , facilityTypes = []
       }
     , Cmd.none
     )
