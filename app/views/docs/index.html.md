@@ -2,7 +2,7 @@
 
 ## i18n
 
-All api endpoints allows a `locale` parameter to specify the language or locale set to use. This affects the data returned and how to make searches: for example if English or Amharic versions of services' name should be used.
+All API endpoints allows a `locale` parameter to specify the language or locale set to use. This affects the data returned and how to make searches: for example if English or Amharic versions of services' name should be used.
 
 | Value | Locale |
 |---|---|
