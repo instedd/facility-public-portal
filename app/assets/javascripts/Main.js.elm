@@ -157,8 +157,7 @@ mainUpdate msg mainModel =
                             updatePagedModel HomeModel common <|
                                 case msg of
                                     AppHome.UnhandledError ->
-                                        -- handled above
-                                        ( homeModel, Cmd.none )
+                                        Utils.unreachable ()
 
                                     AppHome.FacilityClicked facilityId ->
                                         ( homeModel, navigateFacility facilityId )
