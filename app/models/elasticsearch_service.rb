@@ -94,12 +94,10 @@ class ElasticsearchService
     end
 
     if params[:fType]
-      puts "YEAH"
       search_body[:query][:bool][:must] << { match: { facility_type_id: params[:fType] } }
     end
 
     if params[:fName]
-      puts "YEAH"
       search_body[:query][:bool][:must] << { match_phrase_prefix: { name: params[:fName] } }
     end
 
