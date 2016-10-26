@@ -31,6 +31,7 @@ type Msg
     | LocationClicked Int
     | Search String
     | Private PrivateMsg
+    | UnhandledError
 
 
 init : Settings -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
@@ -80,9 +81,8 @@ update s msg model =
                     in
                         model ! [ loadMore, addFacilities ]
 
-                ApiSearch _ _ ->
-                    -- TODO handle error
-                    ( model, Cmd.none )
+                ApiSearch _ (Api.SearchFailed _) ->
+                    ( model, Utils.performMessage UnhandledError )
 
                 MapMsg (Map.MapViewportChanged mapViewport) ->
                     ( { model | mapViewport = mapViewport }, debCmd (Private PerformSearch) )

@@ -1,0 +1,21 @@
+#notice {
+  position: absolute;
+  right: 12px;
+  top: 24px;
+  z-index: 4;
+
+  .card-action {
+    a { color: $blue; }
+  }
+}
+
+// same media query as fitContent
+@media all and(max-width: 992px) {
+  #notice {
+    top: 40%;
+    width: 90%;
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+  }
+}

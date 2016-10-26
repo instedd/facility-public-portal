@@ -39,6 +39,7 @@ type Msg
     | FacilityClicked Int
     | Private PrivateMsg
     | FacilityReportMsg FacilityReportResult
+    | UnhandledError
 
 
 type alias FacilityReport =
@@ -77,6 +78,9 @@ update s msg model =
                             ++ [ Map.setHighlightedFacilityMarker facility ]
                           )
 
+                ApiFetch (Api.FetchFacilityFailed _) ->
+                    ( model, Utils.performMessage UnhandledError )
+
                 UserLocationMsg msg ->
                     mapTCmd (\l -> setUserLocation l model) (Private << UserLocationMsg) <|
                         UserLocation.update s msg (userLocation model)
@@ -100,10 +104,6 @@ update s msg model =
 
                 ToggleCheckbox name ->
                     ( toggleCheckbox name model, Cmd.none )
-
-                _ ->
-                    -- TODO handle error
-                    ( model, Cmd.none )
 
         _ ->
             -- public events
