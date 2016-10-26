@@ -108,23 +108,6 @@ last l =
     List.head <| List.reverse l
 
 
-singleton : a -> List a
-singleton x =
-    [ x ]
-
-
-selectList : List ( a, Bool ) -> List a
-selectList =
-    List.foldr
-        (\( x, include ) rec ->
-            if include then
-                x :: rec
-            else
-                rec
-        )
-        []
-
-
 discardEmpty : String -> Maybe String
 discardEmpty q =
     if q == "" then

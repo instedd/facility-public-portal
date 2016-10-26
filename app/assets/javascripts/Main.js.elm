@@ -11,8 +11,9 @@ import AppFacilityDetails
 import UserLocation
 import Html exposing (Html, div, span, p, text, a)
 import Html.Attributes exposing (id, class, style, href, attribute)
-import Utils exposing (mapFst, mapSnd, mapTCmd, selectList, singleton)
+import Utils exposing (mapFst, mapSnd, mapTCmd)
 import Menu
+import SelectList exposing (..)
 
 
 type alias Flags =
@@ -390,29 +391,22 @@ scaleControlView scale =
 mapView : (a -> MainMsg) -> Settings -> Menu.Model -> Maybe Notice -> Shared.MapView a -> Html MainMsg
 mapView wmsg settings menuModel notice viewContent =
     Shared.layout <|
-        div
-            []
-            ([ Shared.controlStack
-                ((div [ class viewContent.headerClass ] [ Shared.header [ Menu.anchor ToggleMenu ] ])
-                    :: (Menu.orContent settings Menu.Map menuModel (Shared.lmap wmsg viewContent.content))
-                )
-             ]
-                ++ (if List.isEmpty viewContent.bottom then
-                        []
-                    else
-                        [ div [ id "bottom-action", class "z-depth-1" ] (Shared.lmap wmsg viewContent.bottom) ]
-                   )
-                ++ [ div [ id "map-toolbar", class "z-depth-1" ] (Shared.lmap wmsg viewContent.toolbar) ]
-                ++ (if List.isEmpty viewContent.modal then
-                        []
-                    else
-                        [ div [ id "modal", class "modal open" ] (Shared.lmap wmsg viewContent.modal) ]
-                   )
-                ++ (notice
-                        |> Maybe.map (noticePopup >> singleton)
-                        |> Maybe.withDefault []
-                   )
-            )
+        div [] <|
+            select
+                [ include <|
+                    Shared.controlStack
+                        ((div [ class viewContent.headerClass ] [ Shared.header [ Menu.anchor ToggleMenu ] ])
+                            :: (Menu.orContent settings Menu.Map menuModel (Shared.lmap wmsg viewContent.content))
+                        )
+                , condition (List.isEmpty viewContent.bottom) <|
+                    div [ id "bottom-action", class "z-depth-1" ] (Shared.lmap wmsg viewContent.bottom)
+                , include <|
+                    div [ id "map-toolbar", class "z-depth-1" ] (Shared.lmap wmsg viewContent.toolbar)
+                , condition (List.isEmpty viewContent.modal) <|
+                    div [ id "modal", class "modal open" ] (Shared.lmap wmsg viewContent.modal)
+                , maybe <|
+                    Maybe.map noticePopup notice
+                ]
 
 
 noticePopup : Notice -> Html MainMsg
@@ -422,9 +416,9 @@ noticePopup notice =
             [ p [] [ text notice.message ]
             ]
         , div [ class "card-action" ]
-            (selectList
-                [ ( a [ href "#", attribute "onClick" "event.preventDefault(); window.location.reload(true)" ] [ text "Refresh" ], notice.refresh )
-                , ( a [ href "#", Shared.onClick DismissNotice ] [ text "Dismiss" ], True )
+            (select
+                [ condition notice.refresh <| (a [ href "#", attribute "onClick" "event.preventDefault(); window.location.reload(true)" ] [ text "Refresh" ])
+                , include <| (a [ href "#", Shared.onClick DismissNotice ] [ text "Dismiss" ])
                 ]
             )
         ]
