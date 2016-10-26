@@ -13,7 +13,7 @@ dependencies:
     # Compiling Elm assets from scratch when building the docker image takes ~15 minutes.
     # To avoid this wait time every time we build the image, we compile assets here, cache
     # compiled dependencies and then tell the docker build to skip assets compilation.
-    - bundle exec rake assets:precompile RAILS_ENV=production SECRET_KEY_BASE=secret:
+    - ./docker/precompile-assets.sh:
         timeout: 1200
   cache_directories:
     - "elm-stuff/build-artifacts"

@@ -13,8 +13,6 @@ module FPP
     # -- all .rb files in that directory are automatically loaded.
     config.middleware.use Rack::Deflater
 
-    config.middleware.use I18n::JS::Middleware
-
     config.i18n.default_locale = Settings.default_locale.to_sym
     config.i18n.available_locales = Settings.locales.keys
   end
