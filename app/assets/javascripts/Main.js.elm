@@ -23,6 +23,7 @@ type alias Flags =
     , contactEmail : String
     , locale : String
     , locales : List ( String, String )
+    , facilityTypes : List (FacilityType)
     }
 
 
@@ -88,6 +89,7 @@ init flags route =
             , contactEmail = flags.contactEmail
             , locale = flags.locale
             , locales = flags.locales
+            , facilityTypes = flags.facilityTypes
             }
 
         model =
@@ -172,6 +174,9 @@ mainUpdate msg mainModel =
 
                                     AppHome.LocationClicked locationId ->
                                         ( homeModel, navigateSearchLocation locationId )
+
+                                    AppHome.FullSearch search ->
+                                        ( homeModel, navigateSearch search )
 
                                     AppHome.Search q ->
                                         ( homeModel, navigateSearchQuery q )
@@ -477,17 +482,17 @@ navigateFacility =
 
 navigateSearchService : Int -> Cmd MainMsg
 navigateSearchService =
-    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Nothing, latLng = Nothing, s = Just id })
+    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Nothing, latLng = Nothing, s = Just id, t = Nothing })
 
 
 navigateSearchLocation : Int -> Cmd MainMsg
 navigateSearchLocation =
-    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Just id, latLng = Nothing, s = Nothing })
+    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Just id, latLng = Nothing, s = Nothing, t = Nothing })
 
 
 navigateSearchQuery : String -> Cmd MainMsg
 navigateSearchQuery =
-    Utils.performMessage << Navigate << (\q -> SearchRoute { q = Just q, l = Nothing, latLng = Nothing, s = Nothing })
+    Utils.performMessage << Navigate << (\q -> SearchRoute { q = Just q, l = Nothing, latLng = Nothing, s = Nothing, t = Nothing })
 
 
 navigateSearch : SearchSpec -> Cmd MainMsg

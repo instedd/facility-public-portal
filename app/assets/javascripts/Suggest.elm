@@ -1,11 +1,11 @@
-module Suggest exposing (Config, Model, Msg(..), PrivateMsg, init, empty, update, hasSuggestionsToShow, viewInput, viewInputWith, viewSuggestions)
+module Suggest exposing (Config, Model, Msg(..), PrivateMsg, init, empty, update, hasSuggestionsToShow, viewInput, viewInputWith, viewSuggestions, advancedSearchWindow)
 
 import Shared exposing (icon)
 import Api
 import Html exposing (..)
-import Html.Attributes exposing (class)
-import Html.Events exposing (onClick)
-import Models exposing (MapViewport)
+import Html.Attributes exposing (..)
+import Html.Events exposing (onClick, onInput)
+import Models exposing (MapViewport, SearchSpec, FacilityType)
 import String
 import Debounce
 import I18n exposing (..)
@@ -16,7 +16,7 @@ type alias Config =
 
 
 type alias Model =
-    { query : String, suggestions : Maybe (List Models.Suggestion), d : Debounce.State }
+    { query : String, advancedSearch : SearchSpec, suggestions : Maybe (List Models.Suggestion), d : Debounce.State, advanced : Bool }
 
 
 type PrivateMsg
@@ -24,6 +24,9 @@ type PrivateMsg
     | ApiSug Api.SuggestionsMsg
     | FetchSuggestions
     | Deb (Debounce.Msg Msg)
+    | ToggleAdvancedSearch
+    | SetAdvancedSearchName String
+    | SetAdvancedSearchType Int
 
 
 type Msg
@@ -32,6 +35,7 @@ type Msg
     | LocationClicked Int
     | Search String
     | Private PrivateMsg
+    | FullSearch SearchSpec
 
 
 hasSuggestionsToShow : Model -> Bool
@@ -46,12 +50,12 @@ empty =
 
 init : String -> Model
 init query =
-    { query = query, suggestions = Nothing, d = Debounce.init }
+    { query = query, advancedSearch = Api.emptySearch, suggestions = Nothing, d = Debounce.init, advanced = False }
 
 
-searchSuggestions : Config -> String -> Model -> ( Model, Cmd Msg )
-searchSuggestions config query model =
-    ( { model | query = query, suggestions = Nothing }, Api.getSuggestions (Private << ApiSug) (Just config.mapViewport.center) query )
+searchSuggestions : Config -> Model -> ( Model, Cmd Msg )
+searchSuggestions config model =
+    ( { model | suggestions = Nothing }, Api.getSuggestions (Private << ApiSug) (Just config.mapViewport.center) model.query )
 
 
 update : Config -> Msg -> Model -> ( Model, Cmd Msg )
@@ -66,7 +70,7 @@ update config msg model =
                         ( { model | query = query, suggestions = Nothing }, debCmd (Private FetchSuggestions) )
 
                 FetchSuggestions ->
-                    searchSuggestions config model.query model
+                    searchSuggestions config model
 
                 ApiSug msg ->
                     case msg of
@@ -83,6 +87,26 @@ update config msg model =
 
                 Deb a ->
                     Debounce.update cfg a model
+
+                ToggleAdvancedSearch ->
+                    if not (isAdvancedSearchOpen model) then
+                        ( { model | advanced = True }, Cmd.none )
+                    else
+                        ( { model | advanced = False }, Cmd.none )
+
+                SetAdvancedSearchName search ->
+                    let
+                        currentSearch =
+                            model.advancedSearch
+                    in
+                        ( { model | advancedSearch = { currentSearch | q = Just search } }, Cmd.none )
+
+                SetAdvancedSearchType t ->
+                    let
+                        currentSearch =
+                            model.advancedSearch
+                    in
+                        ( { model | advancedSearch = { currentSearch | t = Just t } }, Cmd.none )
 
         _ ->
             -- public events
@@ -115,7 +139,7 @@ viewSuggestions model =
             []
 
         Just s ->
-            [ suggestionsContent s ]
+            [ suggestionsContent s ] ++ advancedSearchFooter
 
 
 suggestionsContent : List Models.Suggestion -> Html Msg
@@ -172,3 +196,55 @@ suggestion s =
                 , p [ class "sub" ]
                     [ text <| Maybe.withDefault "" parentName ]
                 ]
+
+
+advancedSearchFooter =
+    [ div
+        [ class "footer" ]
+        [ a [ href "#", Shared.onClick (Private ToggleAdvancedSearch) ] [ text "Advanced Search" ] ]
+    ]
+
+
+isAdvancedSearchOpen : Model -> Bool
+isAdvancedSearchOpen model =
+    model.advanced
+
+
+advancedSearchWindow : Model -> List FacilityType -> List (Html Msg)
+advancedSearchWindow model types =
+    let
+        query =
+            Maybe.withDefault "" model.advancedSearch.q
+
+        selectedType =
+            Maybe.withDefault 0 model.advancedSearch.t
+    in
+        if isAdvancedSearchOpen model then
+            Shared.modalWindow
+                [ text "Advanced Search"
+                , a [ href "#", class "right", Shared.onClick (Private ToggleAdvancedSearch) ] [ Shared.icon "close" ]
+                ]
+                [ Html.form [ action "#", method "GET" ]
+                    [ label [ for "q" ] [ text "Facility name" ]
+                    , input [ id "q", type' "text", value query, onInput (Private << SetAdvancedSearchName) ] []
+                    , label [] [ text "Facility type" ]
+                    , Html.select [ Shared.onSelect (Private << SetAdvancedSearchType) ] (selectOptions types selectedType)
+                    ]
+                ]
+                [ a [ href "#", class "btn-flat", Shared.onClick (FullSearch model.advancedSearch) ] [ text "Search" ] ]
+        else
+            []
+
+
+selectOptions : List FacilityType -> Int -> List (Html a)
+selectOptions types selectedType =
+    [ Html.option [ value "0" ] [ text "" ] ]
+        ++ (List.map
+                (\ftype ->
+                    if selectedType == ftype.id then
+                        Html.option [ value (toString ftype.id), selected True ] [ text ftype.name ]
+                    else
+                        Html.option [ value (toString ftype.id) ] [ text ftype.name ]
+                )
+                types
+           )

@@ -93,9 +93,18 @@ nav .nav-wrapper {
   flex-direction: column;
   overflow: hidden;
   z-index: 3;
+  // Redundancy for fallback
+  max-height: 96%;
+  max-height: calc(100% - 24px);
 
   .preloader-wrapper {
     margin: 40px auto;
+  }
+
+  .footer {
+    padding: 18px;
+    border-top: 1px solid $grey3;
+    a { color: $blue; }
   }
 }
 
@@ -180,10 +189,6 @@ nav .nav-wrapper {
   }
 }
 
-.spinner-blue-only {
-  border-color: $blue;
-}
-
 .location {
   #location-spinner {
     line-height: 48px;
@@ -264,10 +269,6 @@ nav .nav-wrapper {
   }
 }
 
-.btn-flat {
-  color: $blue;
-}
-
 input[type="checkbox"]:checked + label:before {
   border-right: 2px solid $blue;
   border-bottom: 2px solid $blue;
@@ -338,9 +339,12 @@ input[type="checkbox"]:checked + label:before {
     width: 100%;
     left: 0;
     top: 0;
+    max-height: 100%;
 
     .content {
-      min-height: 100vh;
+      // There needs to be space for footer and header height
+      min-height: 70vh;
+      min-height: calc(100% - 72px - 55px - 50px);
       overflow-y: scroll;
     }
   }

@@ -5,7 +5,6 @@ import Http
 import Maybe exposing (andThen)
 import Models exposing (..)
 import Task
-import Utils exposing (..)
 
 
 type SuggestionsMsg
@@ -62,7 +61,7 @@ searchMore wmsg result =
 
 emptySearch : SearchSpec
 emptySearch =
-    { q = Nothing, s = Nothing, l = Nothing, latLng = Nothing }
+    { q = Nothing, s = Nothing, l = Nothing, latLng = Nothing, t = Nothing }
 
 
 byQuery : Maybe LatLng -> Maybe String -> SearchSpec

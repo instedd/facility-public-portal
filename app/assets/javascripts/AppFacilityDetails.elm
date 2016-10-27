@@ -168,24 +168,19 @@ userLocationView model =
 reportWindow : Model -> List (Html Msg)
 reportWindow model =
     if isReportWindowOpen model then
-        [ div [ class "modal-content" ]
-            [ div [ class "header" ]
-                [ text <| t ReportAnIssue
-                , a [ href "#", class "right", Shared.onClick (Private ToggleFacilityReport) ] [ Shared.icon "close" ]
-                ]
-            , div [ class "body" ]
-                [ Html.form [ action "#", method "GET" ]
-                    [ Shared.checkbox "wrong_location" "Wrong location" (facilityReport model).wrong_location (Private (ToggleCheckbox "wrong_location"))
-                    , Shared.checkbox "closed" "Facility closed" (facilityReport model).closed (Private (ToggleCheckbox "closed"))
-                    , Shared.checkbox "contact_info_missing" "Incomplete contact information" (facilityReport model).contact_info_missing (Private (ToggleCheckbox "contact_info_missing"))
-                    , Shared.checkbox "inaccurate_services" "Inaccurate service list" (facilityReport model).inaccurate_services (Private (ToggleCheckbox "inaccurate_services"))
-                    , Shared.checkbox "other" "Other" (facilityReport model).other (Private (ToggleCheckbox "other"))
-                    ]
+        Shared.modalWindow
+            [ text <| t ReportAnIssue
+            , a [ href "#", class "right", Shared.onClick (Private ToggleFacilityReport) ] [ Shared.icon "close" ]
+            ]
+            [ Html.form [ action "#", method "GET" ]
+                [ Shared.checkbox "wrong_location" "Wrong location" (facilityReport model).wrong_location (Private (ToggleCheckbox "wrong_location"))
+                , Shared.checkbox "closed" "Facility closed" (facilityReport model).closed (Private (ToggleCheckbox "closed"))
+                , Shared.checkbox "contact_info_missing" "Incomplete contact information" (facilityReport model).contact_info_missing (Private (ToggleCheckbox "contact_info_missing"))
+                , Shared.checkbox "inaccurate_services" "Inaccurate service list" (facilityReport model).inaccurate_services (Private (ToggleCheckbox "inaccurate_services"))
+                , Shared.checkbox "other" "Other" (facilityReport model).other (Private (ToggleCheckbox "other"))
                 ]
             ]
-        , div [ class "modal-footer" ]
             [ a [ href "#", class "btn-flat", Shared.onClick (Private ReportFinalized) ] [ text "Send report" ] ]
-        ]
     else
         []
 

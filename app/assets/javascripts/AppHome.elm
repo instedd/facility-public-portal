@@ -4,7 +4,7 @@ import Api exposing (emptySearch)
 import Html exposing (..)
 import Html.App
 import Map
-import Models exposing (Settings, MapViewport, LatLng, SearchResult, shouldLoadMore)
+import Models exposing (Settings, MapViewport, LatLng, SearchResult, FacilityType, SearchSpec, shouldLoadMore)
 import Shared exposing (MapView)
 import Utils exposing (mapFst, mapTCmd)
 import UserLocation
@@ -13,7 +13,7 @@ import Debounce
 
 
 type alias Model =
-    { suggest : Suggest.Model, mapViewport : MapViewport, userLocation : UserLocation.Model, d : Debounce.State }
+    { suggest : Suggest.Model, mapViewport : MapViewport, userLocation : UserLocation.Model, d : Debounce.State, facilityTypes : List FacilityType }
 
 
 type PrivateMsg
@@ -32,11 +32,12 @@ type Msg
     | Search String
     | Private PrivateMsg
     | UnhandledError
+    | FullSearch SearchSpec
 
 
 init : Settings -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
-init _ mapViewport userLocation =
-    { suggest = Suggest.empty, mapViewport = mapViewport, userLocation = userLocation, d = Debounce.init }
+init settings mapViewport userLocation =
+    { suggest = Suggest.empty, mapViewport = mapViewport, userLocation = userLocation, d = Debounce.init, facilityTypes = settings.facilityTypes }
         ! [ searchAllFacilitiesStartingFrom mapViewport.center
           , Map.removeHighlightedFacilityMarker
           , Map.fitContentUsingPadding False
@@ -61,6 +62,9 @@ update s msg model =
 
                         Suggest.Search q ->
                             ( model, Utils.performMessage (Search q) )
+
+                        Suggest.FullSearch search ->
+                            ( model, Utils.performMessage (FullSearch search))
 
                         _ ->
                             wrapSuggest model <| Suggest.update { mapViewport = model.mapViewport } msg model.suggest
@@ -125,7 +129,7 @@ view model =
     , content = suggestionInput model :: (suggestionItems model)
     , toolbar = [ userLocationView model ]
     , bottom = []
-    , modal = []
+    , modal = List.map (Html.App.map (Private << SuggestMsg)) (Suggest.advancedSearchWindow model.suggest model.facilityTypes)
     }
 
 

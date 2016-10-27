@@ -9,6 +9,10 @@
   max-height: 80%;
   width: 400px;
 
+  select {
+    display: block;
+  }
+
   .modal-content {
     padding: 0;
 
@@ -28,7 +32,7 @@
     .body {
       padding: 24px;
       label {
-        color: black;
+        color: $color_mountain_mist_approx;
       }
     }
   }
@@ -42,5 +46,11 @@
     max-height: 200%;
     top: 0;
     bottom: 0;
+
+    .modal-content {
+      .header {
+        background-color: $blue;
+      }
+    }
   }
 }

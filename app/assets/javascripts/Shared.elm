@@ -9,7 +9,6 @@ import Models
 import String
 import I18n exposing (..)
 
-
 type alias LHtml a =
     List (Html a)
 
@@ -102,3 +101,22 @@ checkbox htmlId label v msg =
         [ input [ type' "checkbox", id htmlId, checked v, onClick msg ] []
         , Html.label [ for htmlId ] [ text label ]
         ]
+
+
+modalWindow : LHtml a -> LHtml a -> LHtml a -> LHtml a
+modalWindow header body footer =
+    [ div [ class "modal-content" ]
+        [ div [ class "header" ] header
+        , div [ class "body" ] body ]
+    , div [ class "modal-footer" ] footer
+    ]
+
+
+targetSelectedIndex : Json.Decode.Decoder Int
+targetSelectedIndex =
+    Json.Decode.at [ "target", "selectedIndex" ] Json.Decode.int
+
+
+onSelect : (Int -> msg) -> Html.Attribute msg
+onSelect msg =
+    Events.on "change" (Json.Decode.map msg targetSelectedIndex)

@@ -6,7 +6,7 @@ import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
-import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, FacilitySummary, shouldLoadMore)
+import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, FacilitySummary, FacilityType, shouldLoadMore)
 import Shared exposing (MapView, icon, classNames)
 import Utils exposing (mapTCmd)
 import UserLocation
@@ -15,7 +15,7 @@ import Debounce
 
 
 type alias Model =
-    { suggest : Suggest.Model, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult, mobileFocusMap : Bool, d : Debounce.State }
+    { suggest : Suggest.Model, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult, mobileFocusMap : Bool, d : Debounce.State, facilityTypes : List FacilityType }
 
 
 type PrivateMsg
@@ -47,7 +47,7 @@ restoreCmd =
 
 init : Settings -> SearchSpec -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init s query mapViewport userLocation =
-    { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing, mobileFocusMap = True, d = Debounce.init }
+    { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing, mobileFocusMap = True, d = Debounce.init, facilityTypes = s.facilityTypes }
         ! [ Api.search (Private << ApiSearch) { query | latLng = Just mapViewport.center }
           , restoreCmd
           ]
@@ -124,7 +124,10 @@ update s msg model =
                             ( model, Utils.performMessage (LocationClicked locationId) )
 
                         Suggest.Search q ->
-                            ( model, Utils.performMessage (Search <| { q = Just q, s = Nothing, l = Nothing, latLng = Nothing }) )
+                            ( model, Utils.performMessage (Search <| { q = Just q, s = Nothing, l = Nothing, latLng = Nothing, t = Nothing }) )
+
+                        Suggest.FullSearch search ->
+                            ( model, Utils.performMessage (Search <| search) )
 
                         _ ->
                             wrapSuggest model <| Suggest.update { mapViewport = model.mapViewport } msg model.suggest
@@ -168,6 +171,9 @@ view model =
 
         hideOnSuggestions =
             ( "hide", Suggest.hasSuggestionsToShow model.suggest )
+
+        content =
+            ( "content", True )
     in
         { headerClass = classNames [ hideOnMobileListingFocused ]
         , content =
@@ -176,7 +182,7 @@ view model =
                 [ mobileBackHeader ]
             , suggestionInput model
             , div
-                [ classList [ hideOnSuggestions, hideOnMobileMapFocused ] ]
+                [ classList [ hideOnSuggestions, hideOnMobileMapFocused, content ] ]
                 [ searchResults model ]
             ]
                 ++ suggestionItems model
@@ -187,7 +193,7 @@ view model =
                 [ classList [ hideOnMobileListingFocused ] ]
                 [ mobileFocusToggleView ]
             ]
-        , modal = []
+        , modal = List.map (Html.App.map (Private << SuggestMsg)) (Suggest.advancedSearchWindow model.suggest model.facilityTypes)
         }
 
 
@@ -263,7 +269,7 @@ searchResults model =
                 Just results ->
                     List.map facilityRow results.items
     in
-        div [ class "collection results content" ] entries
+        div [ class "collection results" ] entries
 
 
 facilityRow : FacilitySummary -> Html Msg
