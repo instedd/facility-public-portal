@@ -59,5 +59,11 @@
     max-height: 200%;
     top: 0;
     bottom: 0;
+
+    .modal-content {
+      .header {
+        background-color: $blue;
+      }
+    }
   }
 }
