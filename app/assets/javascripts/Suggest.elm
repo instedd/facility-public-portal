@@ -16,7 +16,7 @@ type alias Config =
 
 
 type alias Model =
-    { query : SearchSpec, suggestions : Maybe (List Models.Suggestion), d : Debounce.State, advanced : Bool }
+    { query : String, advancedSearch : SearchSpec, suggestions : Maybe (List Models.Suggestion), d : Debounce.State, advanced : Bool }
 
 
 type PrivateMsg
@@ -40,11 +40,7 @@ type Msg
 
 hasSuggestionsToShow : Model -> Bool
 hasSuggestionsToShow model =
-    let
-        a =
-            Maybe.withDefault "" model.query.q
-    in
-        (a /= "") && (model.suggestions /= Nothing)
+    (model.query /= "") && (model.suggestions /= Nothing)
 
 
 empty : Model
@@ -54,22 +50,12 @@ empty =
 
 init : String -> Model
 init query =
-    { query = initSearch query, suggestions = Nothing, d = Debounce.init, advanced = False }
+    { query = query, advancedSearch = Api.emptySearch, suggestions = Nothing, d = Debounce.init, advanced = False }
 
 
-initSearch : String -> SearchSpec
-initSearch q =
-    { q = Just q
-    , s = Nothing
-    , l = Nothing
-    , latLng = Nothing
-    , fType = Nothing
-    }
-
-
-searchSuggestions : Config -> String -> Model -> ( Model, Cmd Msg )
-searchSuggestions config query model =
-    ( { model | query = initSearch query, suggestions = Nothing }, Api.getSuggestions (Private << ApiSug) (Just config.mapViewport.center) query )
+searchSuggestions : Config -> Model -> ( Model, Cmd Msg )
+searchSuggestions config model =
+    ( { model | suggestions = Nothing }, Api.getSuggestions (Private << ApiSug) (Just config.mapViewport.center) model.query )
 
 
 update : Config -> Msg -> Model -> ( Model, Cmd Msg )
@@ -81,27 +67,19 @@ update config msg model =
                     if query == "" then
                         ( empty, Cmd.none )
                     else
-                        ( { model | query = initSearch query, suggestions = Nothing }, debCmd (Private FetchSuggestions) )
+                        ( { model | query = query, suggestions = Nothing }, debCmd (Private FetchSuggestions) )
 
                 FetchSuggestions ->
-                    let
-                        a =
-                            Maybe.withDefault "" model.query.q
-                    in
-                        searchSuggestions config a model
+                    searchSuggestions config model
 
                 ApiSug msg ->
                     case msg of
                         Api.SuggestionsSuccess query suggestions ->
-                            let
-                                a =
-                                    Maybe.withDefault "" model.query.q
-                            in
-                                if (query == a) then
-                                    ( { model | suggestions = Just suggestions }, Cmd.none )
-                                else
-                                    -- ignore old requests
-                                    ( model, Cmd.none )
+                            if (query == model.query) then
+                                ( { model | suggestions = Just suggestions }, Cmd.none )
+                            else
+                                -- ignore old requests
+                                ( model, Cmd.none )
 
                         Api.SuggestionsFailed e ->
                             -- TODO
@@ -118,17 +96,17 @@ update config msg model =
 
                 SetAdvancedSearchName search ->
                     let
-                        query =
-                            { q = Just search, l = model.query.l, s = model.query.s, latLng = model.query.latLng, fType = model.query.fType }
+                        currentSearch =
+                            model.advancedSearch
                     in
-                        ( { model | query = query }, Cmd.none )
+                        ( { model | advancedSearch = { currentSearch | q = Just search } }, Cmd.none )
 
-                SetAdvancedSearchType search ->
+                SetAdvancedSearchType t ->
                     let
-                        query =
-                            { q = model.query.q, l = model.query.l, s = model.query.s, latLng = model.query.latLng, fType = Just search }
+                        currentSearch =
+                            model.advancedSearch
                     in
-                        ( { model | query = query }, Cmd.none )
+                        ( { model | advancedSearch = { currentSearch | fType = Just t } }, Cmd.none )
 
         _ ->
             -- public events
@@ -151,11 +129,7 @@ viewInput model =
 
 viewInputWith : (Msg -> a) -> Model -> Html a -> Html a
 viewInputWith wmsg model trailing =
-    let
-        a =
-            Maybe.withDefault "" model.query.q
-    in
-        Shared.searchBar a (wmsg <| Search a) (wmsg << Private << Input) trailing
+    Shared.searchBar model.query (wmsg <| Search model.query) (wmsg << Private << Input) trailing
 
 
 viewSuggestions : Model -> List (Html Msg)
@@ -240,10 +214,10 @@ advancedSearchWindow : Model -> List FacilityType -> List (Html Msg)
 advancedSearchWindow model types =
     let
         query =
-            Maybe.withDefault "" model.query.q
+            Maybe.withDefault "" model.advancedSearch.q
 
         selectedType =
-            Maybe.withDefault 0 model.query.fType
+            Maybe.withDefault 0 model.advancedSearch.fType
     in
         if isAdvancedSearchOpen model then
             Shared.modalWindow
@@ -257,7 +231,7 @@ advancedSearchWindow model types =
                     , Html.select [ Shared.onSelect (Private << SetAdvancedSearchType) ] (selectOptions types selectedType)
                     ]
                 ]
-                [ a [ href "#", class "btn-flat", Shared.onClick (FullSearch model.query) ] [ text "Search" ] ]
+                [ a [ href "#", class "btn-flat", Shared.onClick (FullSearch model.advancedSearch) ] [ text "Search" ] ]
             -- TODO
         else
             []
