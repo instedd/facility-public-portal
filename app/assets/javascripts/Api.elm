@@ -5,7 +5,6 @@ import Http
 import Maybe exposing (andThen)
 import Models exposing (..)
 import Task
-import Utils exposing (..)
 
 
 type SuggestionsMsg
