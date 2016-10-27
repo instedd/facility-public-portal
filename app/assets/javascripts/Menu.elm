@@ -1,8 +1,8 @@
-module Menu exposing (Model(..), Item(..), toggle, anchor, menuContent, orContent)
+module Menu exposing (Model(..), Item(..), toggle, anchor, menuContent, toggleMenu, sideMenu)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Shared exposing (icon)
+import Shared exposing (icon, onClick)
 import Models exposing (Settings)
 import I18n exposing (..)
 
@@ -62,11 +62,27 @@ menuContent settings active =
             ]
 
 
-orContent : Settings -> Item -> Model -> List (Html a) -> List (Html a)
-orContent settings active model content =
+toggleMenu : Settings -> Item -> Model -> List (Html a) -> List (Html a)
+toggleMenu settings active model content =
     case model of
         Closed ->
             content
 
         Open ->
+            [ div []
+                [ div [ class "hide-on-med-and-down" ] [ menuContent settings active ]
+                , div [ class "hide-on-large-only" ] content
+                ]
+            ]
+
+
+sideMenu : Settings -> Item -> Model -> msg -> Html msg
+sideMenu settings active model toggleMsg =
+    div [ id "mobile-menu", class "hide-on-large-only" ]
+        [ div
+            [ classList [ ( "side-nav", True ), ( "active", model == Open ) ] ]
             [ menuContent settings active ]
+        , div
+            [ classList [ ( "overlay", True ), ( "hide", model == Closed ) ], onClick toggleMsg ]
+            []
+        ]

@@ -1,10 +1,9 @@
 module MainMenu exposing (..)
 
-import Models exposing (..)
-import Shared
-import Menu
 import Html exposing (..)
 import Html.App
+import Menu
+import Shared
 
 
 type alias Flags =
