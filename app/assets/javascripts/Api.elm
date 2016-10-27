@@ -65,14 +65,6 @@ type FacilityTypesMsg
     | FacilityTypesFailed Http.Error
 
 
-getFacilityTypes : (FacilityTypesMsg -> msg) -> Cmd msg
-getFacilityTypes wmsg =
-    let
-        url = "/api/facility_types"
-    in
-        Task.perform (wmsg << FacilityTypesFailed) (wmsg << FacilityTypesSuccess) (Http.get Decoders.facilityTypes url)
-
-
 emptySearch : SearchSpec
 emptySearch =
     { q = Nothing, s = Nothing, l = Nothing, latLng = Nothing, fType = Nothing, fName = Nothing }

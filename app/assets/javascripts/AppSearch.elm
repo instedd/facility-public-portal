@@ -15,7 +15,7 @@ import Debounce
 
 
 type alias Model =
-    { suggest : Suggest.Model, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult, mobileFocusMap : Bool, d : Debounce.State, facilityTypes: List FacilityType }
+    { suggest : Suggest.Model, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult, mobileFocusMap : Bool, d : Debounce.State, facilityTypes : List FacilityType }
 
 
 type PrivateMsg
@@ -171,9 +171,6 @@ view model =
 
         hideOnSuggestions =
             ( "hide", Suggest.hasSuggestionsToShow model.suggest )
-
-        showOnSuggestions =
-            ( "hide", not (Suggest.hasSuggestionsToShow model.suggest) )
 
         content =
             ( "content", True )
