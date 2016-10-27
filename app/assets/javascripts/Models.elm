@@ -1,9 +1,10 @@
 module Models exposing (..)
 
 import Date exposing (Date)
-import Utils exposing ((&>), discardEmpty)
 import Dict exposing (Dict)
+import SelectList exposing (..)
 import String
+import Utils exposing ((&>), discardEmpty)
 
 
 type alias Settings =
@@ -53,9 +54,10 @@ type alias Facility =
 
 
 type alias FacilityType =
-    { id: Int
-    , name: String
+    { id : Int
+    , name : String
     }
+
 
 type alias FacilitySummary =
     { id : Int
@@ -169,26 +171,16 @@ path : String -> SearchSpec -> String
 path base params =
     let
         queryParams =
-            List.concat
-                [ params.q
-                    |> Maybe.map (\q -> [ ( "q", q ) ])
-                    |> Maybe.withDefault []
-                , params.s
-                    |> Maybe.map (\s -> [ ( "s", toString s ) ])
-                    |> Maybe.withDefault []
-                , params.l
-                    |> Maybe.map (\l -> [ ( "l", toString l ) ])
-                    |> Maybe.withDefault []
-                , params.latLng
-                    |> Maybe.map (\( lat, lng ) -> [ ( "lat", toString lat ), ( "lng", toString lng ) ])
-                    |> Maybe.withDefault []
-                , params.fType
-                    |> Maybe.map (\fType -> [ ( "fType", toString fType ) ])
-                    |> Maybe.withDefault []
-                , params.fName
-                    |> Maybe.map (\fName -> [ ( "fName", fName ) ])
-                    |> Maybe.withDefault []
-                ]
+            select <|
+                List.map maybe
+                    [ Maybe.map (\q -> ( "q", q )) params.q
+                    , Maybe.map (\s -> ( "s", toString s )) params.s
+                    , Maybe.map (\l -> ( "l", toString l )) params.l
+                    , Maybe.map (\( lat, _ ) -> ( "lat", toString lat )) params.latLng
+                    , Maybe.map (\( _, lng ) -> ( "lng", toString lng )) params.latLng
+                    , Maybe.map (\fType -> ( "fType", toString fType )) params.fType
+                    , Maybe.map (\fName -> ( "fName", fName )) params.fName
+                    ]
     in
         Utils.buildPath base queryParams
 
