@@ -124,7 +124,7 @@ update s msg model =
                             ( model, Utils.performMessage (LocationClicked locationId) )
 
                         Suggest.Search q ->
-                            ( model, Utils.performMessage (Search <| { q = Just q, s = Nothing, l = Nothing, latLng = Nothing, fType = Nothing }) )
+                            ( model, Utils.performMessage (Search <| { q = Just q, s = Nothing, l = Nothing, latLng = Nothing, t = Nothing }) )
 
                         Suggest.FullSearch search ->
                             ( model, Utils.performMessage (Search <| search) )

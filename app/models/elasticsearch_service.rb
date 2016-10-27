@@ -93,8 +93,8 @@ class ElasticsearchService
       search_body[:query][:bool][:must] << { match: { service_ids: params[:s] } }
     end
 
-    if params[:fType]
-      search_body[:query][:bool][:must] << { match: { facility_type_id: params[:fType] } }
+    if params[:t]
+      search_body[:query][:bool][:must] << { match: { facility_type_id: params[:t] } }
     end
 
     if params[:l]

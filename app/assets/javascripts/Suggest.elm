@@ -106,7 +106,7 @@ update config msg model =
                         currentSearch =
                             model.advancedSearch
                     in
-                        ( { model | advancedSearch = { currentSearch | fType = Just t } }, Cmd.none )
+                        ( { model | advancedSearch = { currentSearch | t = Just t } }, Cmd.none )
 
         _ ->
             -- public events
@@ -217,7 +217,7 @@ advancedSearchWindow model types =
             Maybe.withDefault "" model.advancedSearch.q
 
         selectedType =
-            Maybe.withDefault 0 model.advancedSearch.fType
+            Maybe.withDefault 0 model.advancedSearch.t
     in
         if isAdvancedSearchOpen model then
             Shared.modalWindow
@@ -232,7 +232,6 @@ advancedSearchWindow model types =
                     ]
                 ]
                 [ a [ href "#", class "btn-flat", Shared.onClick (FullSearch model.advancedSearch) ] [ text "Search" ] ]
-            -- TODO
         else
             []
 

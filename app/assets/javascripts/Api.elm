@@ -66,7 +66,7 @@ type FacilityTypesMsg
 
 emptySearch : SearchSpec
 emptySearch =
-    { q = Nothing, s = Nothing, l = Nothing, latLng = Nothing, fType = Nothing }
+    { q = Nothing, s = Nothing, l = Nothing, latLng = Nothing, t = Nothing }
 
 
 byQuery : Maybe LatLng -> Maybe String -> SearchSpec

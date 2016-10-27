@@ -91,8 +91,8 @@ RSpec.describe ElasticsearchService do
 
     describe "by facility type" do
       it "works!" do
-        search_assert({ fType: 1 }, expected_names: ["1st Wetanibo Balchi"])
-        search_assert({ fType: 2 }, expected_names: ["Abaferet Hospital"])
+        search_assert({ t: 1 }, expected_names: ["1st Wetanibo Balchi"])
+        search_assert({ t: 2 }, expected_names: ["Abaferet Hospital"])
       end
     end
 
