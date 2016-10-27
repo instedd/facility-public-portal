@@ -417,23 +417,35 @@ localeControlView settings route =
 
 mapView : (a -> MainMsg) -> Settings -> Menu.Model -> Maybe Notice -> Shared.MapView a -> Html MainMsg
 mapView wmsg settings menuModel notice viewContent =
-    Shared.layout <|
-        div [] <|
-            select
-                [ include <|
-                    Shared.controlStack
-                        ((div [ class viewContent.headerClass ] [ Shared.header [ Menu.anchor ToggleMenu ] ])
-                            :: (Menu.orContent settings Menu.Map menuModel (Shared.lmap wmsg viewContent.content))
-                        )
-                , unless (List.isEmpty viewContent.bottom) <|
-                    div [ id "bottom-action", class "z-depth-1" ] (Shared.lmap wmsg viewContent.bottom)
-                , include <|
-                    div [ id "map-toolbar", class "z-depth-1" ] (Shared.lmap wmsg viewContent.toolbar)
-                , unless (List.isEmpty viewContent.modal) <|
-                    div [ id "modal", class "modal open" ] (Shared.lmap wmsg viewContent.modal)
-                , maybe <|
-                    Maybe.map noticePopup notice
-                ]
+    let
+        hosting =
+            Shared.lmap wmsg
+
+        header =
+            div [ class viewContent.headerClass ] [ Shared.header [ Menu.anchor ToggleMenu ] ]
+
+        togglingMenu =
+            Menu.toggleMenu settings Menu.Map menuModel
+
+        mobileMenu =
+            Menu.sideMenu settings Menu.Map menuModel ToggleMenu
+    in
+        Shared.layout <|
+            div [] <|
+                select
+                    [ include <|
+                        Shared.controlStack (header :: togglingMenu (hosting viewContent.content))
+                    , unless (List.isEmpty viewContent.bottom) <|
+                        div [ id "bottom-action", class "z-depth-1" ] (hosting viewContent.bottom)
+                    , include <|
+                        div [ id "map-toolbar", class "z-depth-1" ] (hosting viewContent.toolbar)
+                    , unless (List.isEmpty viewContent.modal) <|
+                        div [ id "modal", class "modal open" ] (hosting viewContent.modal)
+                    , include <|
+                        mobileMenu
+                    , maybe <|
+                        Maybe.map noticePopup notice
+                    ]
 
 
 noticePopup : Notice -> Html MainMsg

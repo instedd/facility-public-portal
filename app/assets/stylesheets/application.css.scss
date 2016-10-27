@@ -385,4 +385,26 @@ input[type="checkbox"]:checked + label:before {
   .facilityDetail .title {
     height: 72px;
   }
+
+  #mobile-menu {
+    .side-nav {
+      transition: 0.25s;
+      &.active {
+        transform: translateX(0);
+      }
+    }
+
+    // FIXME
+    li a i { top: 0; }
+
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.65);
+      z-index: 5;
+    }
+  }
 }
