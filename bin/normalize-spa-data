@@ -82,6 +82,7 @@ filenames = {
   facilities_services: "FacilityService.csv",
   services: "MedicalService.csv",
   locations: "OrganizationUnit.csv",
+  ownerships: "ownership.csv"
 }
 
 dataset = filenames.map_values do |filename|

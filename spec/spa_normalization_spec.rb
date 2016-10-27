@@ -2,8 +2,7 @@ require 'rails_helper'
 
 RSpec.describe SpaNormalization do
 
-  it "foo" do
-    # | last update   | ???                             |
+  it "generates normalized schema" do
     dataset = {
       facilities: [
         {
@@ -13,6 +12,7 @@ RSpec.describe SpaNormalization do
           "ContactInformationId" => "CI1",
           "OrganizationUnitId" => "L2",
           "FacilityTypeId" => "T1",
+          "OwnershipId" => "O2"
         }
       ],
 
@@ -50,6 +50,11 @@ RSpec.describe SpaNormalization do
         {"Id" => "L1", "OfficialName" => "Location 1", "ParentId" => "-----------------"},
         {"Id" => "L2", "OfficialName" => "Location 2", "ParentId" => "L1"}
       ],
+
+      ownerships: [
+        {"Id" => "O1", "OwnershipName" => "Public"},
+        {"Id" => "O2", "OwnershipName" => "Private"},
+      ]
     }
 
     result = SpaNormalization.new(dataset).run
@@ -61,6 +66,7 @@ RSpec.describe SpaNormalization do
                                          lng: 38.77668,
                                          location_id: "L2",
                                          facility_type: "Health Center",
+                                         ownership: "Private",
                                          contact_name: "Fikadu Tamicho Fetene",
                                          contact_email: "ftfetene@example.com",
                                          contact_phone: "924243855",
