@@ -59,11 +59,6 @@ searchMore wmsg result =
             Task.perform (wmsg << SearchFailed) (wmsg << SearchSuccess) (Http.get Decoders.search nextUrl)
 
 
-type FacilityTypesMsg
-    = FacilityTypesSuccess (List FacilityType)
-    | FacilityTypesFailed Http.Error
-
-
 emptySearch : SearchSpec
 emptySearch =
     { q = Nothing, s = Nothing, l = Nothing, latLng = Nothing, t = Nothing }

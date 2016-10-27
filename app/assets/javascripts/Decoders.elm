@@ -50,13 +50,6 @@ facilitySummary =
         |> required "adm" (list string)
 
 
-facilityType : Decoder FacilityType
-facilityType =
-    decode FacilityType
-        |> required "id" int
-        |> required "name" string
-
-
 service : Decoder Service
 service =
     decode Service
