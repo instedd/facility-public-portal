@@ -176,7 +176,7 @@ mainUpdate msg mainModel =
                                         ( homeModel, navigateSearchLocation locationId )
 
                                     AppHome.FullSearch search ->
-                                        ( homeModel, navigateSearch (Debug.log "search" search) )
+                                        ( homeModel, navigateSearch search )
 
                                     AppHome.Search q ->
                                         ( homeModel, navigateSearchQuery q )
