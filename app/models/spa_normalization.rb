@@ -24,11 +24,11 @@ class SpaNormalization
           lat: latlng["Latitude"],
           lng: latlng["Longitude"],
           location_id: f["OrganizationUnitId"],
+          ownership: ownerships[f["OwnershipId"]]["OwnershipName"].strip,
           facility_type: types[f["FacilityTypeId"]]["FacilityTypeName"].strip,
           contact_name: full_name.empty? ? nil : full_name.strip,
           contact_email: contact["Email"].try(:strip),
           contact_phone: contact["Telephone"].try(:strip),
-          ownership: ownerships[f["OwnershipId"]]["OwnershipName"].strip,
           last_update: nil # TODO
         }
       end

@@ -38,7 +38,8 @@ class ApplicationController < ActionController::Base
       "mapboxToken" => Settings.mapbox_token,
       "locales" => Settings.locales,
       "locale" => I18n.locale,
-      "facilityTypes" => ElasticsearchService.instance.get_facility_types
+      "facilityTypes" => ElasticsearchService.instance.get_facility_types,
+      "ownerships" => ElasticsearchService.instance.get_ownerships
     }
   end
 end

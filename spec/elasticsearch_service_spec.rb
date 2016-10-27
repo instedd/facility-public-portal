@@ -15,6 +15,7 @@ RSpec.describe ElasticsearchService do
                         lng: 38.761659,
                         location_id: "L3",
                         facility_type: "Health Center",
+                        ownership: "Government/Public",
                         contact_name: "",
                         contact_email: nil,
                         contact_phone: nil,
@@ -27,6 +28,7 @@ RSpec.describe ElasticsearchService do
                         lng: 38.370941,
                         location_id: "L4",
                         facility_type: "Primary Hospital",
+                        ownership: "Other governmental (military, prison, police)",
                         contact_name: "",
                         contact_email: nil,
                         contact_phone: nil,
@@ -131,6 +133,10 @@ RSpec.describe ElasticsearchService do
         end
       end
     end
+  end
+
+  it "provides all distinct ownership kinds" do
+    expect(elasticsearch_service.get_ownerships.size).to eq(2)
   end
 
   def search_assert(params, expected_names:, order_matters: false)

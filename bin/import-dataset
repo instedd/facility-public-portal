@@ -11,6 +11,8 @@ end
 
 input_path = ARGV[0]
 
+ENV["ELASTICSEARCH_LOG"] ||= "0"
+
 ElasticsearchService.instance.drop_index rescue nil
 ElasticsearchService.instance.setup_index
 ElasticsearchService.instance.setup_mappings
