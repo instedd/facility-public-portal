@@ -97,10 +97,6 @@ class ElasticsearchService
       search_body[:query][:bool][:must] << { match: { facility_type_id: params[:fType] } }
     end
 
-    if params[:fName]
-      search_body[:query][:bool][:must] << { match_phrase_prefix: { name: params[:fName] } }
-    end
-
     if params[:l]
       search_body[:query][:bool][:must] << { match: { adm_ids: params[:l] } }
     end

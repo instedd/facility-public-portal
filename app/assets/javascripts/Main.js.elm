@@ -470,17 +470,17 @@ navigateFacility =
 
 navigateSearchService : Int -> Cmd MainMsg
 navigateSearchService =
-    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Nothing, latLng = Nothing, s = Just id, fType = Nothing, fName = Nothing })
+    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Nothing, latLng = Nothing, s = Just id, fType = Nothing })
 
 
 navigateSearchLocation : Int -> Cmd MainMsg
 navigateSearchLocation =
-    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Just id, latLng = Nothing, s = Nothing, fType = Nothing, fName = Nothing })
+    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Just id, latLng = Nothing, s = Nothing, fType = Nothing })
 
 
 navigateSearchQuery : String -> Cmd MainMsg
 navigateSearchQuery =
-    Utils.performMessage << Navigate << (\q -> SearchRoute { q = Just q, l = Nothing, latLng = Nothing, s = Nothing, fType = Nothing, fName = Nothing })
+    Utils.performMessage << Navigate << (\q -> SearchRoute { q = Just q, l = Nothing, latLng = Nothing, s = Nothing, fType = Nothing })
 
 
 navigateSearch : SearchSpec -> Cmd MainMsg

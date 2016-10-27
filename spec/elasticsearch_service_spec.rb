@@ -96,13 +96,6 @@ RSpec.describe ElasticsearchService do
       end
     end
 
-    describe "by facility name" do
-      it "works!" do
-        search_assert({ fName: "Wet" }, expected_names: ["1st Wetanibo Balchi"])
-        search_assert({ fName: "Abaf" }, expected_names: ["Abaferet Hospital"])
-      end
-    end
-
     describe "sorting by user location" do
       it "works!" do
         search_assert({ lat: 8.959169, lng: 38.827452 }, expected_names: ["1st Wetanibo Balchi", "Abaferet Hospital"])

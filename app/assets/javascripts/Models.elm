@@ -29,7 +29,6 @@ type alias SearchSpec =
     , l : Maybe Int
     , latLng : Maybe LatLng
     , fType : Maybe Int
-    , fName : Maybe String
     }
 
 
@@ -179,7 +178,6 @@ path base params =
                     , Maybe.map (\( lat, _ ) -> ( "lat", toString lat )) params.latLng
                     , Maybe.map (\( _, lng ) -> ( "lng", toString lng )) params.latLng
                     , Maybe.map (\fType -> ( "fType", toString fType )) params.fType
-                    , Maybe.map (\fName -> ( "fName", fName )) params.fName
                     ]
     in
         Utils.buildPath base queryParams
@@ -200,8 +198,6 @@ specFromParams params =
     , fType =
         Dict.get "fType" params
             &> (String.toInt >> Result.toMaybe)
-    , fName =
-        Dict.get "fName" params
     }
 
 

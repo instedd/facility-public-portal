@@ -10,12 +10,13 @@ import String
 import Debounce
 import I18n exposing (..)
 
+
 type alias Config =
     { mapViewport : MapViewport }
 
 
 type alias Model =
-    { query : SearchSpec, suggestions : Maybe (List Models.Suggestion), d : Debounce.State, advanced: Bool }
+    { query : SearchSpec, suggestions : Maybe (List Models.Suggestion), d : Debounce.State, advanced : Bool }
 
 
 type PrivateMsg
@@ -40,7 +41,8 @@ type Msg
 hasSuggestionsToShow : Model -> Bool
 hasSuggestionsToShow model =
     let
-        a = Maybe.withDefault "" model.query.q
+        a =
+            Maybe.withDefault "" model.query.q
     in
         (a /= "") && (model.suggestions /= Nothing)
 
@@ -62,7 +64,6 @@ initSearch q =
     , l = Nothing
     , latLng = Nothing
     , fType = Nothing
-    , fName = Nothing
     }
 
 
@@ -84,7 +85,8 @@ update config msg model =
 
                 FetchSuggestions ->
                     let
-                        a = Maybe.withDefault "" model.query.q
+                        a =
+                            Maybe.withDefault "" model.query.q
                     in
                         searchSuggestions config a model
 
@@ -92,7 +94,8 @@ update config msg model =
                     case msg of
                         Api.SuggestionsSuccess query suggestions ->
                             let
-                                a = Maybe.withDefault "" model.query.q
+                                a =
+                                    Maybe.withDefault "" model.query.q
                             in
                                 if (query == a) then
                                     ( { model | suggestions = Just suggestions }, Cmd.none )
@@ -114,14 +117,16 @@ update config msg model =
                         ( { model | advanced = False }, Cmd.none )
 
                 SetAdvancedSearchName search ->
-                    let query =
-                        { q = model.query.q, l = model.query.l, s = model.query.s, latLng = model.query.latLng, fType = model.query.fType, fName = Just search }
+                    let
+                        query =
+                            { q = Just search, l = model.query.l, s = model.query.s, latLng = model.query.latLng, fType = model.query.fType }
                     in
                         ( { model | query = query }, Cmd.none )
 
                 SetAdvancedSearchType search ->
-                    let query =
-                        { q = model.query.q, l = model.query.l, s = model.query.s, latLng = model.query.latLng, fName = model.query.fName, fType = Just search }
+                    let
+                        query =
+                            { q = model.query.q, l = model.query.l, s = model.query.s, latLng = model.query.latLng, fType = Just search }
                     in
                         ( { model | query = query }, Cmd.none )
 
@@ -147,9 +152,11 @@ viewInput model =
 viewInputWith : (Msg -> a) -> Model -> Html a -> Html a
 viewInputWith wmsg model trailing =
     let
-        a = Maybe.withDefault "" model.query.q
+        a =
+            Maybe.withDefault "" model.query.q
     in
         Shared.searchBar a (wmsg <| Search a) (wmsg << Private << Input) trailing
+
 
 viewSuggestions : Model -> List (Html Msg)
 viewSuggestions model =
@@ -231,8 +238,10 @@ isAdvancedSearchOpen model =
 
 advancedSearchWindow : Model -> List FacilityType -> List (Html Msg)
 advancedSearchWindow model types =
-    let query =
-            Maybe.withDefault "" model.query.fName
+    let
+        query =
+            Maybe.withDefault "" model.query.q
+
         selectedType =
             Maybe.withDefault 0 model.query.fType
     in
@@ -242,13 +251,14 @@ advancedSearchWindow model types =
                 , a [ href "#", class "right", Shared.onClick (Private ToggleAdvancedSearch) ] [ Shared.icon "close" ]
                 ]
                 [ Html.form [ action "#", method "GET" ]
-                    [ label [ for "fName" ] [ text "Facility name" ]
-                    , input [ id "fName", type' "text", value query, onInput (Private << SetAdvancedSearchName) ] []
+                    [ label [ for "q" ] [ text "Facility name" ]
+                    , input [ id "q", type' "text", value query, onInput (Private << SetAdvancedSearchName) ] []
                     , label [] [ text "Facility type" ]
-                    , Html.select [ Shared.onSelect (Private << SetAdvancedSearchType)] (selectOptions types selectedType)
+                    , Html.select [ Shared.onSelect (Private << SetAdvancedSearchType) ] (selectOptions types selectedType)
                     ]
                 ]
-                [ a [ href "#", class "btn-flat", Shared.onClick (FullSearch {q = Nothing, s = Nothing, l = Nothing, latLng = Nothing, fName = model.query.fName, fType = model.query.fType }) ] [ text "Search" ] ]
+                [ a [ href "#", class "btn-flat", Shared.onClick (FullSearch model.query) ] [ text "Search" ] ]
+            -- TODO
         else
             []
 
@@ -256,10 +266,12 @@ advancedSearchWindow model types =
 selectOptions : List FacilityType -> Int -> List (Html a)
 selectOptions types selectedType =
     [ Html.option [ value "0" ] [ text "" ] ]
-    ++ (List.map (\ftype ->
-        if selectedType == ftype.id then
-            Html.option [ value (toString ftype.id), selected True ] [ text ftype.name ]
-        else
-            Html.option [ value (toString ftype.id) ] [ text ftype.name ]
-        ) types )
-
+        ++ (List.map
+                (\ftype ->
+                    if selectedType == ftype.id then
+                        Html.option [ value (toString ftype.id), selected True ] [ text ftype.name ]
+                    else
+                        Html.option [ value (toString ftype.id) ] [ text ftype.name ]
+                )
+                types
+           )
