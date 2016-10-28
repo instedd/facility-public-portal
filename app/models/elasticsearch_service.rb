@@ -102,6 +102,10 @@ class ElasticsearchService
       search_body[:query][:bool][:must] << { match: { facility_type_id: params[:t] } }
     end
 
+    if params[:o]
+      search_body[:query][:bool][:must] << { match: { ownership_id: params[:o] } }
+    end
+
     if params[:l]
       search_body[:query][:bool][:must] << { match: { adm_ids: params[:l] } }
     end
