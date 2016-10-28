@@ -6,7 +6,7 @@ import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
-import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, FacilitySummary, FacilityType, Ownership, shouldLoadMore)
+import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, FacilitySummary, FacilityType, Ownership, shouldLoadMore, emptySearch)
 import Shared exposing (MapView, icon, classNames)
 import Utils exposing (mapTCmd)
 import UserLocation
@@ -146,7 +146,7 @@ update s msg model =
                             ( model, Utils.performMessage (LocationClicked locationId) )
 
                         Suggest.Search q ->
-                            ( model, Utils.performMessage (Search <| { q = Just q, s = Nothing, l = Nothing, latLng = Nothing, t = Nothing, o = Nothing }) )
+                            ( model, Utils.performMessage (Search <| { emptySearch | q = Just q }) )
 
                         Suggest.FullSearch search ->
                             ( model, Utils.performMessage (Search <| search) )

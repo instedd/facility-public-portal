@@ -26,11 +26,11 @@ type Route
 
 type alias SearchSpec =
     { q : Maybe String
-    , s : Maybe Int
-    , l : Maybe Int
+    , service : Maybe Int
+    , location : Maybe Int
     , latLng : Maybe LatLng
-    , t : Maybe Int
-    , o : Maybe Int
+    , fType : Maybe Int
+    , ownership : Maybe Int
     }
 
 
@@ -181,12 +181,12 @@ path base params =
             select <|
                 List.map maybe
                     [ Maybe.map (\q -> ( "q", q )) params.q
-                    , Maybe.map (\s -> ( "service", toString s )) params.s
-                    , Maybe.map (\l -> ( "location", toString l )) params.l
+                    , Maybe.map (\s -> ( "service", toString s )) params.service
+                    , Maybe.map (\l -> ( "location", toString l )) params.location
                     , Maybe.map (\( lat, _ ) -> ( "lat", toString lat )) params.latLng
                     , Maybe.map (\( _, lng ) -> ( "lng", toString lng )) params.latLng
-                    , Maybe.map (\t -> ( "type", toString t )) params.t
-                    , Maybe.map (\o -> ( "ownership", toString o )) params.o
+                    , Maybe.map (\t -> ( "type", toString t )) params.fType
+                    , Maybe.map (\o -> ( "ownership", toString o )) params.ownership
                     ]
     in
         Utils.buildPath base queryParams
@@ -195,17 +195,17 @@ path base params =
 specFromParams : Dict String String -> SearchSpec
 specFromParams params =
     { q = Dict.get "q" params &> discardEmpty
-    , s = intParam "service" params
-    , l = intParam "location" params
+    , service = intParam "service" params
+    , location = intParam "location" params
     , latLng = paramsLatLng params
-    , t = intParam "type" params
-    , o = intParam "ownership" params
+    , fType = intParam "type" params
+    , ownership = intParam "ownership" params
     }
 
 
 emptySearch : SearchSpec
 emptySearch =
-    { q = Nothing, s = Nothing, l = Nothing, latLng = Nothing, t = Nothing, o = Nothing }
+    { q = Nothing, service = Nothing, location = Nothing, latLng = Nothing, fType = Nothing, ownership = Nothing }
 
 
 

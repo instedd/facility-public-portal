@@ -483,12 +483,12 @@ navigateFacility =
 
 navigateSearchService : Int -> Cmd MainMsg
 navigateSearchService id =
-    Utils.performMessage <| Navigate (SearchRoute { emptySearch | s = Just id })
+    Utils.performMessage <| Navigate (SearchRoute { emptySearch | service = Just id })
 
 
 navigateSearchLocation : Int -> Cmd MainMsg
 navigateSearchLocation id =
-    Utils.performMessage <| Navigate (SearchRoute { emptySearch | l = Just id })
+    Utils.performMessage <| Navigate (SearchRoute { emptySearch | location = Just id })
 
 
 navigateSearchQuery : String -> Cmd MainMsg

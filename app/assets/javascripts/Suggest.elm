@@ -107,14 +107,14 @@ update config msg model =
                         currentSearch =
                             model.advancedSearch
                     in
-                        ( { model | advancedSearch = { currentSearch | t = Just t } }, Cmd.none )
+                        ( { model | advancedSearch = { currentSearch | fType = Just t } }, Cmd.none )
 
                 SetAdvancedSearchOwnership o ->
                     let
                         currentSearch =
                             model.advancedSearch
                     in
-                        ( { model | advancedSearch = { currentSearch | o = Just o } }, Cmd.none )
+                        ( { model | advancedSearch = { currentSearch | ownership = Just o } }, Cmd.none )
 
         _ ->
             -- public events
@@ -232,9 +232,9 @@ advancedSearchWindow model types ownerships =
                     [ label [ for "q" ] [ text "Facility name" ]
                     , input [ id "q", type' "text", value query, onInput (Private << SetAdvancedSearchName) ] []
                     , label [] [ text "Facility type" ]
-                    , Html.select [ Shared.onSelect (Private << SetAdvancedSearchType) ] (selectOptions types model.advancedSearch.t)
+                    , Html.select [ Shared.onSelect (Private << SetAdvancedSearchType) ] (selectOptions types model.advancedSearch.fType)
                     , label [] [ text "Ownership" ]
-                    , Html.select [ Shared.onSelect (Private << SetAdvancedSearchOwnership) ] (selectOptions ownerships model.advancedSearch.o)
+                    , Html.select [ Shared.onSelect (Private << SetAdvancedSearchOwnership) ] (selectOptions ownerships model.advancedSearch.ownership)
                     ]
                 ]
                 [ a [ href "#", class "btn-flat", Shared.onClick (FullSearch model.advancedSearch) ] [ text "Search" ] ]
