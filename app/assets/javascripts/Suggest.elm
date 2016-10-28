@@ -1,4 +1,4 @@
-module Suggest exposing (Config, Model, Msg(..), PrivateMsg, init, empty, update, hasSuggestionsToShow, viewInput, viewInputWith, viewSuggestions, advancedSearchWindow)
+module Suggest exposing (Config, Model, Msg(..), PrivateMsg, init, subscriptions, empty, update, hasSuggestionsToShow, viewInput, viewInputWith, viewSuggestions, advancedSearchWindow)
 
 import Shared exposing (icon)
 import Api
@@ -10,6 +10,7 @@ import String
 import Debounce
 import I18n exposing (..)
 import NavegableList exposing (..)
+import KeyboardControl
 
 
 type alias Config =
@@ -23,6 +24,7 @@ type alias Model =
 type PrivateMsg
     = Input String
     | ApiSug Api.SuggestionsMsg
+    | Key KeyboardControl.ControlKey
     | FetchSuggestions
     | Deb (Debounce.Msg Msg)
     | ToggleAdvancedSearch
@@ -86,6 +88,18 @@ update config msg model =
                             -- TODO
                             ( model, Cmd.none )
 
+                Key k ->
+                    case model.suggestions of
+                        Nothing ->
+                            ( model, Cmd.none )
+
+                        Just s ->
+                            let
+                                ( s', cmds ) =
+                                    KeyboardControl.handleKey (Search model.query) enterSuggestion k s
+                            in
+                                ( { model | suggestions = Just s' }, cmds )
+
                 Deb a ->
                     Debounce.update cfg a model
 
@@ -130,7 +144,7 @@ viewInput model =
 
 viewInputWith : (Msg -> a) -> Model -> Html a -> Html a
 viewInputWith wmsg model trailing =
-    Shared.searchBar model.query (wmsg <| Search model.query) (wmsg << Private << Input) trailing
+    Shared.searchBar model.query (wmsg << Private << Input) trailing
 
 
 viewSuggestions : Model -> List (Html Msg)
@@ -140,37 +154,32 @@ viewSuggestions model =
             []
 
         Just s ->
-            [ suggestionsContent s, advancedSearchFooter ]
+            [ displaySuggestions s, advancedSearchFooter ]
 
 
-suggestionsContent : NavegableList Models.Suggestion -> Html Msg
-suggestionsContent s =
+displaySuggestions : NavegableList Models.Suggestion -> Html Msg
+displaySuggestions suggestions =
     let
-        sl =
-            toList s
-
-        entries =
-            case sl of
-                [] ->
-                    [ div
-                        [ class "no-results" ]
-                        [ span [ class "search-icon" ] [ icon "find_in_page" ]
-                        , text "No results found"
-                        ]
+        content =
+            if NavegableList.isEmpty suggestions then
+                [ div
+                    [ class "no-results" ]
+                    [ span [ class "search-icon" ] [ icon "find_in_page" ]
+                    , text "No results found"
                     ]
-
-                _ ->
-                    List.map suggestion sl
+                ]
+            else
+                List.map (uncurry suggestion) (toListWithFocus suggestions)
     in
-        div [ class "content collection results" ] entries
+        div [ class "content collection results" ] content
 
 
-suggestion : Models.Suggestion -> Html Msg
-suggestion s =
+suggestion : Models.Suggestion -> Bool -> Html Msg
+suggestion s isFocused =
     case s of
         Models.F { id, name, facilityType, adm } ->
             a
-                [ class "collection-item avatar suggestion"
+                [ classList [ ( "collection-item avatar suggestion", True ), ( "active", isFocused ) ]
                 , onClick <| FacilityClicked id
                 ]
                 [ icon "local_hospital"
@@ -181,7 +190,7 @@ suggestion s =
 
         Models.S { id, name, facilityCount } ->
             a
-                [ class "collection-item avatar suggestion"
+                [ classList [ ( "collection-item avatar suggestion", True ), ( "active", isFocused ) ]
                 , onClick <| ServiceClicked id
                 ]
                 [ icon "label"
@@ -192,7 +201,7 @@ suggestion s =
 
         Models.L { id, name, parentName } ->
             a
-                [ class "collection-item avatar suggestion"
+                [ classList [ ( "collection-item avatar suggestion", True ), ( "active", isFocused ) ]
                 , onClick <| LocationClicked id
                 ]
                 [ icon "location_on"
@@ -251,3 +260,21 @@ selectOptions types selectedType =
                 )
                 types
            )
+
+
+enterSuggestion : Models.Suggestion -> Msg
+enterSuggestion s =
+    case s of
+        Models.F { id } ->
+            FacilityClicked id
+
+        Models.S { id } ->
+            ServiceClicked id
+
+        Models.L { id } ->
+            LocationClicked id
+
+
+subscriptions : Sub Msg
+subscriptions =
+    Sub.map (Private << Key) KeyboardControl.subscriptions

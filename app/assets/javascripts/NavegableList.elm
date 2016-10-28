@@ -8,6 +8,7 @@ module NavegableList
         , focusedElement
         , focusNext
         , focusPrevious
+        , isEmpty
         )
 
 
@@ -115,3 +116,8 @@ focusPrevious nl =
                 _ ->
                     -- can't happen
                     nl
+
+
+isEmpty : NavegableList a -> Bool
+isEmpty l =
+    List.isEmpty (toList l)

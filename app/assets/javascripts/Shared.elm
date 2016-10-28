@@ -5,9 +5,9 @@ import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
 import Json.Decode
-import Models
 import String
 import I18n exposing (..)
+
 
 type alias LHtml a =
     List (Html a)
@@ -63,20 +63,19 @@ header content =
         ]
 
 
-searchBar : String -> a -> (String -> a) -> Html a -> Html a
-searchBar userInput submitMsg inputMsg trailing =
+searchBar : String -> (String -> a) -> Html a -> Html a
+searchBar userInput inputMsg trailing =
     div [ class "search-box" ]
         [ div [ class "search" ]
-            [ Html.form [ action "#", method "GET", autocomplete False, Events.onSubmit submitMsg ]
-                [ input
-                    [ type' "search"
-                    , placeholder <| t SearchHealthFacility
-                    , value userInput
-                    , Events.onInput inputMsg
-                    ]
-                    []
-                , trailing
+            [ input
+                [ type' "search"
+                , value userInput
+                , placeholder <| t SearchHealthFacility
+                , attribute "onkeydown" "FPP.handleControlKeys(event)"
+                , Events.onInput inputMsg
                 ]
+                []
+            , trailing
             ]
         ]
 
@@ -107,7 +106,8 @@ modalWindow : LHtml a -> LHtml a -> LHtml a -> LHtml a
 modalWindow header body footer =
     [ div [ class "modal-content" ]
         [ div [ class "header" ] header
-        , div [ class "body" ] body ]
+        , div [ class "body" ] body
+        ]
     , div [ class "modal-footer" ] footer
     ]
 

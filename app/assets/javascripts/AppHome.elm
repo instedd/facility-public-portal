@@ -64,7 +64,7 @@ update s msg model =
                             ( model, Utils.performMessage (Search q) )
 
                         Suggest.FullSearch search ->
-                            ( model, Utils.performMessage (FullSearch search))
+                            ( model, Utils.performMessage (FullSearch search) )
 
                         _ ->
                             wrapSuggest model <| Suggest.update { mapViewport = model.mapViewport } msg model.suggest
@@ -149,6 +149,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Sub.map (Private << MapMsg) Map.subscriptions
+        , Sub.map (Private << SuggestMsg) Suggest.subscriptions
         , Map.facilityMarkerClicked FacilityClicked
         ]
 

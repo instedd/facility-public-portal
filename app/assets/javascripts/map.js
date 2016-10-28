@@ -246,4 +246,14 @@ $(document).ready(function() {
   elm.ports.jsCommand.subscribe(function(msg) {
     FPP.commands[msg[0]](msg[1]);
   });
+
+
+  // Elm does not easily allow to perform selective preventDefault and stopPropagation
+  FPP.handleControlKeys = function(e) {
+    if ($.inArray(e.keyCode, [13,38,40]) >= 0) {
+      elm.ports.controlKeys.send(e.keyCode);
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
 });

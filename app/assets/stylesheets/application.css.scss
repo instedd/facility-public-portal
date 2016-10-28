@@ -298,6 +298,10 @@ input[type="checkbox"]:checked + label:before {
     min-height: auto;
     cursor: default;
 
+    &:hover, &.active {
+      background-color: #ddd
+    }
+
     i {
       position: absolute;
       left: 15px;
