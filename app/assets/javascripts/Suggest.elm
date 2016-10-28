@@ -139,7 +139,7 @@ viewSuggestions model =
             []
 
         Just s ->
-            [ suggestionsContent s ] ++ advancedSearchFooter
+            [ suggestionsContent s, advancedSearchFooter ]
 
 
 suggestionsContent : List Models.Suggestion -> Html Msg
@@ -158,7 +158,7 @@ suggestionsContent s =
                 _ ->
                     List.map suggestion s
     in
-        div [ class "collection results content" ] entries
+        div [ class "content collection results" ] entries
 
 
 suggestion : Models.Suggestion -> Html Msg
@@ -199,10 +199,9 @@ suggestion s =
 
 
 advancedSearchFooter =
-    [ div
+    div
         [ class "footer" ]
         [ a [ href "#", Shared.onClick (Private ToggleAdvancedSearch) ] [ text "Advanced Search" ] ]
-    ]
 
 
 isAdvancedSearchOpen : Model -> Bool

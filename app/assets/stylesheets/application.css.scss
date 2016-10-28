@@ -90,12 +90,10 @@ nav .nav-wrapper {
   top: 12px;
   width: 390px;
   min-width: 318px;
+  max-height: 95%;
   flex-direction: column;
   overflow: hidden;
   z-index: 3;
-  // Redundancy for fallback
-  max-height: 96%;
-  max-height: calc(100% - 24px);
 
   .preloader-wrapper {
     margin: 40px auto;
@@ -217,11 +215,6 @@ nav .nav-wrapper {
 .search-box {
   width: 100%;
   padding: 5px 10px 0 10px;
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
-  display: flex;
   -webkit-box-flex-wrap: wrap;
   -moz-box-flex-wrap: wrap;
   -ms-flex-flex-wrap: wrap;
@@ -279,7 +272,6 @@ input[type="checkbox"]:checked + label:before {
 }
 
 .content {
-  max-height: 74vh;
   overflow-y: scroll;
   overflow-x: hidden;
 }
@@ -342,10 +334,11 @@ input[type="checkbox"]:checked + label:before {
     max-height: 100%;
 
     .content {
-      // There needs to be space for footer and header height
-      min-height: 70vh;
-      min-height: calc(100% - 72px - 55px - 50px);
       overflow-y: scroll;
+
+      &.expand {
+        height: 100vh;
+      }
     }
   }
 

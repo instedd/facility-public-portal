@@ -160,6 +160,9 @@ wrapSuggest model =
 view : Model -> MapView Msg
 view model =
     let
+        anySuggestion =
+            Suggest.hasSuggestionsToShow model.suggest
+
         onlyMobile =
             ( "hide-on-large-only", True )
 
@@ -170,10 +173,7 @@ view model =
             ( "hide-on-med-and-down", not model.mobileFocusMap )
 
         hideOnSuggestions =
-            ( "hide", Suggest.hasSuggestionsToShow model.suggest )
-
-        content =
-            ( "content", True )
+            ( "hide", anySuggestion )
     in
         { headerClass = classNames [ hideOnMobileListingFocused ]
         , content =
@@ -182,17 +182,17 @@ view model =
                 [ mobileBackHeader ]
             , suggestionInput model
             , div
-                [ classList [ hideOnSuggestions, hideOnMobileMapFocused, content ] ]
+                [ classList [ hideOnSuggestions, hideOnMobileMapFocused, ( "content expand", True ) ] ]
                 [ searchResults model ]
             ]
                 ++ suggestionItems model
         , toolbar =
             [ userLocationView model ]
         , bottom =
-            [ div
-                [ classList [ hideOnMobileListingFocused ] ]
+            if (model.mobileFocusMap && not anySuggestion) then
                 [ mobileFocusToggleView ]
-            ]
+            else
+                []
         , modal = List.map (Html.App.map (Private << SuggestMsg)) (Suggest.advancedSearchWindow model.suggest model.facilityTypes)
         }
 

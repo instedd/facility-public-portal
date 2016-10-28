@@ -436,7 +436,7 @@ facilityDetail cssClasses now facility =
                     [ class "material-icons right", Events.onClick Close ]
                     [ text "clear" ]
                 ]
-            , div [ class "content" ]
+            , div [ class "content expand" ]
                 [ div [ class "detailSection pic" ] [ img [ src "/facility.png" ] [] ]
                 , div [ class "detailSection actions" ] [ facilityActions ]
                 , div [ class "detailSection contact" ] [ facilityContactDetails contactInfo ]
