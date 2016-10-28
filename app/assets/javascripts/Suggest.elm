@@ -1,4 +1,4 @@
-module Suggest exposing (Config, Model, Msg(..), PrivateMsg, init, subscriptions, empty, update, hasSuggestionsToShow, viewInput, viewInputWith, viewSuggestions, advancedSearchWindow)
+module Suggest exposing (Config, Model, Msg(..), PrivateMsg, init, keyboardSubscriptions, empty, update, hasSuggestionsToShow, viewInput, viewInputWith, viewSuggestions, advancedSearchWindow, handleKey)
 
 import Shared exposing (icon)
 import Api
@@ -89,16 +89,7 @@ update config msg model =
                             ( model, Cmd.none )
 
                 Key k ->
-                    case model.suggestions of
-                        Nothing ->
-                            ( model, Cmd.none )
-
-                        Just s ->
-                            let
-                                ( s', cmds ) =
-                                    KeyboardControl.handleKey (Search model.query) enterSuggestion k s
-                            in
-                                ( { model | suggestions = Just s' }, cmds )
+                    handleKey model k
 
                 Deb a ->
                     Debounce.update cfg a model
@@ -275,6 +266,20 @@ enterSuggestion s =
             LocationClicked id
 
 
-subscriptions : Sub Msg
-subscriptions =
+keyboardSubscriptions : Sub Msg
+keyboardSubscriptions =
     Sub.map (Private << Key) KeyboardControl.subscriptions
+
+
+handleKey : Model -> KeyboardControl.ControlKey -> ( Model, Cmd Msg )
+handleKey model key =
+    case model.suggestions of
+        Nothing ->
+            ( model, Cmd.none )
+
+        Just entries ->
+            let
+                ( entries', cmds ) =
+                    KeyboardControl.handleKey (Search model.query) enterSuggestion key entries
+            in
+                ( { model | suggestions = Just entries' }, cmds )

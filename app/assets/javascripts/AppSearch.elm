@@ -12,10 +12,19 @@ import Utils exposing (mapTCmd)
 import UserLocation
 import Suggest
 import Debounce
+import KeyboardControl
+import NavegableList exposing (..)
 
 
 type alias Model =
     { suggest : Suggest.Model, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult, mobileFocusMap : Bool, d : Debounce.State, facilityTypes : List FacilityType }
+
+
+type alias SearchResult =
+    -- Same as Models.SearchResult but track the focused element
+    { items : NavegableList FacilitySummary
+    , nextUrl : Maybe String
+    }
 
 
 type PrivateMsg
@@ -28,6 +37,7 @@ type PrivateMsg
     | ToggleMobileFocus
     | Deb (Debounce.Msg Msg)
     | PerformSearch
+    | Key KeyboardControl.ControlKey
 
 
 type Msg
@@ -85,7 +95,7 @@ update s msg model =
                             else
                                 Cmd.none
                     in
-                        { model | results = Just results }
+                        { model | results = Just (navegable results) }
                             ! [ loadMore, Map.fitContent, addFacilities ]
 
                 ApiSearch (Api.SearchFailed _) ->
@@ -137,6 +147,12 @@ update s msg model =
 
                 Deb a ->
                     Debounce.update cfg a model
+
+                Key k ->
+                    if Suggest.hasSuggestionsToShow model.suggest then
+                        wrapSuggest model <| Suggest.handleKey model.suggest k
+                    else
+                        handleKey model k
 
         _ ->
             -- public events
@@ -238,7 +254,9 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Sub.map (Private << MapMsg) Map.subscriptions
+          -- , Sub.map (Private << SuggestMsg) Suggest.subscriptions
         , Map.facilityMarkerClicked FacilityClicked
+        , Sub.map (Private << Key) KeyboardControl.subscriptions
         ]
 
 
@@ -267,18 +285,37 @@ searchResults model =
                     []
 
                 Just results ->
-                    List.map facilityRow results.items
+                    List.map (uncurry facilityRow) (toListWithFocus results.items)
     in
         div [ class "collection results" ] entries
 
 
-facilityRow : FacilitySummary -> Html Msg
-facilityRow f =
+facilityRow : FacilitySummary -> Bool -> Html Msg
+facilityRow f focus =
     a
-        [ class "collection-item result avatar"
+        [ classList [ ( "collection-item result avatar", True ), ( "active", focus ) ]
         , Events.onClick <| FacilityClicked f.id
         ]
         [ icon "local_hospital"
         , span [ class "title" ] [ text f.name ]
         , p [ class "sub" ] [ text f.facilityType ]
         ]
+
+
+navegable : Models.SearchResult -> SearchResult
+navegable r =
+    { r | items = (NavegableList.fromList r.items) }
+
+
+handleKey : Model -> KeyboardControl.ControlKey -> ( Model, Cmd Msg )
+handleKey model key =
+    case model.results of
+        Nothing ->
+            ( model, Cmd.none )
+
+        Just sr ->
+            let
+                ( entries', cmds ) =
+                    KeyboardControl.handleKey (Private PerformSearch) (\entry -> FacilityClicked entry.id) key sr.items
+            in
+                ( { model | results = Just { sr | items = entries' } }, cmds )
