@@ -1,10 +1,9 @@
 module AppHome exposing (Model, Msg(..), PrivateMsg, init, view, update, subscriptions, mapViewport, userLocation)
 
-import Api exposing (emptySearch)
-import Html exposing (..)
+import Api
 import Html.App
 import Map
-import Models exposing (Settings, MapViewport, LatLng, SearchResult, FacilityType, SearchSpec, shouldLoadMore)
+import Models exposing (Settings, MapViewport, LatLng, SearchResult, FacilityType, Ownership, SearchSpec, shouldLoadMore, emptySearch)
 import Shared exposing (MapView)
 import Utils exposing (mapFst, mapTCmd)
 import UserLocation
@@ -13,7 +12,13 @@ import Debounce
 
 
 type alias Model =
-    { suggest : Suggest.Model, mapViewport : MapViewport, userLocation : UserLocation.Model, d : Debounce.State, facilityTypes : List FacilityType }
+    { suggest : Suggest.Model
+    , mapViewport : MapViewport
+    , userLocation : UserLocation.Model
+    , d : Debounce.State
+    , facilityTypes : List FacilityType
+    , ownerships : List Ownership
+    }
 
 
 type PrivateMsg
@@ -37,11 +42,21 @@ type Msg
 
 init : Settings -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init settings mapViewport userLocation =
-    { suggest = Suggest.empty, mapViewport = mapViewport, userLocation = userLocation, d = Debounce.init, facilityTypes = settings.facilityTypes }
-        ! [ searchAllFacilitiesStartingFrom mapViewport.center
-          , Map.removeHighlightedFacilityMarker
-          , Map.fitContentUsingPadding False
-          ]
+    let
+        model =
+            { suggest = Suggest.empty
+            , mapViewport = mapViewport
+            , userLocation = userLocation
+            , d = Debounce.init
+            , facilityTypes = settings.facilityTypes
+            , ownerships = settings.ownerships
+            }
+    in
+        model
+            ! [ searchAllFacilitiesStartingFrom mapViewport.center
+              , Map.removeHighlightedFacilityMarker
+              , Map.fitContentUsingPadding False
+              ]
 
 
 update : Settings -> Msg -> Model -> ( Model, Cmd Msg )
@@ -64,7 +79,7 @@ update s msg model =
                             ( model, Utils.performMessage (Search q) )
 
                         Suggest.FullSearch search ->
-                            ( model, Utils.performMessage (FullSearch search))
+                            ( model, Utils.performMessage (FullSearch search) )
 
                         _ ->
                             wrapSuggest model <| Suggest.update { mapViewport = model.mapViewport } msg model.suggest
@@ -129,7 +144,7 @@ view model =
     , content = suggestionInput model :: (suggestionItems model)
     , toolbar = [ userLocationView model ]
     , bottom = []
-    , modal = List.map (Html.App.map (Private << SuggestMsg)) (Suggest.advancedSearchWindow model.suggest model.facilityTypes)
+    , modal = List.map (Html.App.map (Private << SuggestMsg)) (Suggest.advancedSearchWindow model.suggest model.facilityTypes model.ownerships)
     }
 
 

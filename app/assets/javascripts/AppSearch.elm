@@ -6,7 +6,7 @@ import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
-import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, FacilitySummary, FacilityType, shouldLoadMore)
+import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, FacilitySummary, FacilityType, Ownership, shouldLoadMore)
 import Shared exposing (MapView, icon, classNames)
 import Utils exposing (mapTCmd)
 import UserLocation
@@ -15,7 +15,16 @@ import Debounce
 
 
 type alias Model =
-    { suggest : Suggest.Model, query : SearchSpec, mapViewport : MapViewport, userLocation : UserLocation.Model, results : Maybe SearchResult, mobileFocusMap : Bool, d : Debounce.State, facilityTypes : List FacilityType }
+    { suggest : Suggest.Model
+    , query : SearchSpec
+    , mapViewport : MapViewport
+    , userLocation : UserLocation.Model
+    , results : Maybe SearchResult
+    , mobileFocusMap : Bool
+    , d : Debounce.State
+    , facilityTypes : List FacilityType
+    , ownerships : List Ownership
+    }
 
 
 type PrivateMsg
@@ -47,10 +56,23 @@ restoreCmd =
 
 init : Settings -> SearchSpec -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init s query mapViewport userLocation =
-    { suggest = Suggest.init (queryText query), query = query, mapViewport = mapViewport, userLocation = userLocation, results = Nothing, mobileFocusMap = True, d = Debounce.init, facilityTypes = s.facilityTypes }
-        ! [ Api.search (Private << ApiSearch) { query | latLng = Just mapViewport.center }
-          , restoreCmd
-          ]
+    let
+        model =
+            { suggest = Suggest.init (queryText query)
+            , query = query
+            , mapViewport = mapViewport
+            , userLocation = userLocation
+            , results = Nothing
+            , mobileFocusMap = True
+            , d = Debounce.init
+            , facilityTypes = s.facilityTypes
+            , ownerships = s.ownerships
+            }
+    in
+        model
+            ! [ Api.search (Private << ApiSearch) { query | latLng = Just mapViewport.center }
+              , restoreCmd
+              ]
 
 
 update : Settings -> Msg -> Model -> ( Model, Cmd Msg )
@@ -124,7 +146,7 @@ update s msg model =
                             ( model, Utils.performMessage (LocationClicked locationId) )
 
                         Suggest.Search q ->
-                            ( model, Utils.performMessage (Search <| { q = Just q, s = Nothing, l = Nothing, latLng = Nothing, t = Nothing }) )
+                            ( model, Utils.performMessage (Search <| { q = Just q, s = Nothing, l = Nothing, latLng = Nothing, t = Nothing, o = Nothing }) )
 
                         Suggest.FullSearch search ->
                             ( model, Utils.performMessage (Search <| search) )
@@ -193,7 +215,7 @@ view model =
                 [ mobileFocusToggleView ]
             else
                 []
-        , modal = List.map (Html.App.map (Private << SuggestMsg)) (Suggest.advancedSearchWindow model.suggest model.facilityTypes)
+        , modal = List.map (Html.App.map (Private << SuggestMsg)) (Suggest.advancedSearchWindow model.suggest model.facilityTypes model.ownerships)
         }
 
 

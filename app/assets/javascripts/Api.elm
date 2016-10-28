@@ -1,4 +1,4 @@
-module Api exposing (SuggestionsMsg(..), getSuggestions, FetchFacilityMsg(..), fetchFacility, SearchMsg(..), search, searchMore, emptySearch)
+module Api exposing (SuggestionsMsg(..), getSuggestions, FetchFacilityMsg(..), fetchFacility, SearchMsg(..), search, searchMore)
 
 import Decoders exposing (..)
 import Http
@@ -57,11 +57,6 @@ searchMore wmsg result =
 
         Just nextUrl ->
             Task.perform (wmsg << SearchFailed) (wmsg << SearchSuccess) (Http.get Decoders.search nextUrl)
-
-
-emptySearch : SearchSpec
-emptySearch =
-    { q = Nothing, s = Nothing, l = Nothing, latLng = Nothing, t = Nothing }
 
 
 byQuery : Maybe LatLng -> Maybe String -> SearchSpec

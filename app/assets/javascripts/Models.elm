@@ -13,6 +13,7 @@ type alias Settings =
     , locale : String
     , locales : List ( String, String )
     , facilityTypes : List FacilityType
+    , ownerships : List Ownership
     }
 
 
@@ -29,6 +30,7 @@ type alias SearchSpec =
     , l : Maybe Int
     , latLng : Maybe LatLng
     , t : Maybe Int
+    , o : Maybe Int
     }
 
 
@@ -53,6 +55,12 @@ type alias Facility =
 
 
 type alias FacilityType =
+    { id : Int
+    , name : String
+    }
+
+
+type alias Ownership =
     { id : Int
     , name : String
     }
@@ -178,6 +186,7 @@ path base params =
                     , Maybe.map (\( lat, _ ) -> ( "lat", toString lat )) params.latLng
                     , Maybe.map (\( _, lng ) -> ( "lng", toString lng )) params.latLng
                     , Maybe.map (\t -> ( "t", toString t )) params.t
+                    , Maybe.map (\o -> ( "o", toString o )) params.o
                     ]
     in
         Utils.buildPath base queryParams
@@ -185,20 +194,18 @@ path base params =
 
 specFromParams : Dict String String -> SearchSpec
 specFromParams params =
-    { q =
-        Dict.get "q" params
-            &> discardEmpty
-    , s =
-        Dict.get "s" params
-            &> (String.toInt >> Result.toMaybe)
-    , l =
-        Dict.get "l" params
-            &> (String.toInt >> Result.toMaybe)
+    { q = Dict.get "q" params &> discardEmpty
+    , s = intParam "s" params
+    , l = intParam "l" params
     , latLng = paramsLatLng params
-    , t =
-        Dict.get "t" params
-            &> (String.toInt >> Result.toMaybe)
+    , t = intParam "t" params
+    , o = intParam "o" params
     }
+
+
+emptySearch : SearchSpec
+emptySearch =
+    { q = Nothing, s = Nothing, l = Nothing, latLng = Nothing, t = Nothing, o = Nothing }
 
 
 
@@ -217,11 +224,13 @@ paramsLatLng params =
         mlat &> \lat -> Maybe.map ((,) lat) mlng
 
 
+intParam : String -> Dict String String -> Maybe Int
+intParam key params =
+    Dict.get key params
+        &> (String.toInt >> Result.toMaybe)
+
+
 floatParam : String -> Dict String String -> Maybe Float
 floatParam key params =
-    case Dict.get key params of
-        Nothing ->
-            Nothing
-
-        Just v ->
-            Result.toMaybe (String.toFloat v)
+    Dict.get key params
+        &> (String.toFloat >> Result.toMaybe)
