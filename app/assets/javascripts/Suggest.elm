@@ -9,6 +9,7 @@ import Models exposing (MapViewport, SearchSpec, FacilityType)
 import String
 import Debounce
 import I18n exposing (..)
+import NavegableList exposing (..)
 
 
 type alias Config =
@@ -16,7 +17,7 @@ type alias Config =
 
 
 type alias Model =
-    { query : String, advancedSearch : SearchSpec, suggestions : Maybe (List Models.Suggestion), d : Debounce.State, advanced : Bool }
+    { query : String, advancedSearch : SearchSpec, suggestions : Maybe (NavegableList Models.Suggestion), d : Debounce.State, advanced : Bool }
 
 
 type PrivateMsg
@@ -76,7 +77,7 @@ update config msg model =
                     case msg of
                         Api.SuggestionsSuccess query suggestions ->
                             if (query == model.query) then
-                                ( { model | suggestions = Just suggestions }, Cmd.none )
+                                ( { model | suggestions = Just (fromList suggestions) }, Cmd.none )
                             else
                                 -- ignore old requests
                                 ( model, Cmd.none )
@@ -142,11 +143,14 @@ viewSuggestions model =
             [ suggestionsContent s, advancedSearchFooter ]
 
 
-suggestionsContent : List Models.Suggestion -> Html Msg
+suggestionsContent : NavegableList Models.Suggestion -> Html Msg
 suggestionsContent s =
     let
+        sl =
+            toList s
+
         entries =
-            case s of
+            case sl of
                 [] ->
                     [ div
                         [ class "no-results" ]
@@ -156,7 +160,7 @@ suggestionsContent s =
                     ]
 
                 _ ->
-                    List.map suggestion s
+                    List.map suggestion sl
     in
         div [ class "content collection results" ] entries
 
