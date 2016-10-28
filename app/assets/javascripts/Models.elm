@@ -181,12 +181,12 @@ path base params =
             select <|
                 List.map maybe
                     [ Maybe.map (\q -> ( "q", q )) params.q
-                    , Maybe.map (\s -> ( "s", toString s )) params.s
-                    , Maybe.map (\l -> ( "l", toString l )) params.l
+                    , Maybe.map (\s -> ( "service", toString s )) params.s
+                    , Maybe.map (\l -> ( "location", toString l )) params.l
                     , Maybe.map (\( lat, _ ) -> ( "lat", toString lat )) params.latLng
                     , Maybe.map (\( _, lng ) -> ( "lng", toString lng )) params.latLng
-                    , Maybe.map (\t -> ( "t", toString t )) params.t
-                    , Maybe.map (\o -> ( "o", toString o )) params.o
+                    , Maybe.map (\t -> ( "type", toString t )) params.t
+                    , Maybe.map (\o -> ( "ownership", toString o )) params.o
                     ]
     in
         Utils.buildPath base queryParams
@@ -195,11 +195,11 @@ path base params =
 specFromParams : Dict String String -> SearchSpec
 specFromParams params =
     { q = Dict.get "q" params &> discardEmpty
-    , s = intParam "s" params
-    , l = intParam "l" params
+    , s = intParam "service" params
+    , l = intParam "location" params
     , latLng = paramsLatLng params
-    , t = intParam "t" params
-    , o = intParam "o" params
+    , t = intParam "type" params
+    , o = intParam "ownership" params
     }
 
 

@@ -76,32 +76,32 @@ RSpec.describe ElasticsearchService do
 
     describe "by service" do
       it "works!" do
-        search_assert({ s: 1 }, expected_names: ["1st Wetanibo Balchi"])
-        search_assert({ s: 2 }, expected_names: ["1st Wetanibo Balchi", "Abaferet Hospital"])
-        search_assert({ s: 3 }, expected_names: ["Abaferet Hospital"])
+        search_assert({ service: 1 }, expected_names: ["1st Wetanibo Balchi"])
+        search_assert({ service: 2 }, expected_names: ["1st Wetanibo Balchi", "Abaferet Hospital"])
+        search_assert({ service: 3 }, expected_names: ["Abaferet Hospital"])
       end
     end
 
     describe "by administrative location" do
       it "works!" do
-        search_assert({ l: 1 }, expected_names: ["1st Wetanibo Balchi","Abaferet Hospital"])
-        search_assert({ l: 2 }, expected_names: ["1st Wetanibo Balchi","Abaferet Hospital"])
-        search_assert({ l: 3 }, expected_names: "1st Wetanibo Balchi")
-        search_assert({ l: 4 }, expected_names: "Abaferet Hospital")
+        search_assert({ location: 1 }, expected_names: ["1st Wetanibo Balchi","Abaferet Hospital"])
+        search_assert({ location: 2 }, expected_names: ["1st Wetanibo Balchi","Abaferet Hospital"])
+        search_assert({ location: 3 }, expected_names: "1st Wetanibo Balchi")
+        search_assert({ location: 4 }, expected_names: "Abaferet Hospital")
       end
     end
 
     describe "by facility type" do
       it "works!" do
-        search_assert({ t: 1 }, expected_names: ["1st Wetanibo Balchi"])
-        search_assert({ t: 2 }, expected_names: ["Abaferet Hospital"])
+        search_assert({ type: 1 }, expected_names: ["1st Wetanibo Balchi"])
+        search_assert({ type: 2 }, expected_names: ["Abaferet Hospital"])
       end
     end
 
     describe "by ownership" do
       it "works!" do
-        search_assert({ o: 1 }, expected_names: ["1st Wetanibo Balchi"])
-        search_assert({ o: 2 }, expected_names: ["Abaferet Hospital"])
+        search_assert({ ownership: 1 }, expected_names: ["1st Wetanibo Balchi"])
+        search_assert({ ownership: 2 }, expected_names: ["Abaferet Hospital"])
       end
     end
 

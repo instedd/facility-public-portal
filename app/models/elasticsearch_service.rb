@@ -94,20 +94,20 @@ class ElasticsearchService
       search_body[:query][:bool][:must] << { match_phrase_prefix: { name: params[:q] } }
     end
 
-    if params[:s]
-      search_body[:query][:bool][:must] << { match: { service_ids: params[:s] } }
+    if params[:service]
+      search_body[:query][:bool][:must] << { match: { service_ids: params[:service] } }
     end
 
-    if params[:t]
-      search_body[:query][:bool][:must] << { match: { facility_type_id: params[:t] } }
+    if params[:type]
+      search_body[:query][:bool][:must] << { match: { facility_type_id: params[:type] } }
     end
 
-    if params[:o]
-      search_body[:query][:bool][:must] << { match: { ownership_id: params[:o] } }
+    if params[:ownership]
+      search_body[:query][:bool][:must] << { match: { ownership_id: params[:ownership] } }
     end
 
-    if params[:l]
-      search_body[:query][:bool][:must] << { match: { adm_ids: params[:l] } }
+    if params[:location]
+      search_body[:query][:bool][:must] << { match: { adm_ids: params[:location] } }
     end
 
     if params[:lat] && params[:lng]
