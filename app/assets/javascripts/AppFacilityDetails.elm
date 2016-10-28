@@ -101,7 +101,10 @@ update s msg model =
                         ( openReportWindow model, Cmd.none )
 
                 ReportFinalized ->
-                    ( closeReportWindow model, sendReport model )
+                    if reportIsCompleted model then
+                        ( closeReportWindow model, sendReport model )
+                    else
+                        ( model, Cmd.none )
 
                 ToggleCheckbox name ->
                     ( toggleCheckbox name model, Cmd.none )
@@ -167,22 +170,28 @@ userLocationView model =
 
 reportWindow : Model -> List (Html Msg)
 reportWindow model =
-    if isReportWindowOpen model then
-        Shared.modalWindow
-            [ text <| t ReportAnIssue
-            , a [ href "#", class "right", Shared.onClick (Private ToggleFacilityReport) ] [ Shared.icon "close" ]
-            ]
-            [ Html.form [ action "#", method "GET" ]
-                [ Shared.checkbox "wrong_location" "Wrong location" (facilityReport model).wrong_location (Private (ToggleCheckbox "wrong_location"))
-                , Shared.checkbox "closed" "Facility closed" (facilityReport model).closed (Private (ToggleCheckbox "closed"))
-                , Shared.checkbox "contact_info_missing" "Incomplete contact information" (facilityReport model).contact_info_missing (Private (ToggleCheckbox "contact_info_missing"))
-                , Shared.checkbox "inaccurate_services" "Inaccurate service list" (facilityReport model).inaccurate_services (Private (ToggleCheckbox "inaccurate_services"))
-                , Shared.checkbox "other" "Other" (facilityReport model).other (Private (ToggleCheckbox "other"))
+    let
+        notEmpty = if reportIsCompleted model then
+                " hide"
+            else
+                ""
+    in
+        if isReportWindowOpen model then
+            Shared.modalWindow
+                [ text <| t ReportAnIssue
+                , a [ href "#", class "right", Shared.onClick (Private ToggleFacilityReport) ] [ Shared.icon "close" ]
                 ]
-            ]
-            [ a [ href "#", class "btn-flat", Shared.onClick (Private ReportFinalized) ] [ text "Send report" ] ]
-    else
-        []
+                [ Html.form [ action "#", method "GET" ]
+                    [ Shared.checkbox "wrong_location" "Wrong location" (facilityReport model).wrong_location (Private (ToggleCheckbox "wrong_location"))
+                    , Shared.checkbox "closed" "Facility closed" (facilityReport model).closed (Private (ToggleCheckbox "closed"))
+                    , Shared.checkbox "contact_info_missing" "Incomplete contact information" (facilityReport model).contact_info_missing (Private (ToggleCheckbox "contact_info_missing"))
+                    , Shared.checkbox "inaccurate_services" "Inaccurate service list" (facilityReport model).inaccurate_services (Private (ToggleCheckbox "inaccurate_services"))
+                    , Shared.checkbox "other" "Other" (facilityReport model).other (Private (ToggleCheckbox "other")) ]
+                ]
+                [ div [ class ("warning" ++ notEmpty) ] [ text "Please select at least 1 issue to report" ]
+                , a [ href "#", class "btn-flat", Shared.onClick (Private ReportFinalized) ] [ text "Send report" ] ]
+        else
+            []
 
 
 subscriptions : Model -> Sub Msg
@@ -306,6 +315,26 @@ isReportWindowOpen model =
 
         Loaded a b c d e (Just _) ->
             True
+
+
+reportIsCompleted : Model -> Bool
+reportIsCompleted model =
+    case model of
+        Loading a b c d ->
+            False
+
+        Loaded a b c d e Nothing ->
+            False
+
+        Loaded a b c d e (Just
+                    { wrong_location
+                    , closed
+                    , contact_info_missing
+                    , inaccurate_services
+                    , other
+                    }
+                ) ->
+            List.any identity [wrong_location, closed, contact_info_missing, inaccurate_services, other]
 
 
 userLocation : Model -> UserLocation.Model

@@ -36,6 +36,15 @@
       }
     }
   }
+
+  .modal-footer {
+    .warning {
+      padding: 17px 5px;
+      color: darkred;
+      font-size: 70%;
+      display: inline-block;
+    }
+  }
 }
 
 // same media query as fitContent
