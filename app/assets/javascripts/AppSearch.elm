@@ -206,6 +206,7 @@ view model =
             , div
                 [ classList [ hideOnSuggestions, hideOnMobileMapFocused, ( "content expand", True ) ] ]
                 [ searchResults model ]
+            , downloadFooter
             ]
                 ++ suggestionItems model
         , toolbar =
@@ -230,6 +231,17 @@ mobileBackHeader =
             , span [] [ text "Search Results" ]
             ]
         ]
+
+
+downloadFooter =
+    div
+        [ class "footer" ]
+        [ a [ href "/data" ]
+            [ Shared.icon "file_download"
+            , span [] [ text "Download full dataset" ]
+            ]
+        ]
+
 
 
 suggestionInput model =
