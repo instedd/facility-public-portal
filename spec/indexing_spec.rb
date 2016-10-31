@@ -14,6 +14,7 @@ RSpec.describe Indexing do
            lat: 10.696144,
            lng: 38.370941,
            location_id: "L1",
+           ownership: "Public",
            facility_type: "Health Center",
            contact_name: "",
            contact_email: nil,
@@ -26,6 +27,16 @@ RSpec.describe Indexing do
        locations: [{id: "L1", name: "Ethiopia", parent_id: "-----------------"},],
        facility_types: []
       }
+    end
+
+    it "doesn't fail on empty dataseet" do
+      dataset = {facilities: [],
+                 services: [],
+                 facilities_services: [],
+                 locations: [],
+                 facility_types: []
+                }
+      expect{index_dataset(dataset)}.not_to raise_error
     end
 
     it "skips facilities without a name" do
@@ -112,10 +123,38 @@ RSpec.describe Indexing do
       expect(all_facilities).to be_empty
     end
 
+    it "skips facilities without ownership" do
+      index_dataset({facilities: [
+         {
+           id: "F1",
+           name: "FOO",
+           lat: 10.696144,
+           lng: 38.370941,
+           location_id: "L1",
+           facility_type: "Health Center",
+           contact_name: "",
+           contact_email: nil,
+           contact_phone: nil,
+           last_update: nil
+         }
+       ],
+       services: [],
+       facilities_services: [],
+       locations: [{id: "L1", name: "Ethiopia", parent_id: "-----------------"},],
+       facility_types: []
+      })
+
+      expect(all_facilities).to be_empty
+    end
+
     it "indexes a valid facility" do
       index_dataset(valid_dataset)
 
       expect(all_facilities.size).to eq(1)
+
+      all_facilities[0].tap do |f|
+        expect(f["ownership"]).to eq("Public")
+      end
     end
 
     describe "facility priority" do
@@ -157,9 +196,9 @@ RSpec.describe Indexing do
         expect(all_facility_types.map { |t| t["id"] }.sort).to eq([1,2])
       end
 
-      it "indexes facility types not present if facility_types table" do
+      it "indexes facility types not present in facility_types table" do
         dataset = {facilities: [
-                     {id: "F1", name: "FOO", lat: 10.696144, lng: 38.370941, location_id: "L1", facility_type: "Hospital"}
+                     {id: "F1", name: "FOO", lat: 10.696144, lng: 38.370941, location_id: "L1", facility_type: "Hospital", ownership: "Public"}
                    ],
                    services: [],
                    facilities_services: [],
@@ -175,21 +214,36 @@ RSpec.describe Indexing do
         expect(type["name"]).to eq("Hospital")
         expect(type["id"]).to eq(1)
       end
+    end
 
-      it "doesn't fail if no types end up being imported" do
-        dataset = {facilities: [],
-                   services: [],
-                   facilities_services: [],
-                   locations: [],
-                   facility_types: []
-                  }
-        expect{index_dataset(dataset)}.not_to raise_error
+    describe "ownerships" do
+      it "indexes distinct ownership types" do
+        dataset = {
+          facilities: [
+            {id: "F1", name: "FOO", lat: 10.696144, lng: 38.370941, location_id: "L1", ownership: "Public", facility_type: "Health Center"},
+            {id: "F2", name: "BAR", lat: 10.696144, lng: 38.370941, location_id: "L1", ownership: "Private", facility_type: "Health Center"}
+          ],
+          services: [],
+          facilities_services: [],
+          locations: [{id: "L1", name: "Ethiopia", parent_id: "-----------------"},],
+          facility_types: []
+        }
+
+        index_dataset(dataset)
+
+        expect(all_ownerships.size).to eq(2)
+        expect(all_ownerships.sort { |o| o["id"] }).to eq([{ "id" => 1, "name" => "Public" }, { "id" => 2, "name" => "Private" }])
       end
     end
   end
 
   def all_facilities
     result = elasticsearch_service.client.search index: TESTING_INDEX, type: 'facility'
+    result["hits"]["hits"].map { |hit| hit["_source"] }
+  end
+
+  def all_ownerships
+    result = elasticsearch_service.client.search index: TESTING_INDEX, type: 'ownership'
     result["hits"]["hits"].map { |hit| hit["_source"] }
   end
 

@@ -27,6 +27,7 @@ class ElasticsearchService
               analyzer: "standard"
             },
             contact_phone: {type: 'string'},
+            ownership: {type: 'string', index: 'not_analyzed'},
             facility_type: {type: 'string', index: 'not_analyzed'},
             position: {type: 'geo_point'},
             last_updated: {
@@ -52,6 +53,10 @@ class ElasticsearchService
 
   def index_facility_types(facility_types)
     index_batch 'facility_type', facility_types
+  end
+
+  def index_ownerships(ownerships)
+    index_batch 'ownership', ownerships
   end
 
   def index_service(service)
@@ -89,16 +94,20 @@ class ElasticsearchService
       search_body[:query][:bool][:must] << { match_phrase_prefix: { name: params[:q] } }
     end
 
-    if params[:s]
-      search_body[:query][:bool][:must] << { match: { service_ids: params[:s] } }
+    if params[:service]
+      search_body[:query][:bool][:must] << { match: { service_ids: params[:service] } }
     end
 
-    if params[:t]
-      search_body[:query][:bool][:must] << { match: { facility_type_id: params[:t] } }
+    if params[:type]
+      search_body[:query][:bool][:must] << { match: { facility_type_id: params[:type] } }
     end
 
-    if params[:l]
-      search_body[:query][:bool][:must] << { match: { adm_ids: params[:l] } }
+    if params[:ownership]
+      search_body[:query][:bool][:must] << { match: { ownership_id: params[:ownership] } }
+    end
+
+    if params[:location]
+      search_body[:query][:bool][:must] << { match: { adm_ids: params[:location] } }
     end
 
     if params[:lat] && params[:lng]
@@ -131,6 +140,11 @@ class ElasticsearchService
 
   def get_facility_types
     result = client.search({index: @index_name, type: 'facility_type', body: { sort: { id: { order: "asc" } } }})
+    result["hits"]["hits"].map { |h| h["_source"] }
+  end
+
+  def get_ownerships
+    result = client.search({index: @index_name, type: 'ownership', body: { sort: { id: { order: "asc" } } }})
     result["hits"]["hits"].map { |h| h["_source"] }
   end
 
@@ -209,7 +223,8 @@ class ElasticsearchService
 
   def self.instance
     @@instance ||= self.new(ENV['ELASTICSEARCH_URL'] || 'localhost',
-                            ENV['ELASTICSEARCH_INDEX'] || 'fpp')
+                            ENV['ELASTICSEARCH_INDEX'] || 'fpp',
+                            should_log: !(ENV['ELASTICSEARCH_LOG'].eql? "0"))
   end
 
   def self.instance=(instance)
@@ -248,6 +263,6 @@ class ElasticsearchService
       [{ index: { _index: @index_name, _type: type, _id: doc[:id] } }, doc]
     end
 
-    result = client.bulk body: actions
+    client.bulk body: actions
   end
 end

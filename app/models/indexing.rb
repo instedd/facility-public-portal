@@ -11,6 +11,7 @@ class Indexing
 
     @last_facility_id = 0
     @last_facility_type_id = 0
+    @last_ownership_id = 0
     @last_service_id = 0
     @last_location_id = 0
   end
@@ -71,6 +72,12 @@ class Indexing
       t
     }.index_by { |type| type[:name] }
 
+    ownerships = @dataset[:facilities].map { |f| f["ownership"] }
+                 .uniq
+                 .compact
+                 .map { |o| { id: (@last_ownership_id += 1), name: o }}
+                 .index_by { |o| o[:name] }
+
     logger.info "Indexing facilities"
 
     @dataset[:facilities].select { |f| validate_facility(f) }.each_slice(100) do |batch|
@@ -96,6 +103,7 @@ class Indexing
           contact_phone: f[:contact_phone] && f[:contact_phone].to_s,
           priority: type[:priority],
           facility_type_id: type[:id],
+          ownership_id: ownerships[f[:ownership]][:id],
           name: f[:name].gsub(/\u00A0/,"").strip,
 
           position: {
@@ -124,6 +132,9 @@ class Indexing
 
     logger.info "Indexing facility types"
     @service.index_facility_types(facility_types.values) unless facility_types.empty?
+
+    logger.info "Indexing ownership types"
+    @service.index_ownerships(ownerships.values) unless ownerships.empty?
 
     logger.info "Indexing services"
     services_by_id.values.each_slice(100) do |batch|
@@ -161,6 +172,6 @@ class Indexing
   private
 
   def validate_facility(facility)
-    ["name", "facility_type", "lat", "lng"].none? { |field| facility[field].blank? }
+    ["name", "facility_type", "ownership", "lat", "lng"].none? { |field| facility[field].blank? }
   end
 end

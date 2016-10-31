@@ -11,7 +11,6 @@ import AppFacilityDetails
 import UserLocation
 import Html exposing (Html, div, span, p, text, a)
 import Html.Attributes exposing (id, class, style, href, attribute, classList)
-import Html.App
 import Utils exposing (mapFst, mapSnd, mapTCmd)
 import Menu
 import SelectList exposing (..)
@@ -24,6 +23,7 @@ type alias Flags =
     , locale : String
     , locales : List ( String, String )
     , facilityTypes : List (FacilityType)
+    , ownerships : List (Ownership)
     }
 
 
@@ -90,6 +90,7 @@ init flags route =
             , locale = flags.locale
             , locales = flags.locales
             , facilityTypes = flags.facilityTypes
+            , ownerships = flags.ownerships
             }
 
         model =
@@ -481,18 +482,18 @@ navigateFacility =
 
 
 navigateSearchService : Int -> Cmd MainMsg
-navigateSearchService =
-    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Nothing, latLng = Nothing, s = Just id, t = Nothing })
+navigateSearchService id =
+    Utils.performMessage <| Navigate (SearchRoute { emptySearch | service = Just id })
 
 
 navigateSearchLocation : Int -> Cmd MainMsg
-navigateSearchLocation =
-    Utils.performMessage << Navigate << (\id -> SearchRoute { q = Nothing, l = Just id, latLng = Nothing, s = Nothing, t = Nothing })
+navigateSearchLocation id =
+    Utils.performMessage <| Navigate (SearchRoute { emptySearch | location = Just id })
 
 
 navigateSearchQuery : String -> Cmd MainMsg
-navigateSearchQuery =
-    Utils.performMessage << Navigate << (\q -> SearchRoute { q = Just q, l = Nothing, latLng = Nothing, s = Nothing, t = Nothing })
+navigateSearchQuery q =
+    Utils.performMessage <| Navigate (SearchRoute { emptySearch | q = Just q })
 
 
 navigateSearch : SearchSpec -> Cmd MainMsg
@@ -500,6 +501,7 @@ navigateSearch =
     Utils.performMessage << Navigate << SearchRoute
 
 
+navigateBack : Cmd MainMsg
 navigateBack =
     Navigation.back 1
 

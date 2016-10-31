@@ -82,6 +82,7 @@ filenames = {
   facilities_services: "FacilityService.csv",
   services: "MedicalService.csv",
   locations: "OrganizationUnit.csv",
+  ownerships: "ownership.csv"
 }
 
 dataset = filenames.map_values do |filename|
@@ -90,7 +91,7 @@ end
 
 result = SpaNormalization.new(dataset).run
 
-write_output "facilities.csv", result[:facilities], ["id", "name", "lat", "lng", "location_id", "facility_type", "contact_name", "contact_email", "contact_phone", "last"]
+write_output "facilities.csv", result[:facilities], ["id", "name", "lat", "lng", "location_id", "facility_type", "ownership", "contact_name", "contact_email", "contact_phone", "last"]
 write_output "services.csv", result[:services], ["id", "name:en"]
 write_output "facilities_services.csv", result[:facilities_services], ["facility_id", "service_id"]
 write_output "facility_types.csv", result[:facility_types], ["name", "priority"]

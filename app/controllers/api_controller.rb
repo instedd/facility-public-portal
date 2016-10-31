@@ -34,7 +34,7 @@ class ApiController < ActionController::Base
   private
 
   def search_params
-    params.permit(:q, :s, :l, :t, :lat, :lng, :size, :from)
+    params.permit(:q, :service, :location, :type, :ownership, :lat, :lng, :size, :from)
   end
 
   def set_locale

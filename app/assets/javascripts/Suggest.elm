@@ -5,7 +5,7 @@ import Api
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import Models exposing (MapViewport, SearchSpec, FacilityType)
+import Models exposing (MapViewport, SearchSpec, FacilityType, Ownership)
 import String
 import Debounce
 import I18n exposing (..)
@@ -27,6 +27,7 @@ type PrivateMsg
     | ToggleAdvancedSearch
     | SetAdvancedSearchName String
     | SetAdvancedSearchType Int
+    | SetAdvancedSearchOwnership Int
 
 
 type Msg
@@ -50,7 +51,7 @@ empty =
 
 init : String -> Model
 init query =
-    { query = query, advancedSearch = Api.emptySearch, suggestions = Nothing, d = Debounce.init, advanced = False }
+    { query = query, advancedSearch = Models.emptySearch, suggestions = Nothing, d = Debounce.init, advanced = False }
 
 
 searchSuggestions : Config -> Model -> ( Model, Cmd Msg )
@@ -106,7 +107,14 @@ update config msg model =
                         currentSearch =
                             model.advancedSearch
                     in
-                        ( { model | advancedSearch = { currentSearch | t = Just t } }, Cmd.none )
+                        ( { model | advancedSearch = { currentSearch | fType = Just t } }, Cmd.none )
+
+                SetAdvancedSearchOwnership o ->
+                    let
+                        currentSearch =
+                            model.advancedSearch
+                    in
+                        ( { model | advancedSearch = { currentSearch | ownership = Just o } }, Cmd.none )
 
         _ ->
             -- public events
@@ -209,14 +217,11 @@ isAdvancedSearchOpen model =
     model.advanced
 
 
-advancedSearchWindow : Model -> List FacilityType -> List (Html Msg)
-advancedSearchWindow model types =
+advancedSearchWindow : Model -> List FacilityType -> List Ownership -> List (Html Msg)
+advancedSearchWindow model types ownerships =
     let
         query =
             Maybe.withDefault "" model.advancedSearch.q
-
-        selectedType =
-            Maybe.withDefault 0 model.advancedSearch.t
     in
         if isAdvancedSearchOpen model then
             Shared.modalWindow
@@ -227,7 +232,9 @@ advancedSearchWindow model types =
                     [ label [ for "q" ] [ text "Facility name" ]
                     , input [ id "q", type' "text", value query, onInput (Private << SetAdvancedSearchName) ] []
                     , label [] [ text "Facility type" ]
-                    , Html.select [ Shared.onSelect (Private << SetAdvancedSearchType) ] (selectOptions types selectedType)
+                    , Html.select [ Shared.onSelect (Private << SetAdvancedSearchType) ] (selectOptions types model.advancedSearch.fType)
+                    , label [] [ text "Ownership" ]
+                    , Html.select [ Shared.onSelect (Private << SetAdvancedSearchOwnership) ] (selectOptions ownerships model.advancedSearch.ownership)
                     ]
                 ]
                 [ a [ href "#", class "btn-flat", Shared.onClick (FullSearch model.advancedSearch) ] [ text "Search" ] ]
@@ -235,15 +242,18 @@ advancedSearchWindow model types =
             []
 
 
-selectOptions : List FacilityType -> Int -> List (Html a)
-selectOptions types selectedType =
-    [ Html.option [ value "0" ] [ text "" ] ]
-        ++ (List.map
-                (\ftype ->
-                    if selectedType == ftype.id then
-                        Html.option [ value (toString ftype.id), selected True ] [ text ftype.name ]
-                    else
-                        Html.option [ value (toString ftype.id) ] [ text ftype.name ]
-                )
-                types
-           )
+selectOptions : List { id : Int, name : String } -> Maybe Int -> List (Html a)
+selectOptions options choice =
+    let
+        selectedId =
+            Maybe.withDefault 0 choice
+    in
+        [ Html.option [ value "0" ] [ text "" ] ]
+            ++ (List.map
+                    (\option ->
+                        Html.option
+                            [ value (toString option.id), selected (option.id == selectedId) ]
+                            [ text option.name ]
+                    )
+                    options
+               )

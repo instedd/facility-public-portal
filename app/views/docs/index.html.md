@@ -90,20 +90,20 @@ Paging is supported to interate the whole results.
 | Name | Type | Description |
 |---|---|---|
 | q | string | Text to be searched. |
-| s | integer | service id that must be handled by the informed facility. |
-| l | integer | location id where the informed facility should belong to. |
-| t | integer | facility type id of the informed facility. |
+| service | integer | Service id that must be handled by the informed facility. |
+| location | integer | Location id where the informed facility should belong to. |
+| type | integer | Facility type id of the informed facility. |
 | lat | float | Lat/Lng coordinates used to prioritize the results.  |
 | lng | float | Lat/Lng coordinates used to prioritize the results.  |
-| size | integer | amount of facilities to be informed per page (default 50) |
-| from | integer | result pagination offset (default 0) |
+| size | integer | Amount of facilities to be informed per page (default 50) |
+| from | integer | Result pagination offset (default 0) |
 
 
 ### Sample
 
 
 ```
-$ curl 'vitalwave.instedd.org/api/search?l=113&size=7&lat=8.9797&lng=38.7589'
+$ curl 'vitalwave.instedd.org/api/search?location=113&size=7&lat=8.9797&lng=38.7589'
 {
   "items": [
     {
@@ -142,7 +142,7 @@ $ curl 'vitalwave.instedd.org/api/search?l=113&size=7&lat=8.9797&lng=38.7589'
       /* ... stripped content ... */
     }
   ],
-  "next_url": "/api/search?from=7&l=113&lat=8.9797&lng=38.7589&size=7"
+  "next_url": "/api/search?from=7&location=113&lat=8.9797&lng=38.7589&size=7"
 }
 ```
 
@@ -150,7 +150,7 @@ The `next_url` contains the path to be requested for the following page of resul
 
 
 ```
-$ curl 'vitalwave.instedd.org/api/search?from=7&l=113&size=7&lat=8.9797&lng=38.7589'
+$ curl 'vitalwave.instedd.org/api/search?from=7&location=113&size=7&lat=8.9797&lng=38.7589'
 {
   "items": [
     {

@@ -13,6 +13,7 @@ type alias Settings =
     , locale : String
     , locales : List ( String, String )
     , facilityTypes : List FacilityType
+    , ownerships : List Ownership
     }
 
 
@@ -25,10 +26,11 @@ type Route
 
 type alias SearchSpec =
     { q : Maybe String
-    , s : Maybe Int
-    , l : Maybe Int
+    , service : Maybe Int
+    , location : Maybe Int
     , latLng : Maybe LatLng
-    , t : Maybe Int
+    , fType : Maybe Int
+    , ownership : Maybe Int
     }
 
 
@@ -53,6 +55,12 @@ type alias Facility =
 
 
 type alias FacilityType =
+    { id : Int
+    , name : String
+    }
+
+
+type alias Ownership =
     { id : Int
     , name : String
     }
@@ -173,11 +181,12 @@ path base params =
             select <|
                 List.map maybe
                     [ Maybe.map (\q -> ( "q", q )) params.q
-                    , Maybe.map (\s -> ( "s", toString s )) params.s
-                    , Maybe.map (\l -> ( "l", toString l )) params.l
+                    , Maybe.map (\s -> ( "service", toString s )) params.service
+                    , Maybe.map (\l -> ( "location", toString l )) params.location
                     , Maybe.map (\( lat, _ ) -> ( "lat", toString lat )) params.latLng
                     , Maybe.map (\( _, lng ) -> ( "lng", toString lng )) params.latLng
-                    , Maybe.map (\t -> ( "t", toString t )) params.t
+                    , Maybe.map (\t -> ( "type", toString t )) params.fType
+                    , Maybe.map (\o -> ( "ownership", toString o )) params.ownership
                     ]
     in
         Utils.buildPath base queryParams
@@ -185,20 +194,18 @@ path base params =
 
 specFromParams : Dict String String -> SearchSpec
 specFromParams params =
-    { q =
-        Dict.get "q" params
-            &> discardEmpty
-    , s =
-        Dict.get "s" params
-            &> (String.toInt >> Result.toMaybe)
-    , l =
-        Dict.get "l" params
-            &> (String.toInt >> Result.toMaybe)
+    { q = Dict.get "q" params &> discardEmpty
+    , service = intParam "service" params
+    , location = intParam "location" params
     , latLng = paramsLatLng params
-    , t =
-        Dict.get "t" params
-            &> (String.toInt >> Result.toMaybe)
+    , fType = intParam "type" params
+    , ownership = intParam "ownership" params
     }
+
+
+emptySearch : SearchSpec
+emptySearch =
+    { q = Nothing, service = Nothing, location = Nothing, latLng = Nothing, fType = Nothing, ownership = Nothing }
 
 
 
@@ -217,11 +224,13 @@ paramsLatLng params =
         mlat &> \lat -> Maybe.map ((,) lat) mlng
 
 
+intParam : String -> Dict String String -> Maybe Int
+intParam key params =
+    Dict.get key params
+        &> (String.toInt >> Result.toMaybe)
+
+
 floatParam : String -> Dict String String -> Maybe Float
 floatParam key params =
-    case Dict.get key params of
-        Nothing ->
-            Nothing
-
-        Just v ->
-            Result.toMaybe (String.toFloat v)
+    Dict.get key params
+        &> (String.toFloat >> Result.toMaybe)

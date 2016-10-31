@@ -15,6 +15,7 @@ RSpec.describe ElasticsearchService do
                         lng: 38.761659,
                         location_id: "L3",
                         facility_type: "Health Center",
+                        ownership: "Government/Public",
                         contact_name: "",
                         contact_email: nil,
                         contact_phone: nil,
@@ -27,6 +28,7 @@ RSpec.describe ElasticsearchService do
                         lng: 38.370941,
                         location_id: "L4",
                         facility_type: "Primary Hospital",
+                        ownership: "Other governmental (military, prison, police)",
                         contact_name: "",
                         contact_email: nil,
                         contact_phone: nil,
@@ -74,25 +76,32 @@ RSpec.describe ElasticsearchService do
 
     describe "by service" do
       it "works!" do
-        search_assert({ s: 1 }, expected_names: ["1st Wetanibo Balchi"])
-        search_assert({ s: 2 }, expected_names: ["1st Wetanibo Balchi", "Abaferet Hospital"])
-        search_assert({ s: 3 }, expected_names: ["Abaferet Hospital"])
+        search_assert({ service: 1 }, expected_names: ["1st Wetanibo Balchi"])
+        search_assert({ service: 2 }, expected_names: ["1st Wetanibo Balchi", "Abaferet Hospital"])
+        search_assert({ service: 3 }, expected_names: ["Abaferet Hospital"])
       end
     end
 
     describe "by administrative location" do
       it "works!" do
-        search_assert({ l: 1 }, expected_names: ["1st Wetanibo Balchi","Abaferet Hospital"])
-        search_assert({ l: 2 }, expected_names: ["1st Wetanibo Balchi","Abaferet Hospital"])
-        search_assert({ l: 3 }, expected_names: "1st Wetanibo Balchi")
-        search_assert({ l: 4 }, expected_names: "Abaferet Hospital")
+        search_assert({ location: 1 }, expected_names: ["1st Wetanibo Balchi","Abaferet Hospital"])
+        search_assert({ location: 2 }, expected_names: ["1st Wetanibo Balchi","Abaferet Hospital"])
+        search_assert({ location: 3 }, expected_names: "1st Wetanibo Balchi")
+        search_assert({ location: 4 }, expected_names: "Abaferet Hospital")
       end
     end
 
     describe "by facility type" do
       it "works!" do
-        search_assert({ t: 1 }, expected_names: ["1st Wetanibo Balchi"])
-        search_assert({ t: 2 }, expected_names: ["Abaferet Hospital"])
+        search_assert({ type: 1 }, expected_names: ["1st Wetanibo Balchi"])
+        search_assert({ type: 2 }, expected_names: ["Abaferet Hospital"])
+      end
+    end
+
+    describe "by ownership" do
+      it "works!" do
+        search_assert({ ownership: 1 }, expected_names: ["1st Wetanibo Balchi"])
+        search_assert({ ownership: 2 }, expected_names: ["Abaferet Hospital"])
       end
     end
 
@@ -131,6 +140,10 @@ RSpec.describe ElasticsearchService do
         end
       end
     end
+  end
+
+  it "provides all distinct ownership kinds" do
+    expect(elasticsearch_service.get_ownerships.size).to eq(2)
   end
 
   def search_assert(params, expected_names:, order_matters: false)

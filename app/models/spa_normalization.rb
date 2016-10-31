@@ -10,6 +10,7 @@ class SpaNormalization
     {}.tap do |result|
       coordinates = @dataset[:geoloc].index_by { |geoloc| geoloc["Id"] }
       types = @dataset[:facility_types].index_by { |type| type["Id"] }
+      ownerships = @dataset[:ownerships].index_by { |type| type["Id"] }
       contact_info = @dataset[:contact_info].index_by { |type| type["Id"] }
 
       result[:facilities] = @dataset[:facilities].map do |f|
@@ -23,6 +24,7 @@ class SpaNormalization
           lat: latlng["Latitude"],
           lng: latlng["Longitude"],
           location_id: f["OrganizationUnitId"],
+          ownership: ownerships[f["OwnershipId"]]["OwnershipName"].strip,
           facility_type: types[f["FacilityTypeId"]]["FacilityTypeName"].strip,
           contact_name: full_name.empty? ? nil : full_name.strip,
           contact_email: contact["Email"].try(:strip),
