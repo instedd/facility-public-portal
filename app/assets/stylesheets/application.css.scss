@@ -272,6 +272,7 @@ input[type="checkbox"]:checked + label:before {
 }
 
 .content {
+  max-height: 80vh;
   overflow-y: scroll;
   overflow-x: hidden;
 }
@@ -334,6 +335,7 @@ input[type="checkbox"]:checked + label:before {
     max-height: 100%;
 
     .content {
+      max-height: none;
       overflow-y: scroll;
 
       &.expand {
