@@ -206,7 +206,7 @@ view model =
             , div
                 [ classList [ hideOnSuggestions, hideOnMobileMapFocused, ( "content expand", True ) ] ]
                 [ searchResults model ]
-            , downloadFooter
+            , downloadFooter model
             ]
                 ++ suggestionItems model
         , toolbar =
@@ -232,15 +232,21 @@ mobileBackHeader =
             ]
         ]
 
-
-downloadFooter =
-    div
-        [ class "footer" ]
-        [ a [ href "/data" ]
-            [ Shared.icon "file_download"
-            , span [] [ text "Download full dataset" ]
+downloadFooter : Model -> Html a
+downloadFooter model =
+    let
+        css =   if Suggest.hasSuggestionsToShow model.suggest then
+                    "footer hide-on-med-and-down hide"
+                else
+                    "footer hide-on-med-and-down"
+    in
+        div
+            [ class css ]
+            [ a [ href "/data" ]
+                [ Shared.icon "file_download"
+                , span [] [ text "Download full dataset" ]
+                ]
             ]
-        ]
 
 
 
