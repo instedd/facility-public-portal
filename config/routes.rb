@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   end
 
   post 'facilities/:id/report', to: 'application#report_facility'
+  get 'data', to: 'application#download_dataset'
   get 'docs', to: 'docs#index'
   get '*unmatched_route', :to => 'application#map'
 end

@@ -17,6 +17,10 @@ class ApplicationController < ActionController::Base
     head :ok
   end
 
+  def download_dataset
+    send_file(Rails.root + "data/full_dataset.zip", type: "application/zip")
+  end
+
   protected
 
   def set_locale
