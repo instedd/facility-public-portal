@@ -382,7 +382,8 @@ input[type="checkbox"]:checked + label:before {
   }
 
   .facilityDetail .title {
-    height: 72px;
+    min-height: 72px;
+    max-height: 85px;
   }
 
   #mobile-menu {
