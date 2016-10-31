@@ -5,10 +5,11 @@ import Html.App
 import Map
 import Models exposing (Settings, MapViewport, LatLng, SearchResult, FacilityType, Ownership, SearchSpec, shouldLoadMore, emptySearch)
 import Shared exposing (MapView)
-import Utils exposing (mapFst, mapTCmd)
+import Utils
 import UserLocation
 import Suggest
 import Debounce
+import Return exposing (..)
 
 
 type alias Model =
@@ -82,7 +83,8 @@ update s msg model =
                             ( model, Utils.performMessage (FullSearch search) )
 
                         _ ->
-                            wrapSuggest model <| Suggest.update { mapViewport = model.mapViewport } msg model.suggest
+                            Suggest.update { mapViewport = model.mapViewport } msg model.suggest
+                                |> mapBoth (Private << SuggestMsg) (setSuggest model)
 
                 ApiSearch initial (Api.SearchSuccess results) ->
                     let
@@ -110,8 +112,8 @@ update s msg model =
                     ( model, Cmd.none )
 
                 UserLocationMsg msg ->
-                    mapTCmd (\m -> { model | userLocation = m }) (Private << UserLocationMsg) <|
-                        UserLocation.update s msg model.userLocation
+                    UserLocation.update s msg model.userLocation
+                        |> mapBoth (Private << UserLocationMsg) (\m -> { model | userLocation = m })
 
                 PerformSearch ->
                     ( model, searchAllFacilitiesStartingFrom model.mapViewport.center )
@@ -133,9 +135,9 @@ debCmd =
     Debounce.debounceCmd cfg
 
 
-wrapSuggest : Model -> ( Suggest.Model, Cmd Suggest.Msg ) -> ( Model, Cmd Msg )
-wrapSuggest model =
-    mapTCmd (\s -> { model | suggest = s }) (Private << SuggestMsg)
+setSuggest : Model -> Suggest.Model -> Model
+setSuggest model s =
+    { model | suggest = s }
 
 
 view : Model -> MapView Msg

@@ -8,7 +8,7 @@ import Html.Events as Events
 import Shared exposing (MapView, classNames)
 import Api
 import Date exposing (Date)
-import Utils exposing (mapTCmd)
+import Utils
 import Time
 import String
 import Task
@@ -18,6 +18,7 @@ import Http
 import Json.Decode as Decode
 import Json.Encode exposing (..)
 import I18n exposing (..)
+import Return exposing (..)
 
 
 type Model
@@ -83,8 +84,8 @@ update s msg model =
                     ( model, Utils.performMessage UnhandledError )
 
                 UserLocationMsg msg ->
-                    mapTCmd (\l -> setUserLocation l model) (Private << UserLocationMsg) <|
-                        UserLocation.update s msg (userLocation model)
+                    UserLocation.update s msg (userLocation model)
+                        |> mapBoth (Private << UserLocationMsg) (setUserLocation model)
 
                 ToggleMobileFocus ->
                     case model of
@@ -171,7 +172,8 @@ userLocationView model =
 reportWindow : Model -> List (Html Msg)
 reportWindow model =
     let
-        notEmpty = if reportIsCompleted model then
+        notEmpty =
+            if reportIsCompleted model then
                 " hide"
             else
                 ""
@@ -186,10 +188,12 @@ reportWindow model =
                     , Shared.checkbox "closed" "Facility closed" (facilityReport model).closed (Private (ToggleCheckbox "closed"))
                     , Shared.checkbox "contact_info_missing" "Incomplete contact information" (facilityReport model).contact_info_missing (Private (ToggleCheckbox "contact_info_missing"))
                     , Shared.checkbox "inaccurate_services" "Inaccurate service list" (facilityReport model).inaccurate_services (Private (ToggleCheckbox "inaccurate_services"))
-                    , Shared.checkbox "other" "Other" (facilityReport model).other (Private (ToggleCheckbox "other")) ]
+                    , Shared.checkbox "other" "Other" (facilityReport model).other (Private (ToggleCheckbox "other"))
+                    ]
                 ]
                 [ div [ class ("warning" ++ notEmpty) ] [ text "Please select at least 1 issue to report" ]
-                , a [ href "#", class "btn-flat", Shared.onClick (Private ReportFinalized) ] [ text "Send report" ] ]
+                , a [ href "#", class "btn-flat", Shared.onClick (Private ReportFinalized) ] [ text "Send report" ]
+                ]
         else
             []
 
@@ -326,15 +330,8 @@ reportIsCompleted model =
         Loaded a b c d e Nothing ->
             False
 
-        Loaded a b c d e (Just
-                    { wrong_location
-                    , closed
-                    , contact_info_missing
-                    , inaccurate_services
-                    , other
-                    }
-                ) ->
-            List.any identity [wrong_location, closed, contact_info_missing, inaccurate_services, other]
+        Loaded a b c d e (Just { wrong_location, closed, contact_info_missing, inaccurate_services, other }) ->
+            List.any identity [ wrong_location, closed, contact_info_missing, inaccurate_services, other ]
 
 
 userLocation : Model -> UserLocation.Model
@@ -347,8 +344,8 @@ userLocation model =
             userLocation
 
 
-setUserLocation : UserLocation.Model -> Model -> Model
-setUserLocation userLocation model =
+setUserLocation : Model -> UserLocation.Model -> Model
+setUserLocation model userLocation =
     case model of
         Loading a b c _ ->
             Loading a b c userLocation
