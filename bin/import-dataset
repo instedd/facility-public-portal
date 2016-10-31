@@ -20,11 +20,12 @@ ElasticsearchService.instance.setup_index
 ElasticsearchService.instance.setup_mappings
 
 def zip_for_download(dir_path)
+  zip_directory = "full_dataset"
   zipped_file_name = "data/full_dataset.zip"
-  entries = Dir.entries(dir_path)
+  entries = Dir.entries(dir_path).select { |e| !e.starts_with? "." }
   Zip::File.open(zipped_file_name, Zip::File::CREATE) do |zipfile|
     entries.each do |filename|
-      zipfile.add(filename, dir_path + '/' + filename)
+      zipfile.add("#{zip_directory}/#{filename}", dir_path + '/' + filename)
     end
   end
 end
@@ -45,4 +46,3 @@ else
   puts "The directory #{input_path} does not exist"
   exit 1
 end
-
