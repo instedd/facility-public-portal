@@ -8,10 +8,11 @@ import Html.Attributes exposing (..)
 import Html.Events as Events
 import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, FacilitySummary, FacilityType, Ownership, shouldLoadMore, emptySearch)
 import Shared exposing (MapView, icon, classNames)
-import Utils exposing (mapTCmd)
+import Utils
 import UserLocation
 import Suggest
 import Debounce
+import Return exposing (..)
 
 
 type alias Model =
@@ -131,8 +132,8 @@ update s msg model =
                     ( model, Utils.performMessage UnhandledError )
 
                 UserLocationMsg msg ->
-                    mapTCmd (\m -> { model | userLocation = m }) (Private << UserLocationMsg) <|
-                        UserLocation.update s msg model.userLocation
+                    UserLocation.update s msg model.userLocation
+                        |> mapBoth (Private << UserLocationMsg) (setUserLocation model)
 
                 SuggestMsg msg ->
                     case msg of
@@ -152,7 +153,8 @@ update s msg model =
                             ( model, Utils.performMessage (Search <| search) )
 
                         _ ->
-                            wrapSuggest model <| Suggest.update { mapViewport = model.mapViewport } msg model.suggest
+                            Suggest.update { mapViewport = model.mapViewport } msg model.suggest
+                                |> mapBoth (Private << SuggestMsg) (setSuggest model)
 
                 ToggleMobileFocus ->
                     ( { model | mobileFocusMap = (not model.mobileFocusMap) }, Cmd.none )
@@ -174,9 +176,14 @@ debCmd =
     Debounce.debounceCmd cfg
 
 
-wrapSuggest : Model -> ( Suggest.Model, Cmd Suggest.Msg ) -> ( Model, Cmd Msg )
-wrapSuggest model =
-    mapTCmd (\s -> { model | suggest = s }) (Private << SuggestMsg)
+setUserLocation : Model -> UserLocation.Model -> Model
+setUserLocation model l =
+    { model | userLocation = l }
+
+
+setSuggest : Model -> Suggest.Model -> Model
+setSuggest model s =
+    { model | suggest = s }
 
 
 view : Model -> MapView Msg

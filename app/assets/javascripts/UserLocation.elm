@@ -1,7 +1,6 @@
 module UserLocation exposing (Model, Msg, init, update, view)
 
 import Models exposing (LatLng, Settings)
-import Utils exposing (mapFst)
 import Geolocation
 import Map
 import Process

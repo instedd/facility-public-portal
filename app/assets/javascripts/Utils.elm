@@ -13,21 +13,6 @@ import Dict exposing (Dict)
     Maybe.andThen
 
 
-mapFst : (a -> b) -> ( a, c ) -> ( b, c )
-mapFst f ( a, c ) =
-    ( f a, c )
-
-
-mapSnd : (b -> c) -> ( a, b ) -> ( a, c )
-mapSnd f ( a, b ) =
-    ( a, f b )
-
-
-mapTCmd : (a -> c) -> (b -> d) -> ( a, Cmd b ) -> ( c, Cmd d )
-mapTCmd f g ( a, b ) =
-    ( f a, Cmd.map g b )
-
-
 buildPath : String -> List ( String, String ) -> String
 buildPath base queryParams =
     case queryParams of

@@ -11,9 +11,10 @@ import AppFacilityDetails
 import UserLocation
 import Html exposing (Html, div, span, p, text, a)
 import Html.Attributes exposing (id, class, style, href, attribute, classList)
-import Utils exposing (mapFst, mapSnd, mapTCmd)
+import Utils
 import Menu
 import SelectList exposing (..)
+import Return exposing (..)
 
 
 type alias Flags =
@@ -43,7 +44,7 @@ type MainModel
       InitializingVR (Result String Route) LatLng Settings
       -- map initialized pending to determine which view/route to load
     | InitializedVR MapViewport Settings (Maybe Notice)
-    | Page PagedModel CommonPageState
+    | Page CommonPageState PagedModel
 
 
 type alias CommonPageState =
@@ -111,7 +112,7 @@ subscriptions model =
         InitializedVR _ _ _ ->
             Sub.none
 
-        Page pagedModel _ ->
+        Page _ pagedModel ->
             case pagedModel of
                 HomeModel model ->
                     Sub.map HomeMsg <| AppHome.subscriptions model
@@ -135,8 +136,8 @@ mainUpdate msg mainModel =
 
         ToggleMenu ->
             case mainModel of
-                Page pagedModel common ->
-                    ( Page pagedModel { common | menu = Menu.toggle common.menu }, Cmd.none )
+                Page common pagedModel ->
+                    ( Page { common | menu = Menu.toggle common.menu } pagedModel, Cmd.none )
 
                 _ ->
                     ( mainModel, Cmd.none )
@@ -156,34 +157,36 @@ mainUpdate msg mainModel =
                             -- Ignore other actions until map is initialized
                             ( mainModel, Cmd.none )
 
-                Page pagedModel common ->
+                Page common pagedModel ->
                     case ( pagedModel, msg ) of
                         ( HomeModel homeModel, HomeMsg (AppHome.UnhandledError) ) ->
                             ( withGenericNotice mainModel, Cmd.none )
 
                         ( HomeModel homeModel, HomeMsg msg ) ->
-                            updatePagedModel HomeModel common <|
-                                case msg of
-                                    AppHome.UnhandledError ->
-                                        Utils.unreachable ()
+                            (case msg of
+                                AppHome.UnhandledError ->
+                                    Utils.unreachable ()
 
-                                    AppHome.FacilityClicked facilityId ->
-                                        ( homeModel, navigateFacility facilityId )
+                                AppHome.FacilityClicked facilityId ->
+                                    ( homeModel, navigateFacility facilityId )
 
-                                    AppHome.ServiceClicked serviceId ->
-                                        ( homeModel, navigateSearchService serviceId )
+                                AppHome.ServiceClicked serviceId ->
+                                    ( homeModel, navigateSearchService serviceId )
 
-                                    AppHome.LocationClicked locationId ->
-                                        ( homeModel, navigateSearchLocation locationId )
+                                AppHome.LocationClicked locationId ->
+                                    ( homeModel, navigateSearchLocation locationId )
 
-                                    AppHome.FullSearch search ->
-                                        ( homeModel, navigateSearch search )
+                                AppHome.FullSearch search ->
+                                    ( homeModel, navigateSearch search )
 
-                                    AppHome.Search q ->
-                                        ( homeModel, navigateSearchQuery q )
+                                AppHome.Search q ->
+                                    ( homeModel, navigateSearchQuery q )
 
-                                    AppHome.Private _ ->
-                                        mapCmd HomeMsg <| AppHome.update common.settings msg homeModel
+                                AppHome.Private _ ->
+                                    mapCmd HomeMsg <| AppHome.update common.settings msg homeModel
+                            )
+                                |> map HomeModel
+                                |> map (Page common)
 
                         ( FacilityDetailsModel facilityModel context, FacilityDetailsMsg msg ) ->
                             case msg of
@@ -201,37 +204,39 @@ mainUpdate msg mainModel =
                                     )
 
                                 AppFacilityDetails.FacilityClicked facilityId ->
-                                    ( Page (FacilityDetailsModel facilityModel context) common, navigateFacility facilityId )
+                                    ( Page common (FacilityDetailsModel facilityModel context), navigateFacility facilityId )
 
                                 _ ->
-                                    mapTCmd
-                                        (\m -> Page (FacilityDetailsModel m context) common)
-                                        FacilityDetailsMsg
-                                        (AppFacilityDetails.update common.settings msg facilityModel)
+                                    (AppFacilityDetails.update common.settings msg facilityModel)
+                                        |> mapCmd FacilityDetailsMsg
+                                        |> map (\m -> FacilityDetailsModel m context)
+                                        |> map (Page common)
 
                         ( SearchModel _, SearchMsg (AppSearch.UnhandledError) ) ->
                             ( withGenericNotice mainModel, Cmd.none )
 
                         ( SearchModel searchModel, SearchMsg msg ) ->
-                            updatePagedModel SearchModel common <|
-                                case msg of
-                                    AppSearch.Search s ->
-                                        ( searchModel, navigateSearch s )
+                            (case msg of
+                                AppSearch.Search s ->
+                                    ( searchModel, navigateSearch s )
 
-                                    AppSearch.FacilityClicked facilityId ->
-                                        ( searchModel, navigateFacility facilityId )
+                                AppSearch.FacilityClicked facilityId ->
+                                    ( searchModel, navigateFacility facilityId )
 
-                                    AppSearch.ServiceClicked serviceId ->
-                                        ( searchModel, navigateSearchService serviceId )
+                                AppSearch.ServiceClicked serviceId ->
+                                    ( searchModel, navigateSearchService serviceId )
 
-                                    AppSearch.LocationClicked locationId ->
-                                        ( searchModel, navigateSearchLocation locationId )
+                                AppSearch.LocationClicked locationId ->
+                                    ( searchModel, navigateSearchLocation locationId )
 
-                                    AppSearch.ClearSearch ->
-                                        ( searchModel, navigateHome )
+                                AppSearch.ClearSearch ->
+                                    ( searchModel, navigateHome )
 
-                                    _ ->
-                                        mapCmd SearchMsg <| AppSearch.update common.settings msg searchModel
+                                _ ->
+                                    mapCmd SearchMsg <| AppSearch.update common.settings msg searchModel
+                            )
+                                |> map SearchModel
+                                |> map (Page common)
 
                         _ ->
                             -- Ignore out of order messages generated by pages other than the current one.
@@ -263,52 +268,43 @@ mainUrlUpdate result mainModel =
             in
                 case route of
                     RootRoute ->
-                        updatePagedModel HomeModel common <|
-                            mapCmd HomeMsg <|
-                                AppHome.init common.settings viewport userLocation
+                        AppHome.init common.settings viewport userLocation
+                            |> mapBoth HomeMsg HomeModel
+                            |> map (Page common)
 
                     FacilityRoute facilityId ->
                         let
                             context =
                                 case mainModel of
-                                    Page (SearchModel searchModel) _ ->
+                                    Page _ (SearchModel searchModel) ->
                                         FromSearch searchModel
 
-                                    Page (FacilityDetailsModel _ previousContext) _ ->
+                                    Page _ (FacilityDetailsModel _ previousContext) ->
                                         previousContext
 
                                     _ ->
                                         FromUnkown
                         in
-                            updatePagedModel (\m -> FacilityDetailsModel m context) common <|
-                                mapCmd FacilityDetailsMsg <|
-                                    AppFacilityDetails.init viewport userLocation facilityId
+                            AppFacilityDetails.init viewport userLocation facilityId
+                                |> mapBoth FacilityDetailsMsg ((flip FacilityDetailsModel) context)
+                                |> map (Page common)
 
                     SearchRoute searchSpec ->
-                        updatePagedModel SearchModel common <|
-                            mapCmd SearchMsg <|
-                                case mainModel of
-                                    Page (FacilityDetailsModel _ (FromSearch searchModel)) _ ->
-                                        if searchModel.query == searchSpec then
-                                            ( searchModel, AppSearch.restoreCmd )
-                                        else
-                                            AppSearch.init common.settings searchSpec viewport userLocation
+                        (case mainModel of
+                            Page _ (FacilityDetailsModel _ (FromSearch searchModel)) ->
+                                if searchModel.query == searchSpec then
+                                    ( searchModel, AppSearch.restoreCmd )
+                                else
+                                    AppSearch.init common.settings searchSpec viewport userLocation
 
-                                    _ ->
-                                        AppSearch.init common.settings searchSpec viewport userLocation
+                            _ ->
+                                AppSearch.init common.settings searchSpec viewport userLocation
+                        )
+                            |> mapBoth SearchMsg SearchModel
+                            |> map (Page common)
 
                     NotFoundRoute ->
                         ( withNotice unknownRouteErrorNotice mainModel, navigateHome )
-
-
-updatePagedModel : (a -> PagedModel) -> CommonPageState -> ( a, Cmd MainMsg ) -> ( MainModel, Cmd MainMsg )
-updatePagedModel wmodel common t =
-    mapFst (\m -> Page (wmodel m) common) t
-
-
-mapCmd : (a -> MainMsg) -> ( m, Cmd a ) -> ( m, Cmd MainMsg )
-mapCmd =
-    mapTCmd identity
 
 
 mapViewport : MainModel -> MapViewport
@@ -320,7 +316,7 @@ mapViewport mainModel =
         InitializedVR mapViewport _ _ ->
             mapViewport
 
-        Page pagedModel _ ->
+        Page _ pagedModel ->
             case pagedModel of
                 HomeModel model ->
                     AppHome.mapViewport model
@@ -341,14 +337,14 @@ getSettings mainModel =
         InitializedVR mapViewport settings _ ->
             settings
 
-        Page _ common ->
+        Page common _ ->
             common.settings
 
 
 getUserLocation : MainModel -> UserLocation.Model
 getUserLocation mainModel =
     case mainModel of
-        Page pagedModel _ ->
+        Page _ pagedModel ->
             case pagedModel of
                 HomeModel model ->
                     AppHome.userLocation model
@@ -366,7 +362,7 @@ getUserLocation mainModel =
 mainView : MainModel -> Html MainMsg
 mainView mainModel =
     case mainModel of
-        Page pagedModel common ->
+        Page common pagedModel ->
             let
                 withLocale =
                     prependToolbar (localeControlView common.settings common.route)
@@ -512,7 +508,7 @@ notice mainModel =
         InitializedVR _ _ notice ->
             notice
 
-        Page _ common ->
+        Page common _ ->
             common.notice
 
         InitializingVR _ _ _ ->
@@ -535,8 +531,8 @@ withNotice notice mainModel =
         InitializedVR mapViewport settings _ ->
             InitializedVR mapViewport settings (Just notice)
 
-        Page pagedModel common ->
-            Page pagedModel { common | notice = Just notice }
+        Page common pagedModel ->
+            Page { common | notice = Just notice } pagedModel
 
         InitializingVR _ _ _ ->
             mainModel
@@ -548,8 +544,8 @@ withoutNotice mainModel =
         InitializedVR mapViewport settings _ ->
             InitializedVR mapViewport settings Nothing
 
-        Page pagedModel common ->
-            Page pagedModel { common | notice = Nothing }
+        Page common pagedModel ->
+            Page { common | notice = Nothing } pagedModel
 
         InitializingVR _ _ _ ->
             mainModel
