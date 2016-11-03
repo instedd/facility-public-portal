@@ -234,3 +234,18 @@ floatParam : String -> Dict String String -> Maybe Float
 floatParam key params =
     Dict.get key params
         &> (String.toFloat >> Result.toMaybe)
+
+
+setQuery : String -> SearchSpec -> SearchSpec
+setQuery q search =
+    { search | q = Just q }
+
+
+setType : Int -> SearchSpec -> SearchSpec
+setType id search =
+    { search | fType = Just id }
+
+
+setOwnership : Int -> SearchSpec -> SearchSpec
+setOwnership id search =
+    { search | ownership = Just id }
