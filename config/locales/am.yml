@@ -2,6 +2,7 @@ am:
   search_health_facility: የፍለጋ የጤና ተቋማት
   map: ካርታ
   api_docs: የኤ ፒ አይ ሰነዶች
+  full_download: ሙሉ የውሂብ ስብስብ አውርድ
   contact: እውቂያ
   services: አገልግሎቶች
   facilities_count: "%{count} መገልገያዎች"

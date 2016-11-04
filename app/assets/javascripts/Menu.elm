@@ -51,6 +51,12 @@ menuContent settings active =
                         , text <| t I18n.ApiDocs
                         ]
                     ]
+                , li []
+                    [ a [ href "/data" ]
+                        [ icon "file_download"
+                        , text <| t I18n.FullDownload
+                        ]
+                    ]
                 , hr [] []
                 , li []
                     [ a [ href <| "mailto:" ++ settings.contactEmail ]

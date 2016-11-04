@@ -2,6 +2,7 @@ es:
   search_health_facility: Buscar centros de salud
   map: Mapa
   api_docs: Documentación API
+  full_download: Descargar dataset completo
   services: Servicos
   contact: Contacto
   facilities_count: "%{count} centros de salud"

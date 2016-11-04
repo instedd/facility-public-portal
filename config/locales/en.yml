@@ -23,6 +23,7 @@ en:
   search_health_facility: Search health facilities
   map: Map
   api_docs: API Docs
+  full_download: Download full dataset
   contact: Contact
   services: Services
   facilities_count: "%{count} facilities"
