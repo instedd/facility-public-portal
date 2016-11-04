@@ -50,6 +50,7 @@ type alias FacilityReport =
     , contact_info_missing : Bool
     , inaccurate_services : Bool
     , other : Bool
+    --, comments : Maybe String
     }
 
 
@@ -186,7 +187,7 @@ reportWindow model =
                 [ Html.form [ action "#", method "GET" ]
                     [ Shared.checkbox "wrong_location" "Wrong location" (facilityReport model).wrong_location (Private (ToggleCheckbox "wrong_location"))
                     , Shared.checkbox "closed" "Facility closed" (facilityReport model).closed (Private (ToggleCheckbox "closed"))
-                    , Shared.checkbox "contact_info_missing" "Incomplete contact information" (facilityReport model).contact_info_missing (Private (ToggleCheckbox "contact_info_missing"))
+                    , Shared.checkbox "contact_info_missing" "Incorrect contact information" (facilityReport model).contact_info_missing (Private (ToggleCheckbox "contact_info_missing"))
                     , Shared.checkbox "inaccurate_services" "Inaccurate service list" (facilityReport model).inaccurate_services (Private (ToggleCheckbox "inaccurate_services"))
                     , Shared.checkbox "other" "Other" (facilityReport model).other (Private (ToggleCheckbox "other"))
                     ]
