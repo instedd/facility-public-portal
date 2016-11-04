@@ -50,11 +50,21 @@
       padding: 20px;
       &.pic {
         margin: 0;
-        padding: 0;
+        padding: 0px;
         height: 217px;
         text-align: center;
+        background-color: $grey-background;
         img {
           height: 100%;
+        }
+        .no-photo {
+          i {
+            font-size: 100px;
+            margin: 0;
+            display: block;
+          }
+          padding: 45px;
+          color: $grey3;
         }
       }
 

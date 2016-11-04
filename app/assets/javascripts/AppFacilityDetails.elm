@@ -434,7 +434,7 @@ facilityDetail cssClasses now facility =
                     [ text "clear" ]
                 ]
             , div [ class "content expand" ]
-                [ div [ class "detailSection pic" ] [ img [ src "/facility.png" ] [] ]
+                [ div [ class "detailSection pic" ] [ div [ class "no-photo" ] [ Shared.icon "photo", text "No photo" ] ]
                 , div [ class "detailSection actions" ] [ facilityActions ]
                 , div [ class "detailSection contact" ] [ facilityContactDetails contactInfo ]
                 , div [ class "detailSection services" ]
