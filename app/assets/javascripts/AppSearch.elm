@@ -309,12 +309,22 @@ searchResults model =
     let
         entries =
             case model.results of
+                -- searching
                 Nothing ->
-                    -- TODO make a difference between searching and no results
                     []
 
                 Just results ->
-                    List.map facilityRow results.items
+                    case results.items of
+                        [] ->
+                            [ div
+                                [ class "no-results" ]
+                                [ span [ class "search-icon" ] [ icon "find_in_page" ]
+                                , text "No results found"
+                                ]
+                            ]
+
+                        items ->
+                            List.map facilityRow items
     in
         div [ class "collection results" ] entries
 
