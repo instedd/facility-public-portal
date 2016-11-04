@@ -81,17 +81,30 @@ view model =
             , a [ href "#", class "right", Shared.onClick Toggle ] [ Shared.icon "close" ]
             ]
             [ Html.form [ action "#", method "GET" ]
-                [ label [ for "q" ] [ text "Facility name" ]
-                , input [ id "q", type' "text", value query, onInput (Private << SetName) ] []
-                , label [] [ text "Facility type" ]
-                , Html.select [ Shared.onSelect (Private << SetType) ] (selectOptions model.facilityTypes model.fType)
-                , label [] [ text "Ownership" ]
-                , Html.select [ Shared.onSelect (Private << SetOwnership) ] (selectOptions model.ownerships model.ownership)
-                , label [] [ text "Location" ]
-                , Html.App.map (Private << SelectorMsg) (LocationSelector.view model.selector)
+                [ field
+                    [ label [ for "q" ] [ text "Facility name" ]
+                    , input [ id "q", type' "text", value query, onInput (Private << SetName) ] []
+                    ]
+                , field
+                    [ label [] [ text "Facility type" ]
+                    , Html.select [ Shared.onSelect (Private << SetType) ] (selectOptions model.facilityTypes model.fType)
+                    ]
+                , field
+                    [ label [] [ text "Ownership" ]
+                    , Html.select [ Shared.onSelect (Private << SetOwnership) ] (selectOptions model.ownerships model.ownership)
+                    ]
+                , field
+                    [ label [] [ text "Location" ]
+                    , Html.App.map (Private << SelectorMsg) (LocationSelector.view model.selector)
+                    ]
                 ]
             ]
             [ a [ href "#", class "btn-flat", Shared.onClick (Perform (search model)) ] [ text "Search" ] ]
+
+
+field : List (Html Msg) -> Html Msg
+field content =
+    div [ class "field" ] content
 
 
 search : Model -> SearchSpec

@@ -217,7 +217,7 @@ view model =
                 Nothing ->
                     model.query
     in
-        div []
+        div [ class "autocomplete-wrapper" ]
             (List.append
                 [ input
                     [ onInput SetQuery
