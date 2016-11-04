@@ -23,8 +23,9 @@ type alias Flags =
     , contactEmail : String
     , locale : String
     , locales : List ( String, String )
-    , facilityTypes : List (FacilityType)
-    , ownerships : List (Ownership)
+    , facilityTypes : List FacilityType
+    , ownerships : List Ownership
+    , locations : List Location
     }
 
 
@@ -92,6 +93,7 @@ init flags route =
             , locales = flags.locales
             , facilityTypes = flags.facilityTypes
             , ownerships = flags.ownerships
+            , locations = flags.locations
             }
 
         model =

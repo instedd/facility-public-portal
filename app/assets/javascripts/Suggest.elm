@@ -54,7 +54,7 @@ empty settings =
 init : Models.Settings -> String -> Model
 init settings query =
     { query = query
-    , advancedSearch = AdvancedSearch.init settings.facilityTypes settings.ownerships
+    , advancedSearch = AdvancedSearch.init settings.facilityTypes settings.ownerships settings.locations
     , suggestions = Nothing
     , d = Debounce.init
     , advanced = False

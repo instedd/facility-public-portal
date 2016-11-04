@@ -33,8 +33,8 @@ type PrivateMsg
     | SelectorMsg LocationSelector.Msg
 
 
-init : List FacilityType -> List Ownership -> Model
-init facilityTypes ownerships =
+init : List FacilityType -> List Ownership -> List Location -> Model
+init facilityTypes ownerships locations =
     { facilityTypes = facilityTypes
     , ownerships = ownerships
     , q = Nothing
@@ -119,10 +119,3 @@ selectOptions options choice =
                     )
                     options
                )
-
-
-locations : List Location
-locations =
-    [ { id = 1, name = "Foo", parentName = Nothing }
-    , { id = 2, name = "Bar", parentName = Just "Foo" }
-    ]
