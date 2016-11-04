@@ -15,7 +15,9 @@ import Utils exposing ((&>))
 
 subscriptions : Sub Msg
 subscriptions =
-    Sub.map SetAutoState Autocomplete.subscription
+    -- TODO: keyboard control is not supported yet :(
+    -- Sub.map SetAutoState Autocomplete.subscription
+    Sub.none
 
 
 type alias Model =
@@ -44,6 +46,7 @@ type Msg
     | SetAutoState Autocomplete.Msg
     | Wrap Bool
     | Reset
+    | OverlayClicked
     | HandleEscape
     | SelectLocationKeyboard Int
     | SelectLocationMouse Int
@@ -55,6 +58,7 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        -- case msg of
         SetQuery newQuery ->
             let
                 showMenu =
@@ -77,8 +81,11 @@ update msg model =
                     Just updateMsg ->
                         update updateMsg newModel
 
+        OverlayClicked ->
+            escape model ! []
+
         HandleEscape ->
-            close model ! []
+            escape model ! []
 
         Wrap toTop ->
             case model.selectedLocation of
@@ -204,6 +211,7 @@ view model =
                         , id "location-input"
                         , class "autocomplete-input"
                         , autocomplete False
+                        , spellcheck False
                         , attribute "role" "combobox"
                         ]
                         []
@@ -217,7 +225,7 @@ overlay : Model -> Html Msg
 overlay model =
     div
         [ class "autocomplete-overlay"
-        , onClick HandleEscape
+        , onClick OverlayClicked
         , hidden (not model.showMenu)
         , style
             [ ( "backgroundColor", "rgba(0,0,0,0)" )
@@ -240,8 +248,7 @@ acceptableLocations query locations =
         List.filter (String.contains lowerQuery << String.toLower << .name) locations
 
 
-close : Model -> Model
-close model =
+escape model =
     let
         validOptions =
             not <| List.isEmpty (acceptableLocations model.query model.locations)
@@ -265,6 +272,11 @@ close model =
 
             Nothing ->
                 clearModel
+
+
+close : Model -> Model
+close =
+    resetMenu
 
 
 viewMenu : Model -> Html Msg
