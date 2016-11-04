@@ -1,4 +1,4 @@
-module Suggest exposing (Config, Model, Msg(..), PrivateMsg, init, empty, update, hasSuggestionsToShow, viewInput, viewInputWith, viewSuggestions, advancedSearchWindow)
+module Suggest exposing (Config, Model, Msg(..), PrivateMsg, init, empty, update, subscriptions, hasSuggestionsToShow, viewInput, viewInputWith, viewSuggestions, advancedSearchWindow)
 
 import AdvancedSearch
 import Api
@@ -115,6 +115,11 @@ cfg =
 
 debCmd =
     Debounce.debounceCmd cfg
+
+
+subscriptions : Sub Msg
+subscriptions =
+    Sub.map (Private << AdvancedSearchMsg) AdvancedSearch.subscriptions
 
 
 viewInput : Model -> Html Msg

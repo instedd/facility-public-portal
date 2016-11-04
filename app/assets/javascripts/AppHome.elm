@@ -166,6 +166,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Sub.map (Private << MapMsg) Map.subscriptions
+        , Sub.map (Private << SuggestMsg) Suggest.subscriptions
         , Map.facilityMarkerClicked FacilityClicked
         ]
 
