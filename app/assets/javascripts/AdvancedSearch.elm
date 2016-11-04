@@ -8,6 +8,7 @@ import Models exposing (SearchSpec, FacilityType, Ownership, Location, emptySear
 import Return exposing (Return)
 import Shared
 import LocationSelector
+import Json.Decode as Json
 
 
 type alias Model =
@@ -31,6 +32,7 @@ type PrivateMsg
     | SetType Int
     | SetOwnership Int
     | SelectorMsg LocationSelector.Msg
+    | HideSelector
 
 
 init : List FacilityType -> List Ownership -> List Location -> Model
@@ -59,6 +61,9 @@ update model msg =
         Private (SelectorMsg msg) ->
             LocationSelector.update msg model.selector
                 |> Return.mapBoth (Private << SelectorMsg) (\m -> { model | selector = m })
+
+        Private HideSelector ->
+            Return.singleton { model | selector = (LocationSelector.close model.selector) }
 
         _ ->
             -- To be handled by host page
@@ -99,12 +104,25 @@ view model =
                     ]
                 ]
             ]
-            [ a [ href "#", class "btn-flat", Shared.onClick (Perform (search model)) ] [ text "Search" ] ]
+            [ a
+                [ href "#"
+                , class "btn-flat"
+                , hideSelectorOnFocus
+                , Shared.onClick (Perform (search model))
+                ]
+                [ text "Search" ]
+            ]
 
 
 field : List (Html Msg) -> Html Msg
 field content =
-    div [ class "field" ] content
+    div
+        [ class "field", hideSelectorOnFocus ]
+        content
+
+
+hideSelectorOnFocus =
+    Html.Events.on "focusin" (Json.succeed <| Private HideSelector)
 
 
 search : Model -> SearchSpec

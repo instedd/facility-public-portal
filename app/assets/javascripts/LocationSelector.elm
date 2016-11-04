@@ -78,33 +78,7 @@ update msg model =
                         update updateMsg newModel
 
         HandleEscape ->
-            let
-                validOptions =
-                    not <| List.isEmpty (acceptableLocations model.query model.locations)
-
-                handleEscape =
-                    if validOptions then
-                        model
-                            |> removeSelection
-                            |> resetMenu
-                    else
-                        { model | query = "" }
-                            |> removeSelection
-                            |> resetMenu
-
-                escapedModel =
-                    case model.selectedLocation of
-                        Just location ->
-                            if model.query == location.name then
-                                model
-                                    |> resetInput
-                            else
-                                handleEscape
-
-                        Nothing ->
-                            handleEscape
-            in
-                escapedModel ! []
+            close model ! []
 
         Wrap toTop ->
             case model.selectedLocation of
@@ -217,22 +191,44 @@ view model =
                 Nothing ->
                     model.query
     in
-        div [ class "autocomplete-wrapper" ]
-            (List.append
-                [ input
-                    [ onInput SetQuery
-                    , onFocus OnFocus
-                    , onWithOptions "keydown" options dec
-                    , value query
-                    , id "location-input"
-                    , class "autocomplete-input"
-                    , autocomplete False
-                    , attribute "role" "combobox"
+        div []
+            [ overlay model
+            , div
+                [ class "autocomplete-wrapper" ]
+                (List.append
+                    [ input
+                        [ onInput SetQuery
+                        , onFocus OnFocus
+                        , onWithOptions "keydown" options dec
+                        , value query
+                        , id "location-input"
+                        , class "autocomplete-input"
+                        , autocomplete False
+                        , attribute "role" "combobox"
+                        ]
+                        []
                     ]
-                    []
-                ]
-                menu
-            )
+                    menu
+                )
+            ]
+
+
+overlay : Model -> Html Msg
+overlay model =
+    div
+        [ class "autocomplete-overlay"
+        , onClick HandleEscape
+        , hidden (not model.showMenu)
+        , style
+            [ ( "backgroundColor", "rgba(0,0,0,0)" )
+            , ( "position", "fixed" )
+            , ( "width", "100%" )
+            , ( "height", "100%" )
+            , ( "top", "0" )
+            , ( "left", "0" )
+            ]
+        ]
+        []
 
 
 acceptableLocations : String -> List Location -> List Location
@@ -242,6 +238,33 @@ acceptableLocations query locations =
             String.toLower query
     in
         List.filter (String.contains lowerQuery << String.toLower << .name) locations
+
+
+close : Model -> Model
+close model =
+    let
+        validOptions =
+            not <| List.isEmpty (acceptableLocations model.query model.locations)
+
+        clearModel =
+            if validOptions then
+                model
+                    |> removeSelection
+                    |> resetMenu
+            else
+                { model | query = "" }
+                    |> removeSelection
+                    |> resetMenu
+    in
+        case model.selectedLocation of
+            Just location ->
+                if model.query == location.name then
+                    resetInput model
+                else
+                    clearModel
+
+            Nothing ->
+                clearModel
 
 
 viewMenu : Model -> Html Msg
