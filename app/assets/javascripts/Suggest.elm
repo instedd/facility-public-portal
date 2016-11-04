@@ -46,14 +46,29 @@ hasSuggestionsToShow model =
     (model.query /= "") && (model.suggestions /= Nothing)
 
 
-empty : Model
-empty =
-    init ""
+empty : Models.Settings -> Model
+empty settings =
+    init settings ""
 
 
-init : String -> Model
-init query =
-    { query = query, advancedSearch = AdvancedSearch.init, suggestions = Nothing, d = Debounce.init, advanced = False }
+init : Models.Settings -> String -> Model
+init settings query =
+    { query = query
+    , advancedSearch = AdvancedSearch.init settings.facilityTypes settings.ownerships
+    , suggestions = Nothing
+    , d = Debounce.init
+    , advanced = False
+    }
+
+
+clear : Model -> Model
+clear model =
+    { model
+        | query = ""
+        , suggestions = Nothing
+        , d = Debounce.init
+        , advanced = False
+    }
 
 
 searchSuggestions : Config -> Model -> ( Model, Cmd Msg )
@@ -68,7 +83,7 @@ update config msg model =
             case msg of
                 Input query ->
                     if query == "" then
-                        ( empty, Cmd.none )
+                        Return.singleton (clear model)
                     else
                         ( { model | query = query, suggestions = Nothing }, debCmd (Private FetchSuggestions) )
 
@@ -204,10 +219,10 @@ advancedSearchFooter =
         [ a [ href "#", Shared.onClick (Private (AdvancedSearchMsg AdvancedSearch.Toggle)) ] [ text "Advanced Search" ] ]
 
 
-advancedSearchWindow : Model -> List FacilityType -> List Ownership -> List (Html Msg)
-advancedSearchWindow model types ownership =
+advancedSearchWindow : Model -> List (Html Msg)
+advancedSearchWindow model =
     if model.advanced then
-        List.map (Html.App.map (Private << AdvancedSearchMsg)) (AdvancedSearch.view model.advancedSearch types ownership)
+        List.map (Html.App.map (Private << AdvancedSearchMsg)) (AdvancedSearch.view model.advancedSearch)
     else
         []
 

@@ -23,8 +23,6 @@ type alias Model =
     , results : Maybe SearchResult
     , mobileFocusMap : Bool
     , d : Debounce.State
-    , facilityTypes : List FacilityType
-    , ownerships : List Ownership
     }
 
 
@@ -59,15 +57,13 @@ init : Settings -> SearchSpec -> MapViewport -> UserLocation.Model -> ( Model, C
 init s query mapViewport userLocation =
     let
         model =
-            { suggest = Suggest.init (queryText query)
+            { suggest = Suggest.init s (queryText query)
             , query = query
             , mapViewport = mapViewport
             , userLocation = userLocation
             , results = Nothing
             , mobileFocusMap = True
             , d = Debounce.init
-            , facilityTypes = s.facilityTypes
-            , ownerships = s.ownerships
             }
     in
         model
@@ -222,7 +218,7 @@ view model =
                 [ mobileFocusToggleView ]
             else
                 []
-        , modal = List.map (Html.App.map (Private << SuggestMsg)) (Suggest.advancedSearchWindow model.suggest model.facilityTypes model.ownerships)
+        , modal = List.map (Html.App.map (Private << SuggestMsg)) (Suggest.advancedSearchWindow model.suggest)
         }
 
 
@@ -237,6 +233,7 @@ mobileBackHeader =
             , span [] [ text "Search Results" ]
             ]
         ]
+
 
 
 -- Keeping this here for when adv search is extracted from suggest, to edit it.

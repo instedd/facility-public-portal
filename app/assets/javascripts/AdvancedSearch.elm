@@ -11,7 +11,9 @@ import LocationSelector
 
 
 type alias Model =
-    { q : Maybe String
+    { facilityTypes : List FacilityType
+    , ownerships : List Ownership
+    , q : Maybe String
     , fType : Maybe Int
     , ownership : Maybe Int
     , selector : LocationSelector.Model
@@ -31,9 +33,11 @@ type PrivateMsg
     | SelectorMsg LocationSelector.Msg
 
 
-init : Model
-init =
-    { q = Nothing
+init : List FacilityType -> List Ownership -> Model
+init facilityTypes ownerships =
+    { facilityTypes = facilityTypes
+    , ownerships = ownerships
+    , q = Nothing
     , fType = Nothing
     , ownership = Nothing
     , selector = LocationSelector.init locations
@@ -66,8 +70,8 @@ subscriptions =
     Sub.map (Private << SelectorMsg) LocationSelector.subscriptions
 
 
-view : Model -> List FacilityType -> List Ownership -> List (Html Msg)
-view model types ownerships =
+view : Model -> List (Html Msg)
+view model =
     let
         query =
             Maybe.withDefault "" model.q
@@ -80,9 +84,9 @@ view model types ownerships =
                 [ label [ for "q" ] [ text "Facility name" ]
                 , input [ id "q", type' "text", value query, onInput (Private << SetName) ] []
                 , label [] [ text "Facility type" ]
-                , Html.select [ Shared.onSelect (Private << SetType) ] (selectOptions types model.fType)
+                , Html.select [ Shared.onSelect (Private << SetType) ] (selectOptions model.facilityTypes model.fType)
                 , label [] [ text "Ownership" ]
-                , Html.select [ Shared.onSelect (Private << SetOwnership) ] (selectOptions ownerships model.ownership)
+                , Html.select [ Shared.onSelect (Private << SetOwnership) ] (selectOptions model.ownerships model.ownership)
                 , label [] [ text "Location" ]
                 , Html.App.map (Private << SelectorMsg) (LocationSelector.view model.selector)
                 ]

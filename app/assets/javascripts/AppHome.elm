@@ -17,8 +17,6 @@ type alias Model =
     , mapViewport : MapViewport
     , userLocation : UserLocation.Model
     , d : Debounce.State
-    , facilityTypes : List FacilityType
-    , ownerships : List Ownership
     }
 
 
@@ -45,12 +43,10 @@ init : Settings -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init settings mapViewport userLocation =
     let
         model =
-            { suggest = Suggest.empty
+            { suggest = Suggest.empty settings
             , mapViewport = mapViewport
             , userLocation = userLocation
             , d = Debounce.init
-            , facilityTypes = settings.facilityTypes
-            , ownerships = settings.ownerships
             }
     in
         model
@@ -146,7 +142,7 @@ view model =
     , content = suggestionInput model :: (suggestionItems model)
     , toolbar = [ userLocationView model ]
     , bottom = []
-    , modal = List.map (Html.App.map (Private << SuggestMsg)) (Suggest.advancedSearchWindow model.suggest model.facilityTypes model.ownerships)
+    , modal = List.map (Html.App.map (Private << SuggestMsg)) (Suggest.advancedSearchWindow model.suggest)
     }
 
 
