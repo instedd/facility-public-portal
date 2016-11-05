@@ -1,23 +1,25 @@
-module LocationSelector exposing (..)
+module LocationSelector
+    exposing
+        ( Model
+        , Msg
+        , init
+        , update
+        , view
+        , subscriptions
+        , close
+        )
 
 import Autocomplete
+import Dom
 import Html exposing (..)
+import Html.App as Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Html.App as Html
-import String
 import Json.Decode as Json
-import Dom
-import Task
 import Models exposing (Location)
+import String
+import Task
 import Utils exposing ((&>))
-
-
-subscriptions : Sub Msg
-subscriptions =
-    -- TODO: keyboard control is not supported yet :(
-    -- Sub.map SetAutoState Autocomplete.subscription
-    Sub.none
 
 
 type alias Model =
@@ -53,6 +55,13 @@ type Msg
     | PreviewLocation Int
     | OnFocus
     | NoOp
+
+
+subscriptions : Sub Msg
+subscriptions =
+    -- TODO: keyboard control is not supported yet :(
+    -- Sub.map SetAutoState Autocomplete.subscription
+    Sub.none
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -113,7 +122,7 @@ update msg model =
             let
                 newModel =
                     setQuery model id
-                        |> resetMenu
+                        |> close
             in
                 newModel ! []
 
@@ -121,7 +130,7 @@ update msg model =
             let
                 newModel =
                     setQuery model id
-                        |> resetMenu
+                        |> close
             in
                 ( newModel, Task.perform (\err -> NoOp) (\_ -> NoOp) (Dom.focus "location-input") )
 
@@ -138,7 +147,7 @@ update msg model =
 resetInput model =
     { model | query = "" }
         |> removeSelection
-        |> resetMenu
+        |> close
 
 
 removeSelection model =
@@ -159,7 +168,7 @@ setQuery model id =
     }
 
 
-resetMenu model =
+close model =
     { model
         | autoState = Autocomplete.empty
         , showMenu = False
@@ -248,6 +257,11 @@ acceptableLocations query locations =
         List.filter (String.contains lowerQuery << String.toLower << .name) locations
 
 
+parseId : String -> Maybe Int
+parseId =
+    String.toInt >> Result.toMaybe
+
+
 escape model =
     let
         validOptions =
@@ -257,11 +271,11 @@ escape model =
             if validOptions then
                 model
                     |> removeSelection
-                    |> resetMenu
+                    |> close
             else
                 { model | query = "" }
                     |> removeSelection
-                    |> resetMenu
+                    |> close
     in
         case model.selectedLocation of
             Just location ->
@@ -272,11 +286,6 @@ escape model =
 
             Nothing ->
                 clearModel
-
-
-close : Model -> Model
-close =
-    resetMenu
 
 
 viewMenu : Model -> Html Msg
@@ -332,12 +341,3 @@ viewConfig =
             , ul = [ class "autocomplete-list" ]
             , li = customizedLi
             }
-
-
-
--- LOCATIONS
-
-
-parseId : String -> Maybe Int
-parseId =
-    String.toInt >> Result.toMaybe

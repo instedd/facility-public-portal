@@ -1,14 +1,22 @@
-module AdvancedSearch exposing (Model, Msg(..), PrivateMsg, init, update, subscriptions, view)
+module AdvancedSearch
+    exposing
+        ( Model
+        , Msg(..)
+        , init
+        , update
+        , subscriptions
+        , view
+        )
 
 import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
-import Models exposing (SearchSpec, FacilityType, Ownership, Location, emptySearch, setType, setQuery, setOwnership)
-import Return exposing (Return)
-import Shared
-import LocationSelector
+import Html.Events exposing (onInput)
 import Json.Decode as Json
+import LocationSelector
+import Models exposing (SearchSpec, FacilityType, Ownership, Location, emptySearch)
+import Return exposing (Return)
+import Shared exposing (onClick)
 
 
 type alias Model =
@@ -66,7 +74,7 @@ update model msg =
             Return.singleton { model | selector = (LocationSelector.close model.selector) }
 
         _ ->
-            -- To be handled by host page
+            -- Public events
             Return.singleton model
 
 
@@ -83,7 +91,7 @@ view model =
     in
         Shared.modalWindow
             [ text "Advanced Search"
-            , a [ href "#", class "right", Shared.onClick Toggle ] [ Shared.icon "close" ]
+            , a [ href "#", class "right", onClick Toggle ] [ Shared.icon "close" ]
             ]
             [ Html.form [ action "#", method "GET" ]
                 [ field
@@ -108,7 +116,7 @@ view model =
                 [ href "#"
                 , class "btn-flat"
                 , hideSelectorOnFocus
-                , Shared.onClick (Perform (search model))
+                , onClick (Perform (search model))
                 ]
                 [ text "Search" ]
             ]
