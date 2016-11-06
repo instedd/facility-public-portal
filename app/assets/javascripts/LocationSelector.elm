@@ -333,7 +333,10 @@ viewConfig =
                 [ classList [ ( "autocomplete-item", True ), ( "key-selected", keySelected || mouseSelected ) ]
                 , id (toString location.id)
                 ]
-            , children = [ Html.text location.name ]
+            , children =
+                [ Html.text location.name
+                , Html.span [ class "autocomplete-item-context" ] [ Html.text (Maybe.withDefault "" location.parentName) ]
+                ]
             }
     in
         Autocomplete.viewConfig

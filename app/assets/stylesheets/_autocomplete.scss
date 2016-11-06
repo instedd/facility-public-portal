@@ -18,12 +18,24 @@
     padding: 5px 10px;
     border-bottom: 1px solid #DDD;
     cursor: pointer;
+
+    .autocomplete-item-context {
+        float: right;
+        font-size: 13px;
+        color: $color_mountain_mist_approx;
+        margin-top: 1px;
+    }
+
+    &.key-selected {
+      background-color: $blue;
+      color: white;
+
+      .autocomplete-item-context {
+            color: white;
+      }
+    }
 }
 
-.key-selected {
-    background-color: $blue;
-    color: white;
-}
 
 .mouse-selected {
     background-color: #ececec;
