@@ -27,12 +27,7 @@
   }
 
   &.key-selected {
-    background-color: $blue;
-    color: white;
-
-    .autocomplete-item-context {
-      color: white;
-    }
+    background-color: #DDD;
   }
 }
 
