@@ -34,9 +34,9 @@ type alias Model =
 
 init : List Location -> Model
 init locations =
-    { locations = locations
+    { locations = List.sortBy .name locations
     , autoState = Autocomplete.empty
-    , howManyToShow = 5
+    , howManyToShow = 8
     , query = ""
     , selectedLocation = Nothing
     , showMenu = False
