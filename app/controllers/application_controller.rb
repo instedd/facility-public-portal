@@ -43,7 +43,9 @@ class ApplicationController < ActionController::Base
       "locales" => Settings.locales,
       "locale" => I18n.locale,
       "facilityTypes" => ElasticsearchService.instance.get_facility_types,
-      "ownerships" => ElasticsearchService.instance.get_ownerships
+      "ownerships" => ElasticsearchService.instance.get_ownerships,
+      # TODO
+      "locations" => ElasticsearchService.instance.get_locations.map { |l| l["parentName"] = l["parent_name"]; l }
     }
   end
 end

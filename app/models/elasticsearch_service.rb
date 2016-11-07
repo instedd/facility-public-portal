@@ -148,6 +148,12 @@ class ElasticsearchService
     result["hits"]["hits"].map { |h| h["_source"] }
   end
 
+  def get_locations
+    # TODO: do not fetch all locations together
+    result = client.search({index: @index_name, type: 'location', body: { size: 1000, sort: { id: { order: "asc" } } }})
+    result["hits"]["hits"].map { |h| h["_source"] }
+  end
+
   def get_facility(id)
     result = client.search({
       index: @index_name,
