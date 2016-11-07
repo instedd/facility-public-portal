@@ -103,9 +103,11 @@ nav .nav-wrapper {
   .footer {
     padding: 18px;
     border-top: 1px solid $grey3;
-    i.material-icons {
+    .icons {
       vertical-align: top;
-      margin-right: 13px;
+      i.material-icons {
+        margin-right: 13px;
+      }
     }
     a { color: $blue; }
   }
@@ -253,15 +255,27 @@ nav .nav-wrapper {
         //Instead of the line below you could use @include box-shadow($shadow-1, $shadow-2, $shadow-3, $shadow-4, $shadow-5, $shadow-6, $shadow-7, $shadow-8, $shadow-9, $shadow-10)
         box-shadow: none !important;
       }
-      + i, + a i {
-        color: $color_mountain_mist_approx;
+      + .actions {
         position: absolute;
         right: 0;
         top: 10px;
         cursor: pointer;
-      }
-      + a:hover i {
-        color: black;
+
+        i, a i, a svg {
+          color: $color_mountain_mist_approx;
+          margin-left: 5px;
+          width: 24px;
+          height: 24px;
+        }
+        a:hover i, a.active i {
+          color: $blue;
+        }
+        a svg {
+          fill: $color_mountain_mist_approx;
+          &.active {
+            fill: $blue;
+          }
+        }
       }
     }
   }

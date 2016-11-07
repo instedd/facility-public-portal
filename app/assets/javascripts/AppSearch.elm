@@ -57,7 +57,7 @@ init : Settings -> SearchSpec -> MapViewport -> UserLocation.Model -> ( Model, C
 init s query mapViewport userLocation =
     let
         model =
-            { suggest = Suggest.init s (queryText query)
+            { suggest = Suggest.init s query
             , query = query
             , mapViewport = mapViewport
             , userLocation = userLocation
@@ -294,11 +294,6 @@ mapViewport model =
 userLocation : Model -> UserLocation.Model
 userLocation model =
     model.userLocation
-
-
-queryText : SearchSpec -> String
-queryText searchSpec =
-    Maybe.withDefault "" searchSpec.q
 
 
 searchResults : Model -> Html Msg

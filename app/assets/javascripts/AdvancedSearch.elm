@@ -6,6 +6,7 @@ module AdvancedSearch
         , update
         , subscriptions
         , view
+        , isEmpty
         )
 
 import Html exposing (..)
@@ -43,13 +44,13 @@ type PrivateMsg
     | HideSelector
 
 
-init : List FacilityType -> List Ownership -> List Location -> Model
-init facilityTypes ownerships locations =
+init : List FacilityType -> List Ownership -> List Location -> SearchSpec -> Model
+init facilityTypes ownerships locations search =
     { facilityTypes = facilityTypes
     , ownerships = ownerships
-    , q = Nothing
-    , fType = Nothing
-    , ownership = Nothing
+    , q = search.q
+    , fType = search.fType
+    , ownership = search.ownership
     , selector = LocationSelector.init locations
     }
 
@@ -158,3 +159,8 @@ selectOptions options choice =
                     )
                     options
                )
+
+
+isEmpty : Model -> Bool
+isEmpty model =
+    Models.isEmpty (search model)

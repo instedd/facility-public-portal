@@ -9,11 +9,13 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import I18n exposing (..)
 import List
-import Models exposing (MapViewport, SearchSpec, FacilityType, Ownership)
+import Models exposing (MapViewport, SearchSpec, FacilityType, Ownership, emptySearch)
 import Return
 import Shared exposing (icon)
 import String
 import Utils
+import Svg
+import Svg.Attributes
 
 
 type alias Config =
@@ -48,13 +50,13 @@ hasSuggestionsToShow model =
 
 empty : Models.Settings -> Model
 empty settings =
-    init settings ""
+    init settings emptySearch
 
 
-init : Models.Settings -> String -> Model
-init settings query =
-    { query = query
-    , advancedSearch = AdvancedSearch.init settings.facilityTypes settings.ownerships settings.locations
+init : Models.Settings -> SearchSpec -> Model
+init settings search =
+    { query = Maybe.withDefault "" search.q
+    , advancedSearch = AdvancedSearch.init settings.facilityTypes settings.ownerships settings.locations search
     , suggestions = Nothing
     , d = Debounce.init
     , advanced = False
@@ -144,7 +146,43 @@ viewInput model =
 
 viewInputWith : (Msg -> a) -> Model -> Html a -> Html a
 viewInputWith wmsg model trailing =
-    Shared.searchBar model.query (wmsg <| Search model.query) (wmsg << Private << Input) trailing
+    Shared.searchBar
+        model.query
+        (wmsg <| Search model.query)
+        (wmsg << Private << Input)
+        (div [ class "actions" ]
+            [ trailing
+            , Html.App.map wmsg (advancedSearchIcon model)
+            ]
+        )
+
+
+advancedSearchIcon : Model -> Html Msg
+advancedSearchIcon model =
+    a
+        [ href "#"
+        , Shared.onClick (Private (AdvancedSearchMsg AdvancedSearch.Toggle))
+        , classList [ ( "active", not (AdvancedSearch.isEmpty model.advancedSearch) ) ]
+        ]
+        [ filterIcon model ]
+
+
+filterIcon : Model -> Html a
+filterIcon model =
+    let
+        class =
+            (if AdvancedSearch.isEmpty model.advancedSearch then
+                ""
+             else
+                "active"
+            )
+    in
+        Svg.svg
+            [ Svg.Attributes.class class
+            , Svg.Attributes.viewBox "0 0 24 24"
+            ]
+            [ Svg.path [ Svg.Attributes.d "M22,4l-8,8v8H10V12L2,4Z" ] []
+            ]
 
 
 viewSuggestions : Model -> List (Html Msg)
@@ -154,7 +192,7 @@ viewSuggestions model =
             []
 
         Just s ->
-            [ suggestionsContent s, advancedSearchFooter ]
+            [ suggestionsContent s ]
 
 
 suggestionsContent : List Models.Suggestion -> Html Msg
@@ -211,12 +249,6 @@ suggestion s =
                 , p [ class "sub" ]
                     [ text <| Maybe.withDefault "" parentName ]
                 ]
-
-
-advancedSearchFooter =
-    div
-        [ class "footer" ]
-        [ a [ href "#", Shared.onClick (Private (AdvancedSearchMsg AdvancedSearch.Toggle)) ] [ text "Advanced Search" ] ]
 
 
 advancedSearchWindow : Model -> List (Html Msg)

@@ -209,6 +209,23 @@ emptySearch =
     { q = Nothing, service = Nothing, location = Nothing, latLng = Nothing, fType = Nothing, ownership = Nothing }
 
 
+searchEquals : SearchSpec -> SearchSpec -> Bool
+searchEquals s1 s2 =
+    List.all identity
+        [ Utils.equalMaybe (Maybe.andThen s1.q discardEmpty) (Maybe.andThen s2.q discardEmpty)
+        , Utils.equalMaybe s1.service s2.service
+        , Utils.equalMaybe s1.location s2.location
+        , Utils.equalMaybe s1.latLng s2.latLng
+        , Utils.equalMaybe s1.fType s2.fType
+        , Utils.equalMaybe s1.ownership s2.ownership
+        ]
+
+
+isEmpty : SearchSpec -> Bool
+isEmpty =
+    searchEquals emptySearch
+
+
 
 -- Private
 

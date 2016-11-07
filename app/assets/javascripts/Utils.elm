@@ -140,6 +140,25 @@ isJust m =
             True
 
 
+isNothing : Maybe a -> Bool
+isNothing =
+    not << isJust
+
+
+equalMaybe a b =
+    case a of
+        Nothing ->
+            isNothing b
+
+        Just xa ->
+            case b of
+                Nothing ->
+                    False
+
+                Just xb ->
+                    xa == xb
+
+
 last : List a -> Maybe a
 last l =
     List.head <| List.reverse l
