@@ -14,7 +14,7 @@ import Html.App
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Json.Decode as Json
-import LocationSelector
+import Selector
 import Models exposing (SearchSpec, FacilityType, Ownership, Location, emptySearch)
 import Return exposing (Return)
 import Shared exposing (onClick)
@@ -26,7 +26,7 @@ type alias Model =
     , q : Maybe String
     , fType : Maybe Int
     , ownership : Maybe Int
-    , selector : LocationSelector.Model
+    , selector : Selector.Model Location
     }
 
 
@@ -40,7 +40,7 @@ type PrivateMsg
     = SetName String
     | SetType Int
     | SetOwnership Int
-    | SelectorMsg LocationSelector.Msg
+    | SelectorMsg Selector.Msg
     | HideSelector
 
 
@@ -51,7 +51,7 @@ init facilityTypes ownerships locations search =
     , q = search.q
     , fType = search.fType
     , ownership = search.ownership
-    , selector = LocationSelector.init locations search.location
+    , selector = Selector.init "location-input" locations .id .name search.location
     }
 
 
@@ -68,11 +68,11 @@ update model msg =
             Return.singleton { model | ownership = Just o }
 
         Private (SelectorMsg msg) ->
-            LocationSelector.update msg model.selector
+            Selector.update msg model.selector
                 |> Return.mapBoth (Private << SelectorMsg) (\m -> { model | selector = m })
 
         Private HideSelector ->
-            Return.singleton { model | selector = (LocationSelector.close model.selector) }
+            Return.singleton { model | selector = (Selector.close model.selector) }
 
         _ ->
             -- Public events
@@ -81,7 +81,7 @@ update model msg =
 
 subscriptions : Sub Msg
 subscriptions =
-    Sub.map (Private << SelectorMsg) LocationSelector.subscriptions
+    Sub.map (Private << SelectorMsg) Selector.subscriptions
 
 
 view : Model -> List (Html Msg)
@@ -89,6 +89,11 @@ view model =
     let
         query =
             Maybe.withDefault "" model.q
+
+        viewLocation location =
+            [ Html.text location.name
+            , Html.span [ class "autocomplete-item-context" ] [ Html.text (Maybe.withDefault "" location.parentName) ]
+            ]
     in
         Shared.modalWindow
             [ text "Advanced Search"
@@ -109,7 +114,7 @@ view model =
                     ]
                 , field
                     [ label [] [ text "Location" ]
-                    , Html.App.map (Private << SelectorMsg) (LocationSelector.view model.selector)
+                    , Html.App.map (Private << SelectorMsg) (Selector.view viewLocation model.selector)
                     ]
                 ]
             ]
@@ -138,7 +143,7 @@ search : Model -> SearchSpec
 search model =
     { emptySearch
         | q = model.q
-        , location = Maybe.map .id model.selector.selectedLocation
+        , location = Maybe.map .id model.selector.selection
         , fType = model.fType
         , ownership = model.ownership
     }
