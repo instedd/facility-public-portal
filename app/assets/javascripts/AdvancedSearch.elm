@@ -51,7 +51,7 @@ init facilityTypes ownerships locations search =
     , q = search.q
     , fType = search.fType
     , ownership = search.ownership
-    , selector = LocationSelector.init locations
+    , selector = LocationSelector.init locations search.location
     }
 
 

@@ -32,13 +32,13 @@ type alias Model =
     }
 
 
-init : List Location -> Model
-init locations =
+init : List Location -> Maybe Int -> Model
+init locations selectedId =
     { locations = List.sortBy .name locations
     , autoState = Autocomplete.empty
     , howManyToShow = 8
     , query = ""
-    , selectedLocation = Nothing
+    , selectedLocation = selectedId &> findById locations
     , showMenu = False
     }
 
@@ -135,7 +135,7 @@ update msg model =
                 ( newModel, Task.perform (\err -> NoOp) (\_ -> NoOp) (Dom.focus "location-input") )
 
         PreviewLocation id ->
-            { model | selectedLocation = Just <| getLocationAtId model.locations id } ! []
+            { model | selectedLocation = Just <| findByIdWithDefault model.locations id } ! []
 
         OnFocus ->
             model ! []
@@ -154,17 +154,21 @@ removeSelection model =
     { model | selectedLocation = Nothing }
 
 
-getLocationAtId locations id =
+findById locations id =
     List.filter (\location -> location.id == id) locations
         |> List.head
-        |> -- TODO: crash on default?
+
+
+findByIdWithDefault locations id =
+    findById locations id
+        |> -- TODO: crash on default? We should probably use findById always
            Maybe.withDefault ({ id = 0, name = "", parentName = Nothing })
 
 
 setQuery model id =
     { model
-        | query = .name <| getLocationAtId model.locations id
-        , selectedLocation = Just <| getLocationAtId model.locations id
+        | query = .name <| findByIdWithDefault model.locations id
+        , selectedLocation = Just <| findByIdWithDefault model.locations id
     }
 
 
