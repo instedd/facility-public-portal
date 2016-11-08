@@ -31,10 +31,25 @@ class ApiController < ActionController::Base
     render json: ElasticsearchService.instance.get_facility_types
   end
 
+  def locations
+    set_cache_headers
+    render json: ElasticsearchService.instance.get_locations
+  end
+
+  def services
+    set_cache_headers
+    # TODO
+    render json: ElasticsearchService.instance.get_services.map { |s| s["name"] = s["name:en"]; s }
+  end
+
   private
 
   def search_params
     params.permit(:q, :service, :location, :type, :ownership, :lat, :lng, :size, :from)
+  end
+
+  def set_cache_headers
+    response.headers['Cache-Control'] = 'max-age=1800'
   end
 
   def set_locale

@@ -56,8 +56,11 @@ restoreCmd =
 init : Settings -> SearchSpec -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init s query mapViewport userLocation =
     let
+        ( suggestModel, suggestCmd ) =
+            Suggest.init s query
+
         model =
-            { suggest = Suggest.init s query
+            { suggest = suggestModel
             , query = query
             , mapViewport = mapViewport
             , userLocation = userLocation
@@ -69,6 +72,7 @@ init s query mapViewport userLocation =
         model
             ! [ Api.search (Private << ApiSearch) { query | latLng = Just mapViewport.center }
               , restoreCmd
+              , Cmd.map (Private << SuggestMsg) suggestCmd
               ]
 
 
@@ -147,6 +151,9 @@ update s msg model =
 
                         Suggest.FullSearch search ->
                             ( model, Utils.performMessage (Search <| search) )
+
+                        Suggest.UnhandledError ->
+                            ( model, Utils.performMessage UnhandledError )
 
                         _ ->
                             Suggest.update { mapViewport = model.mapViewport } msg model.suggest

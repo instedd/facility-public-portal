@@ -58,12 +58,22 @@ service =
         |> required "facility_count" int
 
 
+services : Decoder (List Service)
+services =
+    list service
+
+
 location : Decoder Location
 location =
     decode Location
         |> required "id" int
         |> required "name" string
         |> optional "parent_name" (nullable string) Nothing
+
+
+locations : Decoder (List Location)
+locations =
+    list location
 
 
 latLng : Decoder LatLng

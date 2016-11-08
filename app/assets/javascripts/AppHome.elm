@@ -42,8 +42,11 @@ type Msg
 init : Settings -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init settings mapViewport userLocation =
     let
+        ( suggestModel, suggestCmd ) =
+            Suggest.empty settings
+
         model =
-            { suggest = Suggest.empty settings
+            { suggest = suggestModel
             , mapViewport = mapViewport
             , userLocation = userLocation
             , d = Debounce.init
@@ -53,6 +56,7 @@ init settings mapViewport userLocation =
             ! [ searchAllFacilitiesStartingFrom mapViewport.center
               , Map.removeHighlightedFacilityMarker
               , Map.fitContentUsingPadding False
+              , Cmd.map (Private << SuggestMsg) suggestCmd
               ]
 
 
@@ -77,6 +81,9 @@ update s msg model =
 
                         Suggest.FullSearch search ->
                             ( model, Utils.performMessage (FullSearch search) )
+
+                        Suggest.UnhandledError ->
+                            ( model, Utils.performMessage UnhandledError )
 
                         _ ->
                             Suggest.update { mapViewport = model.mapViewport } msg model.suggest

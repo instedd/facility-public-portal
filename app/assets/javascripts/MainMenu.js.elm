@@ -30,8 +30,6 @@ init flags =
       , locales = flags.locales
       , facilityTypes = []
       , ownerships = []
-      , locations = []
-      , services = []
       }
     , Cmd.none
     )

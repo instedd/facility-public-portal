@@ -1,4 +1,17 @@
-module Api exposing (SuggestionsMsg(..), getSuggestions, FetchFacilityMsg(..), fetchFacility, SearchMsg(..), search, searchMore)
+module Api
+    exposing
+        ( SuggestionsMsg(..)
+        , getSuggestions
+        , FetchFacilityMsg(..)
+        , fetchFacility
+        , ServicesMsg(..)
+        , getServices
+        , LocationsMsg(..)
+        , getLocations
+        , SearchMsg(..)
+        , search
+        , searchMore
+        )
 
 import Decoders exposing (..)
 import Http
@@ -33,6 +46,26 @@ fetchFacility wmsg id =
             "/api/facilities/" ++ (toString id)
     in
         Task.perform (wmsg << FetchFacilityFailed) (wmsg << FetchFacilitySuccess) (Http.get Decoders.facility url)
+
+
+type LocationsMsg
+    = LocationsSuccess (List Location)
+    | LocationsFailed Http.Error
+
+
+getLocations : (Http.Error -> msg) -> (List Location -> msg) -> Cmd msg
+getLocations error ok =
+    Task.perform error ok (Http.get Decoders.locations "/api/locations")
+
+
+type ServicesMsg
+    = ServicesSuccess (List Service)
+    | ServicesFailed Http.Error
+
+
+getServices : (Http.Error -> msg) -> (List Service -> msg) -> Cmd msg
+getServices error ok =
+    Task.perform error ok (Http.get Decoders.services "/api/services")
 
 
 type SearchMsg

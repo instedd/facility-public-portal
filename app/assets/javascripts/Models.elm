@@ -14,8 +14,6 @@ type alias Settings =
     , locales : List ( String, String )
     , facilityTypes : List FacilityType
     , ownerships : List Ownership
-    , locations : List Location
-    , services : List Service
     }
 
 

@@ -41,6 +41,7 @@ type Msg
     | Search String
     | FullSearch SearchSpec
     | Private PrivateMsg
+    | UnhandledError
 
 
 hasSuggestionsToShow : Model -> Bool
@@ -48,19 +49,25 @@ hasSuggestionsToShow model =
     (model.query /= "") && (model.suggestions /= Nothing)
 
 
-empty : Models.Settings -> Model
+empty : Models.Settings -> ( Model, Cmd Msg )
 empty settings =
     init settings emptySearch
 
 
-init : Models.Settings -> SearchSpec -> Model
+init : Models.Settings -> SearchSpec -> ( Model, Cmd Msg )
 init settings search =
-    { query = Maybe.withDefault "" search.q
-    , advancedSearch = AdvancedSearch.init settings.facilityTypes settings.ownerships settings.locations settings.services search
-    , suggestions = Nothing
-    , d = Debounce.init
-    , advanced = False
-    }
+    let
+        ( advancedSearchModel, advancedSearchCmd ) =
+            AdvancedSearch.init settings.facilityTypes settings.ownerships search
+    in
+        Return.singleton
+            { query = Maybe.withDefault "" search.q
+            , advancedSearch = advancedSearchModel
+            , suggestions = Nothing
+            , d = Debounce.init
+            , advanced = False
+            }
+            |> Return.command (Cmd.map (Private << AdvancedSearchMsg) advancedSearchCmd)
 
 
 clear : Model -> Model
@@ -115,6 +122,9 @@ update config msg model =
 
                         AdvancedSearch.Perform search ->
                             ( model, Utils.performMessage (FullSearch search) )
+
+                        AdvancedSearch.UnhandledError ->
+                            ( model, Utils.performMessage UnhandledError )
 
                         _ ->
                             AdvancedSearch.update model.advancedSearch msg
