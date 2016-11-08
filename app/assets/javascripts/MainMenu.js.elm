@@ -31,6 +31,7 @@ init flags =
       , facilityTypes = []
       , ownerships = []
       , locations = []
+      , services = []
       }
     , Cmd.none
     )

@@ -45,7 +45,8 @@ class ApplicationController < ActionController::Base
       "facilityTypes" => ElasticsearchService.instance.get_facility_types,
       "ownerships" => ElasticsearchService.instance.get_ownerships,
       # TODO
-      "locations" => ElasticsearchService.instance.get_locations.map { |l| l["parentName"] = l["parent_name"]; l }
+      "locations" => ElasticsearchService.instance.get_locations.map { |l| l["parentName"] = l["parent_name"]; l },
+      "services" => ElasticsearchService.instance.get_services.map { |s| s["facilityCount"] = s["facility_count"]; s["name"] = s["name:en"]; s }
     }
   end
 end

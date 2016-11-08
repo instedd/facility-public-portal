@@ -15,7 +15,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Json.Decode as Json
 import Selector
-import Models exposing (SearchSpec, FacilityType, Ownership, Location, emptySearch)
+import Models exposing (SearchSpec, Service, FacilityType, Ownership, Location, emptySearch)
 import Return exposing (Return)
 import Shared exposing (onClick)
 
@@ -24,9 +24,11 @@ type alias Model =
     { facilityTypes : List FacilityType
     , ownerships : List Ownership
     , q : Maybe String
+    , service : Maybe Int
     , fType : Maybe Int
     , ownership : Maybe Int
-    , selector : Selector.Model Location
+    , locationSelector : Selector.Model Location
+    , serviceSelector : Selector.Model Service
     }
 
 
@@ -40,18 +42,21 @@ type PrivateMsg
     = SetName String
     | SetType Int
     | SetOwnership Int
-    | SelectorMsg Selector.Msg
-    | HideSelector
+    | LocationSelectorMsg Selector.Msg
+    | ServiceSelectorMsg Selector.Msg
+    | HideSelectors
 
 
-init : List FacilityType -> List Ownership -> List Location -> SearchSpec -> Model
-init facilityTypes ownerships locations search =
+init : List FacilityType -> List Ownership -> List Location -> List Service -> SearchSpec -> Model
+init facilityTypes ownerships locations services search =
     { facilityTypes = facilityTypes
     , ownerships = ownerships
     , q = search.q
+    , service = search.service
     , fType = search.fType
     , ownership = search.ownership
-    , selector = Selector.init "location-input" locations .id .name search.location
+    , locationSelector = Selector.init "location-input" locations .id .name search.location
+    , serviceSelector = Selector.init "service-input" services .id .name search.service
     }
 
 
@@ -67,12 +72,20 @@ update model msg =
         Private (SetOwnership o) ->
             Return.singleton { model | ownership = Just o }
 
-        Private (SelectorMsg msg) ->
-            Selector.update msg model.selector
-                |> Return.mapBoth (Private << SelectorMsg) (\m -> { model | selector = m })
+        Private (LocationSelectorMsg msg) ->
+            Selector.update msg model.locationSelector
+                |> Return.mapBoth (Private << LocationSelectorMsg) (\m -> { model | locationSelector = m })
 
-        Private HideSelector ->
-            Return.singleton { model | selector = (Selector.close model.selector) }
+        Private (ServiceSelectorMsg msg) ->
+            Selector.update msg model.serviceSelector
+                |> Return.mapBoth (Private << ServiceSelectorMsg) (\m -> { model | serviceSelector = m })
+
+        Private HideSelectors ->
+            Return.singleton
+                { model
+                    | locationSelector = Selector.close model.locationSelector
+                    , serviceSelector = Selector.close model.serviceSelector
+                }
 
         _ ->
             -- Public events
@@ -81,7 +94,10 @@ update model msg =
 
 subscriptions : Sub Msg
 subscriptions =
-    Sub.map (Private << SelectorMsg) Selector.subscriptions
+    Sub.batch
+        [ Sub.map (Private << LocationSelectorMsg) Selector.subscriptions
+        , Sub.map (Private << ServiceSelectorMsg) Selector.subscriptions
+        ]
 
 
 view : Model -> List (Html Msg)
@@ -94,6 +110,9 @@ view model =
             [ Html.text location.name
             , Html.span [ class "autocomplete-item-context" ] [ Html.text (Maybe.withDefault "" location.parentName) ]
             ]
+
+        viewService service =
+            [ Html.text service.name ]
     in
         Shared.modalWindow
             [ text "Advanced Search"
@@ -114,14 +133,18 @@ view model =
                     ]
                 , field
                     [ label [] [ text "Location" ]
-                    , Html.App.map (Private << SelectorMsg) (Selector.view viewLocation model.selector)
+                    , Html.App.map (Private << LocationSelectorMsg) (Selector.view viewLocation model.locationSelector)
+                    ]
+                , field
+                    [ label [] [ text "Service" ]
+                    , Html.App.map (Private << ServiceSelectorMsg) (Selector.view viewService model.serviceSelector)
                     ]
                 ]
             ]
             [ a
                 [ href "#"
                 , class "btn-flat"
-                , hideSelectorOnFocus
+                , hideSelectorsOnFocus
                 , onClick (Perform (search model))
                 ]
                 [ text "Search" ]
@@ -131,19 +154,20 @@ view model =
 field : List (Html Msg) -> Html Msg
 field content =
     div
-        [ class "field", hideSelectorOnFocus ]
+        [ class "field", hideSelectorsOnFocus ]
         content
 
 
-hideSelectorOnFocus =
-    Html.Events.on "focusin" (Json.succeed <| Private HideSelector)
+hideSelectorsOnFocus =
+    Html.Events.on "focusin" (Json.succeed <| Private HideSelectors)
 
 
 search : Model -> SearchSpec
 search model =
     { emptySearch
         | q = model.q
-        , location = Maybe.map .id model.selector.selection
+        , service = Maybe.map .id model.serviceSelector.selection
+        , location = Maybe.map .id model.locationSelector.selection
         , fType = model.fType
         , ownership = model.ownership
     }

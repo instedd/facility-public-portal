@@ -56,7 +56,7 @@ empty settings =
 init : Models.Settings -> SearchSpec -> Model
 init settings search =
     { query = Maybe.withDefault "" search.q
-    , advancedSearch = AdvancedSearch.init settings.facilityTypes settings.ownerships settings.locations search
+    , advancedSearch = AdvancedSearch.init settings.facilityTypes settings.ownerships settings.locations settings.services search
     , suggestions = Nothing
     , d = Debounce.init
     , advanced = False

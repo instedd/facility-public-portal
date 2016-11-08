@@ -15,6 +15,7 @@ type alias Settings =
     , facilityTypes : List FacilityType
     , ownerships : List Ownership
     , locations : List Location
+    , services : List Service
     }
 
 

@@ -26,6 +26,7 @@ type alias Flags =
     , facilityTypes : List FacilityType
     , ownerships : List Ownership
     , locations : List Location
+    , services : List Service
     }
 
 
@@ -94,6 +95,7 @@ init flags route =
             , facilityTypes = flags.facilityTypes
             , ownerships = flags.ownerships
             , locations = flags.locations
+            , services = flags.services
             }
 
         model =
