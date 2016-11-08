@@ -1,5 +1,21 @@
-<h2>Edit Master Facility Regsitry landing page</h2>
+<h1>Edit Master Facility Registry landing page</h1>
 
-<p>Use Markdown to modify the text and preview before publishing.</p>
+<p>Use <a href="https://guides.github.com/features/mastering-markdown/" target="_blank">Markdown</a> to modify the text and preview before publishing. Any text that is left empty will not show in the landing page.</p>
 
-<textarea>Hola</textarea>
+<%= form_tag '/edit', id: "edit_landing_texts" do %>
+  <%= label_tag 'heading', "Heading" %>
+  <%= text_area_tag 'heading', @texts[:heading].to_s %>
+  <%= label_tag 'intro_to_search', 'Text after the desktop and cell phone image and before the SEARCH button' %>
+  <%= text_area_tag 'intro_to_search', @texts[:intro_to_search].to_s %>
+  <%= label_tag 'subsection', 'Subsection under the separator' %>
+  <%= text_area_tag 'subsection', @texts[:subsection].to_s %>
+  <%= label_tag 'left_column', 'Paragraph for the left column' %>
+  <%= text_area_tag 'left_column', @texts[:left_column].to_s %>
+  <%= label_tag 'right_column', 'Paragraph for the right column' %>
+  <%= text_area_tag 'right_column', @texts[:right_column].to_s %>
+  <div class='actions'>
+    <%= link_to 'Discard draft', discard_draft_path, class: "btn btn-flat", method: 'post' %>
+    <%= submit_tag 'Save draft and Preview', class: "btn btn-large" %>
+    <%= submit_tag 'Publish', class: "btn btn-large" %>
+  </div>
+<% end %>

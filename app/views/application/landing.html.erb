@@ -1,35 +1,34 @@
 <h1>Master Facility Registry</h1>
 
-<%= markdown("## Titulo
-  Bajada
-  ") %>
+<% if @texts[:heading] %>
+  <%= markdown(@texts[:heading]) %>
+<% end %>
 
 <div class="img-center">
   <%= image_tag "desktop_mobile.png" %>
 </div>
 
-<%= markdown("## Titulo
-  Bajada
-  ") %>
+<% if @texts[:intro_to_search] %>
+  <%= markdown(@texts[:intro_to_search]) %>
+<% end %>
 
 <%= link_to "Search", map_path, class: "btn btn-large" %>
 
 <hr class="divider">
 
-<%= markdown("## Titulo
-  - List
-  - List
-  ") %>
+<% if @texts[:subsection] %>
+  <%= markdown(@texts[:subsection]) %>
+<% end %>
 
 <div class="row editable-columns">
   <div class="column col s12 m6">
-    <%= markdown("## Titulo
-    Bajada
-    ") %>
+    <% if @texts[:left_column] %>
+      <%= markdown(@texts[:left_column]) %>
+    <% end %>
   </div>
   <div class="column col s12 m6">
-    <%= markdown("## Titulo
-    Bajada
-    ") %>
+    <% if @texts[:right_column] %>
+      <%= markdown(@texts[:right_column]) %>
+    <% end %>
   </div>
 </div>

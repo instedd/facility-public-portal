@@ -6,6 +6,7 @@ class ApplicationController < ActionController::Base
   before_action :set_js_flags
 
   def landing
+    @texts = LandingText.where(preview: false).first.texts
     render 'landing', layout: 'content'
   end
 

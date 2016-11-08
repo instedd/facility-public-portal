@@ -30,7 +30,7 @@ body.docs, body.landing, body.landing_editor {
     font-size: 16px;
     line-height: 1.8;
     a { color: $blue; }
-    a.btn {
+    a.btn:not(.btn-flat) {
       background-color: $blue;
       color: white;
     }
@@ -114,7 +114,7 @@ body.docs, body.landing, body.landing_editor {
   }
 }
 
-body.landing {
+body.landing, body.preview {
   hr.divider {
     border: 0;
     margin: 50px 0 60px 0;
@@ -136,6 +136,24 @@ body.landing {
       display: inline-block;
       padding: 15px 25px;
       width: 48%;
+    }
+  }
+}
+
+body.landing_editor {
+  form#edit_landing_texts{
+    textarea {
+      width: 100%;
+      height: 150px;
+      font-size: 14px;
+      background-color: white;
+      border: 1px solid $grey3;
+      border-radius: 5px;
+      margin-bottom: 30px;
+    }
+
+    .actions {
+      float: right;
     }
   }
 }

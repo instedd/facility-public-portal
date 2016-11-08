@@ -16,6 +16,9 @@ Rails.application.routes.draw do
   get 'docs', to: 'docs#index'
 
   get 'edit', to: 'landing_editor#index'
+  get 'preview', to: 'landing_editor#preview'
+  post 'edit', to: 'landing_editor#edit'
+  post 'discard_draft', to: 'landing_editor#discard_draft'
 
   get '*unmatched_route', :to => 'application#map'
 end
