@@ -1,4 +1,5 @@
 class LandingEditorController < ApplicationController
+  http_basic_authenticate_with name: Settings.admin_user, password: Settings.admin_pass
 
   def index
     @texts = LandingText.where(preview: true).first.texts

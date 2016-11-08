@@ -1,3 +1,5 @@
+admin_user: "foo"
+admin_pass: "bar"
 locales:
   es: Español
   # am: አማርኛ
