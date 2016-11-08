@@ -1,10 +1,11 @@
 
 .modal.open {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 1003;
   display: block;
   opacity: 1;
-  top: 20%;
-  position: absolute;
   margin: 0 auto;
   max-height: 80%;
   width: 400px;
