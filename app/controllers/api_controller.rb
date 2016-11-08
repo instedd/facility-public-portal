@@ -38,8 +38,7 @@ class ApiController < ActionController::Base
 
   def services
     set_cache_headers
-    # TODO
-    render json: ElasticsearchService.instance.get_services.map { |s| s["name"] = s["name:en"]; s }
+    render json: ElasticsearchService.instance.get_services
   end
 
   private
