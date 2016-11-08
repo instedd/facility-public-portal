@@ -5,6 +5,10 @@ class ApplicationController < ActionController::Base
   skip_before_action :verify_authenticity_token, only: :report_facility
   before_action :set_js_flags
 
+  def landing
+    render 'landing', layout: 'content'
+  end
+
   def map
   end
 

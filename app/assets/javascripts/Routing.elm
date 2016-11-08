@@ -24,7 +24,7 @@ routeToPath : Route -> String
 routeToPath route =
     case route of
         RootRoute ->
-            "/"
+            "/map"
 
         SearchRoute params ->
             path "/search" params
@@ -62,7 +62,7 @@ matchers =
             FacilityRoute id
     in
         oneOf
-            [ format makeRootRoute (s "")
+            [ format makeRootRoute (s "map")
             , format makeSearchRoute (s "search")
             , format makeFacilityRoute (s "facilities" </> int)
             ]

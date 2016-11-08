@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  root to: "application#map"
+  root to: "application#landing"
 
   scope :api do
     get 'search', to: 'api#search'
@@ -12,6 +12,10 @@ Rails.application.routes.draw do
 
   post 'facilities/:id/report', to: 'application#report_facility'
   get 'data', to: 'application#download_dataset'
+  get 'map', to: 'application#map'
   get 'docs', to: 'docs#index'
+
+  get 'edit', to: 'landing_editor#index'
+
   get '*unmatched_route', :to => 'application#map'
 end

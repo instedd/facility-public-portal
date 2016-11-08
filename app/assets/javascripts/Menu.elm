@@ -15,6 +15,7 @@ type Model
 type Item
     = Map
     | ApiDoc
+    | LandingPage
 
 
 toggle model =
@@ -40,9 +41,15 @@ menuContent settings active =
         div [ class "menu" ]
             [ ul []
                 [ li []
-                    [ a [ href "/", isActive Map ]
+                    [ a [ href "/map", isActive Map ]
                         [ icon "map"
                         , text <| t I18n.Map
+                        ]
+                    ]
+                , li []
+                    [ a [ href "/", isActive LandingPage ]
+                        [ icon "info"
+                        , text <| t I18n.LandingPage
                         ]
                     ]
                 , li []

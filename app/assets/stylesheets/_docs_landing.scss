@@ -1,4 +1,4 @@
-body.docs {
+body.docs, body.landing, body.landing_editor {
   background: $grey-background;
 
   main, footer {
@@ -23,14 +23,17 @@ body.docs {
   }
 
   .content {
-    margin: 100px 150px;
-    width: 65%;
+    margin: 100px 120px;
+    width: 75%;
     max-height: none;
 
     font-size: 16px;
     line-height: 1.8;
     a { color: $blue; }
-
+    a.btn {
+      background-color: $blue;
+      color: white;
+    }
     h1 {
       font-size: 42px;
     }
@@ -107,6 +110,32 @@ body.docs {
     .content {
       margin: 100px auto;
       width: 90%;
+    }
+  }
+}
+
+body.landing {
+  hr.divider {
+    border: 0;
+    margin: 50px 0 60px 0;
+  }
+
+  .img-center {
+    text-align: center;
+  }
+
+  .editable-columns {
+    .column {
+      &:first-child {
+        margin-right: 10px;
+        margin-bottom: 10px;
+      }
+      background-color: white;
+      border-radius: 5px;
+      border: 1px solid $grey3;
+      display: inline-block;
+      padding: 15px 25px;
+      width: 48%;
     }
   }
 }

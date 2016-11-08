@@ -12,6 +12,7 @@ type TranslationId
     | FacilitiesCount { count : Int }
     | ReportAnIssue
     | FullDownload
+    | LandingPage
 
 
 t : TranslationId -> String
