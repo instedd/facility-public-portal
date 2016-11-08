@@ -32,14 +32,15 @@ class ApiController < ActionController::Base
   end
 
   def locations
-    set_cache_headers
-    render json: ElasticsearchService.instance.get_locations
+    locations = ElasticsearchService.instance.get_locations
+    render_if_stale(locations)
   end
 
   def services
-    set_cache_headers
-    render json: ElasticsearchService.instance.get_services
+    services = ElasticsearchService.instance.get_services
+    render_if_stale(services)
   end
+
 
   private
 
@@ -47,8 +48,20 @@ class ApiController < ActionController::Base
     params.permit(:q, :service, :location, :type, :ownership, :lat, :lng, :size, :from)
   end
 
-  def set_cache_headers
-    response.headers['Cache-Control'] = 'max-age=1800'
+  def render_if_stale(data)
+    etag = Digest::MD5.hexdigest(data.to_json)
+    client_etag = request.headers["If-None-Match"]
+
+    if client_etag.eql? etag
+      render status: 304, nothing: true
+    else
+      response.headers['ETag'] = etag
+      render status: 200, json: data
+    end
+  end
+
+  def etag(content)
+    Digest::MD5.hexdigest(locations.to_json)
   end
 
   def set_locale
