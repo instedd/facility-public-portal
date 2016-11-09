@@ -25,7 +25,6 @@ type alias Flags =
     , locales : List ( String, String )
     , facilityTypes : List FacilityType
     , ownerships : List Ownership
-    , locations : List Location
     }
 
 
@@ -93,7 +92,6 @@ init flags route =
             , locales = flags.locales
             , facilityTypes = flags.facilityTypes
             , ownerships = flags.ownerships
-            , locations = flags.locations
             }
 
         model =
@@ -178,11 +176,8 @@ mainUpdate msg mainModel =
                                 AppHome.LocationClicked locationId ->
                                     ( homeModel, navigateSearchLocation locationId )
 
-                                AppHome.FullSearch search ->
+                                AppHome.Search search ->
                                     ( homeModel, navigateSearch search )
-
-                                AppHome.Search q ->
-                                    ( homeModel, navigateSearchQuery q )
 
                                 AppHome.Private _ ->
                                     mapCmd HomeMsg <| AppHome.update common.settings msg homeModel
@@ -487,11 +482,6 @@ navigateSearchService id =
 navigateSearchLocation : Int -> Cmd MainMsg
 navigateSearchLocation id =
     Utils.performMessage <| Navigate (SearchRoute { emptySearch | location = Just id })
-
-
-navigateSearchQuery : String -> Cmd MainMsg
-navigateSearchQuery q =
-    Utils.performMessage <| Navigate (SearchRoute { emptySearch | q = Just q })
 
 
 navigateSearch : SearchSpec -> Cmd MainMsg

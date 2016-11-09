@@ -6,6 +6,7 @@ import Date exposing (Date)
 import Time
 import Task
 import Dict exposing (Dict)
+import Return
 
 
 (&>) : Maybe a -> (a -> Maybe b) -> Maybe b
@@ -140,6 +141,24 @@ isJust m =
             True
 
 
+isNothing : Maybe a -> Bool
+isNothing =
+    not << isJust
+
+
+equalMaybe : Maybe a -> Maybe a -> Bool
+equalMaybe a b =
+    case ( a, b ) of
+        ( Nothing, Nothing ) ->
+            True
+
+        ( Just xa, Just xb ) ->
+            xa == xb
+
+        _ ->
+            False
+
+
 last : List a -> Maybe a
 last l =
     List.head <| List.reverse l
@@ -161,3 +180,8 @@ unreachable =
 performMessage : msg -> Cmd msg
 performMessage msg =
     Task.perform unreachable identity (Task.succeed msg)
+
+
+perform : msg -> ( model, Cmd msg ) -> ( model, Cmd msg )
+perform msg =
+    Return.command (performMessage msg)

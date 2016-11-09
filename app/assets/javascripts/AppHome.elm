@@ -5,7 +5,7 @@ import Html.App
 import Map
 import Models exposing (Settings, MapViewport, LatLng, SearchResult, FacilityType, Ownership, SearchSpec, shouldLoadMore, emptySearch)
 import Shared exposing (MapView)
-import Utils
+import Utils exposing (perform)
 import UserLocation
 import Suggest
 import Debounce
@@ -33,17 +33,19 @@ type Msg
     = FacilityClicked Int
     | ServiceClicked Int
     | LocationClicked Int
-    | Search String
     | Private PrivateMsg
     | UnhandledError
-    | FullSearch SearchSpec
+    | Search SearchSpec
 
 
 init : Settings -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init settings mapViewport userLocation =
     let
+        ( suggestModel, suggestCmd ) =
+            Suggest.empty settings
+
         model =
-            { suggest = Suggest.empty settings
+            { suggest = suggestModel
             , mapViewport = mapViewport
             , userLocation = userLocation
             , d = Debounce.init
@@ -53,6 +55,7 @@ init settings mapViewport userLocation =
             ! [ searchAllFacilitiesStartingFrom mapViewport.center
               , Map.removeHighlightedFacilityMarker
               , Map.fitContentUsingPadding False
+              , Cmd.map (Private << SuggestMsg) suggestCmd
               ]
 
 
@@ -64,19 +67,24 @@ update s msg model =
                 SuggestMsg msg ->
                     case msg of
                         Suggest.FacilityClicked facilityId ->
-                            ( model, Utils.performMessage (FacilityClicked facilityId) )
+                            Return.singleton model
+                                |> perform (FacilityClicked facilityId)
 
                         Suggest.ServiceClicked serviceId ->
-                            ( model, Utils.performMessage (ServiceClicked serviceId) )
+                            Return.singleton model
+                                |> perform (ServiceClicked serviceId)
 
                         Suggest.LocationClicked locationId ->
-                            ( model, Utils.performMessage (LocationClicked locationId) )
+                            Return.singleton model
+                                |> perform (LocationClicked locationId)
 
-                        Suggest.Search q ->
-                            ( model, Utils.performMessage (Search q) )
+                        Suggest.Search search ->
+                            Return.singleton model
+                                |> perform (Search search)
 
-                        Suggest.FullSearch search ->
-                            ( model, Utils.performMessage (FullSearch search) )
+                        Suggest.UnhandledError ->
+                            Return.singleton model
+                                |> perform UnhandledError
 
                         _ ->
                             Suggest.update { mapViewport = model.mapViewport } msg model.suggest
@@ -99,7 +107,8 @@ update s msg model =
                         model ! [ loadMore, addFacilities ]
 
                 ApiSearch _ (Api.SearchFailed _) ->
-                    ( model, Utils.performMessage UnhandledError )
+                    Return.singleton model
+                        |> perform UnhandledError
 
                 MapMsg (Map.MapViewportChanged mapViewport) ->
                     ( { model | mapViewport = mapViewport }, debCmd (Private PerformSearch) )

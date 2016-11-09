@@ -1,4 +1,4 @@
-module LocationSelector
+module Selector
     exposing
         ( Model
         , Msg
@@ -16,31 +16,46 @@ import Html.App as Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json
-import Models exposing (Location)
 import String
 import Task
 import Utils exposing ((&>))
 
 
-type alias Model =
-    { locations : List Location
+type alias Model a =
+    { inputId : String
+    , options : List (Option a)
     , autoState : Autocomplete.State
     , howManyToShow : Int
     , query : String
-    , selectedLocation : Maybe Location
+    , selection : Maybe (Option a)
     , showMenu : Bool
     }
 
 
-init : List Location -> Model
-init locations =
-    { locations = List.sortBy .name locations
-    , autoState = Autocomplete.empty
-    , howManyToShow = 8
-    , query = ""
-    , selectedLocation = Nothing
-    , showMenu = False
-    }
+type alias Option a =
+    { id : Int, label : String, item : a }
+
+
+type alias OptionView a =
+    a -> List (Html Never)
+
+
+init : String -> List a -> (a -> Int) -> (a -> String) -> Maybe Int -> Model a
+init id items fId fLabel selectedId =
+    let
+        options =
+            items
+                |> List.map (\a -> { id = fId a, label = fLabel a, item = a })
+                |> List.sortBy .label
+    in
+        { inputId = id
+        , options = options
+        , autoState = Autocomplete.empty
+        , howManyToShow = 8
+        , query = ""
+        , selection = selectedId &> findById options
+        , showMenu = False
+        }
 
 
 type Msg
@@ -50,9 +65,9 @@ type Msg
     | Reset
     | OverlayClicked
     | HandleEscape
-    | SelectLocationKeyboard Int
-    | SelectLocationMouse Int
-    | PreviewLocation Int
+    | SelectKeyboard Int
+    | SelectMouse Int
+    | Preview Int
     | OnFocus
     | NoOp
 
@@ -64,21 +79,20 @@ subscriptions =
     Sub.none
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
-        -- case msg of
         SetQuery newQuery ->
             let
                 showMenu =
-                    not << List.isEmpty <| (acceptableLocations newQuery model.locations)
+                    not << List.isEmpty <| (matches newQuery model.options)
             in
-                { model | query = newQuery, showMenu = showMenu, selectedLocation = Nothing } ! []
+                { model | query = newQuery, showMenu = showMenu, selection = Nothing } ! []
 
         SetAutoState autoMsg ->
             let
                 ( newState, maybeMsg ) =
-                    Autocomplete.update updateConfig autoMsg model.howManyToShow model.autoState (acceptableLocations model.query model.locations)
+                    Autocomplete.update updateConfig autoMsg model.howManyToShow model.autoState (currentMatches model)
 
                 newModel =
                     { model | autoState = newState }
@@ -97,28 +111,28 @@ update msg model =
             escape model ! []
 
         Wrap toTop ->
-            case model.selectedLocation of
-                Just location ->
+            case model.selection of
+                Just _ ->
                     update Reset model
 
                 Nothing ->
                     if toTop then
                         { model
-                            | autoState = Autocomplete.resetToLastItem updateConfig (acceptableLocations model.query model.locations) model.howManyToShow model.autoState
-                            , selectedLocation = List.head <| List.reverse <| List.take model.howManyToShow <| (acceptableLocations model.query model.locations)
+                            | autoState = Autocomplete.resetToLastItem updateConfig (currentMatches model) model.howManyToShow model.autoState
+                            , selection = List.head <| List.reverse <| List.take model.howManyToShow <| (currentMatches model)
                         }
                             ! []
                     else
                         { model
-                            | autoState = Autocomplete.resetToFirstItem updateConfig (acceptableLocations model.query model.locations) model.howManyToShow model.autoState
-                            , selectedLocation = List.head <| List.take model.howManyToShow <| (acceptableLocations model.query model.locations)
+                            | autoState = Autocomplete.resetToFirstItem updateConfig (currentMatches model) model.howManyToShow model.autoState
+                            , selection = List.head <| List.take model.howManyToShow <| (currentMatches model)
                         }
                             ! []
 
         Reset ->
-            { model | autoState = Autocomplete.reset updateConfig model.autoState, selectedLocation = Nothing } ! []
+            { model | autoState = Autocomplete.reset updateConfig model.autoState, selection = Nothing } ! []
 
-        SelectLocationKeyboard id ->
+        SelectKeyboard id ->
             let
                 newModel =
                     setQuery model id
@@ -126,16 +140,16 @@ update msg model =
             in
                 newModel ! []
 
-        SelectLocationMouse id ->
+        SelectMouse id ->
             let
                 newModel =
                     setQuery model id
                         |> close
             in
-                ( newModel, Task.perform (\err -> NoOp) (\_ -> NoOp) (Dom.focus "location-input") )
+                ( newModel, Task.perform (\err -> NoOp) (\_ -> NoOp) (Dom.focus model.inputId) )
 
-        PreviewLocation id ->
-            { model | selectedLocation = Just <| getLocationAtId model.locations id } ! []
+        Preview id ->
+            { model | selection = findById model.options id } ! []
 
         OnFocus ->
             model ! []
@@ -151,20 +165,18 @@ resetInput model =
 
 
 removeSelection model =
-    { model | selectedLocation = Nothing }
+    { model | selection = Nothing }
 
 
-getLocationAtId locations id =
-    List.filter (\location -> location.id == id) locations
+findById options id =
+    List.filter (\option -> option.id == id) options
         |> List.head
-        |> -- TODO: crash on default?
-           Maybe.withDefault ({ id = 0, name = "", parentName = Nothing })
 
 
 setQuery model id =
     { model
-        | query = .name <| getLocationAtId model.locations id
-        , selectedLocation = Just <| getLocationAtId model.locations id
+        | query = findById model.options id |> Maybe.map .label |> Maybe.withDefault ""
+        , selection = findById model.options id
     }
 
 
@@ -175,8 +187,8 @@ close model =
     }
 
 
-view : Model -> Html Msg
-view model =
+view : OptionView a -> Model a -> Html Msg
+view optionView model =
     let
         options =
             { preventDefault = True, stopPropagation = False }
@@ -195,14 +207,14 @@ view model =
 
         menu =
             if model.showMenu then
-                [ viewMenu model ]
+                [ viewMenu optionView model ]
             else
                 []
 
         query =
-            case model.selectedLocation of
-                Just location ->
-                    location.name
+            case model.selection of
+                Just option ->
+                    option.label
 
                 Nothing ->
                     model.query
@@ -217,7 +229,7 @@ view model =
                         , onFocus OnFocus
                         , onWithOptions "keydown" options dec
                         , value query
-                        , id "location-input"
+                        , id model.inputId
                         , class "autocomplete-input"
                         , autocomplete False
                         , spellcheck False
@@ -230,7 +242,7 @@ view model =
             ]
 
 
-overlay : Model -> Html Msg
+overlay : Model a -> Html Msg
 overlay model =
     div
         [ class "autocomplete-overlay"
@@ -248,13 +260,18 @@ overlay model =
         []
 
 
-acceptableLocations : String -> List Location -> List Location
-acceptableLocations query locations =
+currentMatches : Model a -> List (Option a)
+currentMatches model =
+    matches model.query model.options
+
+
+matches : String -> List (Option a) -> List (Option a)
+matches query options =
     let
         lowerQuery =
             String.toLower query
     in
-        List.filter (String.contains lowerQuery << String.toLower << .name) locations
+        List.filter (String.contains lowerQuery << String.toLower << .label) options
 
 
 parseId : String -> Maybe Int
@@ -265,7 +282,7 @@ parseId =
 escape model =
     let
         validOptions =
-            not <| List.isEmpty (acceptableLocations model.query model.locations)
+            not <| List.isEmpty (currentMatches model)
 
         clearModel =
             if validOptions then
@@ -277,9 +294,9 @@ escape model =
                     |> removeSelection
                     |> close
     in
-        case model.selectedLocation of
-            Just location ->
-                if model.query == location.name then
+        case model.selection of
+            Just option ->
+                if model.query == option.label then
                     resetInput model
                 else
                     clearModel
@@ -288,13 +305,13 @@ escape model =
                 clearModel
 
 
-viewMenu : Model -> Html Msg
-viewMenu model =
+viewMenu : OptionView a -> Model a -> Html Msg
+viewMenu optionView model =
     div [ class "autocomplete-menu" ]
-        [ Html.map SetAutoState (Autocomplete.view viewConfig model.howManyToShow model.autoState (acceptableLocations model.query model.locations)) ]
+        [ Html.map SetAutoState (Autocomplete.view (viewConfig optionView) model.howManyToShow model.autoState (currentMatches model)) ]
 
 
-updateConfig : Autocomplete.UpdateConfig Msg Location
+updateConfig : Autocomplete.UpdateConfig Msg (Option a)
 updateConfig =
     Autocomplete.updateConfig
         { toId =
@@ -304,11 +321,11 @@ updateConfig =
                 if code == 38 || code == 40 then
                     maybeId
                         &> parseId
-                        |> Maybe.map PreviewLocation
+                        |> Maybe.map Preview
                 else if code == 13 then
                     maybeId
                         &> parseId
-                        |> Maybe.map SelectLocationKeyboard
+                        |> Maybe.map SelectKeyboard
                 else
                     Just <| Reset
         , onTooLow =
@@ -316,27 +333,24 @@ updateConfig =
         , onTooHigh =
             Just <| Wrap True
         , onMouseEnter =
-            parseId >> Maybe.map PreviewLocation
+            parseId >> Maybe.map Preview
         , onMouseLeave =
             \_ -> Nothing
         , onMouseClick =
-            parseId >> Maybe.map SelectLocationMouse
+            parseId >> Maybe.map SelectMouse
         , separateSelections = False
         }
 
 
-viewConfig : Autocomplete.ViewConfig Location
-viewConfig =
+viewConfig : OptionView a -> Autocomplete.ViewConfig (Option a)
+viewConfig optionView =
     let
-        customizedLi keySelected mouseSelected location =
+        customizedLi keySelected mouseSelected option =
             { attributes =
                 [ classList [ ( "autocomplete-item", True ), ( "key-selected", keySelected || mouseSelected ) ]
-                , id (toString location.id)
+                , id (toString option.id)
                 ]
-            , children =
-                [ Html.text location.name
-                , Html.span [ class "autocomplete-item-context" ] [ Html.text (Maybe.withDefault "" location.parentName) ]
-                ]
+            , children = optionView option.item
             }
     in
         Autocomplete.viewConfig
