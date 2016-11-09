@@ -33,10 +33,9 @@ type Msg
     = FacilityClicked Int
     | ServiceClicked Int
     | LocationClicked Int
-    | Search String
     | Private PrivateMsg
     | UnhandledError
-    | FullSearch SearchSpec
+    | Search SearchSpec
 
 
 init : Settings -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
@@ -76,11 +75,8 @@ update s msg model =
                         Suggest.LocationClicked locationId ->
                             ( model, Utils.performMessage (LocationClicked locationId) )
 
-                        Suggest.Search q ->
-                            ( model, Utils.performMessage (Search q) )
-
-                        Suggest.FullSearch search ->
-                            ( model, Utils.performMessage (FullSearch search) )
+                        Suggest.Search search ->
+                            ( model, Utils.performMessage (Search search) )
 
                         Suggest.UnhandledError ->
                             ( model, Utils.performMessage UnhandledError )

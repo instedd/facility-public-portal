@@ -9,7 +9,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import I18n exposing (..)
 import List
-import Models exposing (MapViewport, SearchSpec, FacilityType, Ownership, emptySearch)
+import Models exposing (MapViewport, SearchSpec, FacilityType, Ownership, emptySearch, querySearch)
 import Return
 import Shared exposing (icon)
 import String
@@ -38,8 +38,7 @@ type Msg
     = FacilityClicked Int
     | ServiceClicked Int
     | LocationClicked Int
-    | Search String
-    | FullSearch SearchSpec
+    | Search SearchSpec
     | Private PrivateMsg
     | UnhandledError
 
@@ -121,7 +120,7 @@ update config msg model =
                             ( { model | advanced = not model.advanced }, Cmd.none )
 
                         AdvancedSearch.Perform search ->
-                            ( model, Utils.performMessage (FullSearch search) )
+                            ( model, Utils.performMessage (Search search) )
 
                         AdvancedSearch.UnhandledError ->
                             ( model, Utils.performMessage UnhandledError )
@@ -158,7 +157,7 @@ viewInputWith : (Msg -> a) -> Model -> Html a -> Html a
 viewInputWith wmsg model trailing =
     Shared.searchBar
         model.query
-        (wmsg <| Search model.query)
+        (wmsg <| Search (querySearch model.query))
         (wmsg << Private << Input)
         (div [ class "actions" ]
             [ trailing

@@ -208,6 +208,11 @@ emptySearch =
     { q = Nothing, service = Nothing, location = Nothing, latLng = Nothing, fType = Nothing, ownership = Nothing }
 
 
+querySearch : String -> SearchSpec
+querySearch q =
+    { emptySearch | q = Just q }
+
+
 searchEquals : SearchSpec -> SearchSpec -> Bool
 searchEquals s1 s2 =
     List.all identity

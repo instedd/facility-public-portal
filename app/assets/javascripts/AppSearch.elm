@@ -146,10 +146,7 @@ update s msg model =
                         Suggest.LocationClicked locationId ->
                             ( model, Utils.performMessage (LocationClicked locationId) )
 
-                        Suggest.Search q ->
-                            ( model, Utils.performMessage (Search <| { emptySearch | q = Just q }) )
-
-                        Suggest.FullSearch search ->
+                        Suggest.Search search ->
                             ( model, Utils.performMessage (Search <| search) )
 
                         Suggest.UnhandledError ->
