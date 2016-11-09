@@ -28,6 +28,11 @@ type alias Flags =
     }
 
 
+displayErrorDetail : Bool
+displayErrorDetail =
+    False
+
+
 main : Program Flags
 main =
     Navigation.programWithFlags Routing.parser
@@ -159,12 +164,12 @@ mainUpdate msg mainModel =
 
                 Page common pagedModel ->
                     case ( pagedModel, msg ) of
-                        ( HomeModel homeModel, HomeMsg (AppHome.UnhandledError) ) ->
-                            ( withGenericNotice mainModel, Cmd.none )
+                        ( HomeModel homeModel, HomeMsg (AppHome.UnhandledError msg) ) ->
+                            ( withErrorNotice msg mainModel, Cmd.none )
 
                         ( HomeModel homeModel, HomeMsg msg ) ->
                             (case msg of
-                                AppHome.UnhandledError ->
+                                AppHome.UnhandledError msg ->
                                     Utils.unreachable ()
 
                                 AppHome.FacilityClicked facilityId ->
@@ -187,8 +192,8 @@ mainUpdate msg mainModel =
 
                         ( FacilityDetailsModel facilityModel context, FacilityDetailsMsg msg ) ->
                             case msg of
-                                AppFacilityDetails.UnhandledError ->
-                                    ( withGenericNotice mainModel, Cmd.none )
+                                AppFacilityDetails.UnhandledError msg ->
+                                    ( withErrorNotice msg mainModel, Cmd.none )
 
                                 AppFacilityDetails.Close ->
                                     ( mainModel
@@ -209,8 +214,8 @@ mainUpdate msg mainModel =
                                         |> map (\m -> FacilityDetailsModel m context)
                                         |> map (Page common)
 
-                        ( SearchModel _, SearchMsg (AppSearch.UnhandledError) ) ->
-                            ( withGenericNotice mainModel, Cmd.none )
+                        ( SearchModel _, SearchMsg (AppSearch.UnhandledError msg) ) ->
+                            ( withErrorNotice msg mainModel, Cmd.none )
 
                         ( SearchModel searchModel, SearchMsg msg ) ->
                             (case msg of
@@ -512,9 +517,15 @@ unknownRouteErrorNotice =
     { message = "The requested URL does not exist.", refresh = False }
 
 
-withGenericNotice : MainModel -> MainModel
-withGenericNotice mainModel =
-    withNotice { message = "Something went wrong. You may want to refresh the application.", refresh = True } mainModel
+withErrorNotice : String -> MainModel -> MainModel
+withErrorNotice msg mainModel =
+    mainModel
+        |> withNotice
+            (if displayErrorDetail then
+                { message = msg, refresh = True }
+             else
+                { message = "Something went wrong. You may want to refresh the application.", refresh = True }
+            )
 
 
 withNotice : Notice -> MainModel -> MainModel

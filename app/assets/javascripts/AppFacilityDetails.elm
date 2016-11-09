@@ -41,7 +41,7 @@ type Msg
     | FacilityClicked Int
     | Private PrivateMsg
     | FacilityReportMsg FacilityReportResult
-    | UnhandledError
+    | UnhandledError String
 
 
 type alias FacilityReport =
@@ -82,9 +82,9 @@ update s msg model =
                             ++ [ Map.setHighlightedFacilityMarker facility ]
                           )
 
-                ApiFetch (Api.FetchFacilityFailed _) ->
+                ApiFetch (Api.FetchFacilityFailed e) ->
                     Return.singleton model
-                        |> perform UnhandledError
+                        |> perform (UnhandledError (toString e))
 
                 UserLocationMsg msg ->
                     UserLocation.update s msg (userLocation model)

@@ -34,7 +34,7 @@ type Msg
     | ServiceClicked Int
     | LocationClicked Int
     | Private PrivateMsg
-    | UnhandledError
+    | UnhandledError String
     | Search SearchSpec
 
 
@@ -82,9 +82,9 @@ update s msg model =
                             Return.singleton model
                                 |> perform (Search search)
 
-                        Suggest.UnhandledError ->
+                        Suggest.UnhandledError msg ->
                             Return.singleton model
-                                |> perform UnhandledError
+                                |> perform (UnhandledError msg)
 
                         _ ->
                             Suggest.update { mapViewport = model.mapViewport } msg model.suggest
@@ -106,9 +106,9 @@ update s msg model =
                     in
                         model ! [ loadMore, addFacilities ]
 
-                ApiSearch _ (Api.SearchFailed _) ->
+                ApiSearch _ (Api.SearchFailed e) ->
                     Return.singleton model
-                        |> perform UnhandledError
+                        |> perform (UnhandledError (toString e))
 
                 MapMsg (Map.MapViewportChanged mapViewport) ->
                     ( { model | mapViewport = mapViewport }, debCmd (Private PerformSearch) )

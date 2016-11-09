@@ -14,6 +14,7 @@ import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
+import Http
 import Json.Decode as Json
 import Selector
 import Models exposing (SearchSpec, Service, FacilityType, Ownership, Location, emptySearch)
@@ -38,7 +39,7 @@ type Msg
     = Toggle
     | Perform SearchSpec
     | Private PrivateMsg
-    | UnhandledError
+    | UnhandledError String
 
 
 type PrivateMsg
@@ -50,7 +51,7 @@ type PrivateMsg
     | HideSelectors
     | LocationsFetched (Maybe Int) (List Location)
     | ServicesFetched (Maybe Int) (List Service)
-    | FetchFailed
+    | FetchFailed Http.Error
 
 
 init : List FacilityType -> List Ownership -> SearchSpec -> Return Msg Model
@@ -81,12 +82,12 @@ initServices services selection =
 
 fetchLocations : Maybe Int -> Cmd Msg
 fetchLocations selection =
-    Api.getLocations (always (Private FetchFailed)) (Private << (LocationsFetched selection))
+    Api.getLocations (Private << FetchFailed) (Private << (LocationsFetched selection))
 
 
 fetchServices : Maybe Int -> Cmd Msg
 fetchServices selection =
-    Api.getServices (always (Private FetchFailed)) (Private << (ServicesFetched selection))
+    Api.getServices (Private << FetchFailed) (Private << (ServicesFetched selection))
 
 
 update : Model -> Msg -> Return Msg Model
@@ -126,9 +127,9 @@ update model msg =
                     Return.singleton
                         { model | serviceSelector = initServices services selectedId }
 
-                FetchFailed ->
+                FetchFailed e ->
                     Return.singleton model
-                        |> perform UnhandledError
+                        |> perform (UnhandledError (toString e))
 
         _ ->
             -- Public events

@@ -40,7 +40,7 @@ type Msg
     | LocationClicked Int
     | Search SearchSpec
     | Private PrivateMsg
-    | UnhandledError
+    | UnhandledError String
 
 
 hasSuggestionsToShow : Model -> Bool
@@ -123,9 +123,9 @@ update config msg model =
                             Return.singleton model
                                 |> perform (Search search)
 
-                        AdvancedSearch.UnhandledError ->
+                        AdvancedSearch.UnhandledError msg ->
                             Return.singleton model
-                                |> perform UnhandledError
+                                |> perform (UnhandledError msg)
 
                         _ ->
                             AdvancedSearch.update model.advancedSearch msg

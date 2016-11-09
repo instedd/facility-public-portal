@@ -45,7 +45,7 @@ type Msg
     | Search SearchSpec
     | ClearSearch
     | Private PrivateMsg
-    | UnhandledError
+    | UnhandledError String
 
 
 restoreCmd : Cmd Msg
@@ -111,9 +111,9 @@ update s msg model =
                         { model | results = Just results }
                             ! [ loadMore, Map.fitContent, addFacilities ]
 
-                ApiSearch (Api.SearchFailed _) ->
+                ApiSearch (Api.SearchFailed e) ->
                     Return.singleton model
-                        |> perform UnhandledError
+                        |> perform (UnhandledError (toString e))
 
                 ApiSearchMore (Api.SearchSuccess results) ->
                     let
@@ -129,9 +129,9 @@ update s msg model =
                         -- TODO append/merge or replace results items to current results. The order might not be trivial
                         model ! [ loadMore, addFacilities ]
 
-                ApiSearchMore _ ->
+                ApiSearchMore (Api.SearchFailed e) ->
                     Return.singleton model
-                        |> perform UnhandledError
+                        |> perform (UnhandledError (toString e))
 
                 UserLocationMsg msg ->
                     UserLocation.update s msg model.userLocation
@@ -155,9 +155,9 @@ update s msg model =
                             Return.singleton model
                                 |> perform (Search <| search)
 
-                        Suggest.UnhandledError ->
+                        Suggest.UnhandledError msg ->
                             Return.singleton model
-                                |> perform UnhandledError
+                                |> perform (UnhandledError msg)
 
                         _ ->
                             Suggest.update { mapViewport = model.mapViewport } msg model.suggest
