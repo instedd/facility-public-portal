@@ -146,18 +146,17 @@ isNothing =
     not << isJust
 
 
+equalMaybe : Maybe a -> Maybe a -> Bool
 equalMaybe a b =
-    case a of
-        Nothing ->
-            isNothing b
+    case ( a, b ) of
+        ( Nothing, Nothing ) ->
+            True
 
-        Just xa ->
-            case b of
-                Nothing ->
-                    False
+        ( Just xa, Just xb ) ->
+            xa == xb
 
-                Just xb ->
-                    xa == xb
+        _ ->
+            False
 
 
 last : List a -> Maybe a

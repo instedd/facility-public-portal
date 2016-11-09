@@ -43,8 +43,8 @@ type Msg
 
 type PrivateMsg
     = SetName String
-    | SetType Int
-    | SetOwnership Int
+    | SetType (Maybe Int)
+    | SetOwnership (Maybe Int)
     | LocationSelectorMsg Selector.Msg
     | ServiceSelectorMsg Selector.Msg
     | HideSelectors
@@ -98,10 +98,10 @@ update model msg =
                     Return.singleton { model | q = Just q }
 
                 SetType fType ->
-                    Return.singleton { model | fType = Just fType }
+                    Return.singleton { model | fType = fType }
 
                 SetOwnership o ->
-                    Return.singleton { model | ownership = Just o }
+                    Return.singleton { model | ownership = o }
 
                 LocationSelectorMsg msg ->
                     Selector.update msg model.locationSelector
@@ -168,11 +168,11 @@ view model =
                     ]
                 , field
                     [ label [] [ text "Facility type" ]
-                    , Html.select [ Shared.onSelect (Private << SetType) ] (selectOptions model.facilityTypes model.fType)
+                    , select (Private << SetType) model.facilityTypes model.fType
                     ]
                 , field
                     [ label [] [ text "Ownership" ]
-                    , Html.select [ Shared.onSelect (Private << SetOwnership) ] (selectOptions model.ownerships model.ownership)
+                    , select (Private << SetOwnership) model.ownerships model.ownership
                     ]
                 , field
                     [ label [] [ text "Location" ]
@@ -192,6 +192,31 @@ view model =
                 ]
                 [ text "Search" ]
             ]
+
+
+select : (Maybe Int -> Msg) -> List { id : Int, name : String } -> Maybe Int -> Html Msg
+select tagger options choice =
+    let
+        selectedId =
+            Maybe.withDefault 0 choice
+
+        toMaybe id =
+            if id == 0 then
+                Nothing
+            else
+                Just id
+
+        clearOption =
+            Html.option [ value "0" ] [ text "" ]
+
+        selectOption option =
+            Html.option
+                [ value (toString option.id), selected (option.id == selectedId) ]
+                [ text option.name ]
+    in
+        Html.select [ Shared.onSelect (toMaybe >> tagger) ] <|
+            clearOption
+                :: (List.map selectOption options)
 
 
 field : List (Html Msg) -> Html Msg
@@ -214,23 +239,6 @@ search model =
         , fType = model.fType
         , ownership = model.ownership
     }
-
-
-selectOptions : List { id : Int, name : String } -> Maybe Int -> List (Html a)
-selectOptions options choice =
-    let
-        selectedId =
-            Maybe.withDefault 0 choice
-    in
-        [ Html.option [ value "0" ] [ text "" ] ]
-            ++ (List.map
-                    (\option ->
-                        Html.option
-                            [ value (toString option.id), selected (option.id == selectedId) ]
-                            [ text option.name ]
-                    )
-                    options
-               )
 
 
 isEmpty : Model -> Bool
