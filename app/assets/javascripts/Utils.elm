@@ -6,6 +6,7 @@ import Date exposing (Date)
 import Time
 import Task
 import Dict exposing (Dict)
+import Return
 
 
 (&>) : Maybe a -> (a -> Maybe b) -> Maybe b
@@ -180,3 +181,8 @@ unreachable =
 performMessage : msg -> Cmd msg
 performMessage msg =
     Task.perform unreachable identity (Task.succeed msg)
+
+
+perform : msg -> ( model, Cmd msg ) -> ( model, Cmd msg )
+perform msg =
+    Return.command (performMessage msg)

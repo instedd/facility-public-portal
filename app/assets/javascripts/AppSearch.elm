@@ -8,7 +8,7 @@ import Html.Attributes exposing (..)
 import Html.Events as Events
 import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, FacilitySummary, FacilityType, Ownership, shouldLoadMore, emptySearch)
 import Shared exposing (MapView, icon, classNames)
-import Utils
+import Utils exposing (perform)
 import UserLocation
 import Suggest
 import Debounce
@@ -112,7 +112,8 @@ update s msg model =
                             ! [ loadMore, Map.fitContent, addFacilities ]
 
                 ApiSearch (Api.SearchFailed _) ->
-                    ( model, Utils.performMessage UnhandledError )
+                    Return.singleton model
+                        |> perform UnhandledError
 
                 ApiSearchMore (Api.SearchSuccess results) ->
                     let
@@ -129,7 +130,8 @@ update s msg model =
                         model ! [ loadMore, addFacilities ]
 
                 ApiSearchMore _ ->
-                    ( model, Utils.performMessage UnhandledError )
+                    Return.singleton model
+                        |> perform UnhandledError
 
                 UserLocationMsg msg ->
                     UserLocation.update s msg model.userLocation
@@ -138,19 +140,24 @@ update s msg model =
                 SuggestMsg msg ->
                     case msg of
                         Suggest.FacilityClicked facilityId ->
-                            ( model, Utils.performMessage (FacilityClicked facilityId) )
+                            Return.singleton model
+                                |> perform (FacilityClicked facilityId)
 
                         Suggest.ServiceClicked serviceId ->
-                            ( model, Utils.performMessage (ServiceClicked serviceId) )
+                            Return.singleton model
+                                |> perform (ServiceClicked serviceId)
 
                         Suggest.LocationClicked locationId ->
-                            ( model, Utils.performMessage (LocationClicked locationId) )
+                            Return.singleton model
+                                |> perform (LocationClicked locationId)
 
                         Suggest.Search search ->
-                            ( model, Utils.performMessage (Search <| search) )
+                            Return.singleton model
+                                |> perform (Search <| search)
 
                         Suggest.UnhandledError ->
-                            ( model, Utils.performMessage UnhandledError )
+                            Return.singleton model
+                                |> perform UnhandledError
 
                         _ ->
                             Suggest.update { mapViewport = model.mapViewport } msg model.suggest

@@ -8,7 +8,7 @@ import Html.Events as Events
 import Shared exposing (MapView, classNames)
 import Api
 import Date exposing (Date)
-import Utils
+import Utils exposing (perform)
 import Time
 import String
 import Task
@@ -49,8 +49,9 @@ type alias FacilityReport =
     , closed : Bool
     , contact_info_missing : Bool
     , inaccurate_services : Bool
-    , other : Bool
-    --, comments : Maybe String
+    , other :
+        Bool
+        --, comments : Maybe String
     }
 
 
@@ -82,7 +83,8 @@ update s msg model =
                           )
 
                 ApiFetch (Api.FetchFacilityFailed _) ->
-                    ( model, Utils.performMessage UnhandledError )
+                    Return.singleton model
+                        |> perform UnhandledError
 
                 UserLocationMsg msg ->
                     UserLocation.update s msg (userLocation model)

@@ -13,7 +13,7 @@ import Models exposing (MapViewport, SearchSpec, FacilityType, Ownership, emptyS
 import Return
 import Shared exposing (icon)
 import String
-import Utils
+import Utils exposing (perform)
 import Svg
 import Svg.Attributes
 
@@ -120,10 +120,12 @@ update config msg model =
                             ( { model | advanced = not model.advanced }, Cmd.none )
 
                         AdvancedSearch.Perform search ->
-                            ( model, Utils.performMessage (Search search) )
+                            Return.singleton model
+                                |> perform (Search search)
 
                         AdvancedSearch.UnhandledError ->
-                            ( model, Utils.performMessage UnhandledError )
+                            Return.singleton model
+                                |> perform UnhandledError
 
                         _ ->
                             AdvancedSearch.update model.advancedSearch msg

@@ -19,7 +19,7 @@ import Selector
 import Models exposing (SearchSpec, Service, FacilityType, Ownership, Location, emptySearch)
 import Return exposing (Return)
 import Shared exposing (onClick)
-import Utils
+import Utils exposing (perform)
 
 
 type alias Model =
@@ -128,7 +128,7 @@ update model msg =
 
                 FetchFailed ->
                     Return.singleton model
-                        |> Return.command (Utils.performMessage UnhandledError)
+                        |> perform UnhandledError
 
         _ ->
             -- Public events
