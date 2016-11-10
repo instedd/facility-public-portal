@@ -1,4 +1,13 @@
-module Menu exposing (Model(..), Item(..), toggle, anchor, menuContent, toggleMenu, sideMenu)
+module Menu
+    exposing
+        ( Model(..)
+        , Item(..)
+        , toggle
+        , anchor
+        , fixedMenu
+        , toggleMenu
+        , sideMenu
+        )
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -98,4 +107,11 @@ sideMenu settings active model toggleMsg =
         , div
             [ classList [ ( "overlay", True ), ( "hide", model == Closed ) ], onClick toggleMsg ]
             []
+        ]
+
+
+fixedMenu settings active =
+    div [ class "side-nav fixed" ]
+        [ Shared.header []
+        , menuContent settings active
         ]

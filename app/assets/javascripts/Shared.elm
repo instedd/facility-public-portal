@@ -9,6 +9,7 @@ import Models
 import String
 import I18n exposing (..)
 
+
 type alias LHtml a =
     List (Html a)
 
@@ -52,15 +53,12 @@ controlStack content =
 
 header : LHtml a -> Html a
 header content =
-    nav [ id "TopNav", class "z-depth-0" ]
-        [ div [ class "nav-wrapper" ]
-            ([ a [ href "/" ]
-                [ img [ id "logo", src "/logo.svg" ] [] ]
-               --, a [ class "right" ] [ icon "menu" ]
-             ]
-                ++ content
-            )
-        ]
+    let
+        logo =
+            a [ href "/" ] [ img [ id "logo", src "/logo.svg" ] [] ]
+    in
+        nav [ id "TopNav", class "z-depth-0" ]
+            [ div [ class "nav-wrapper" ] (logo :: content) ]
 
 
 searchBar : String -> a -> (String -> a) -> Html a -> Html a
@@ -107,7 +105,8 @@ modalWindow : LHtml a -> LHtml a -> LHtml a -> LHtml a
 modalWindow header body footer =
     [ div [ class "modal-content" ]
         [ div [ class "header" ] header
-        , div [ class "body" ] body ]
+        , div [ class "body" ] body
+        ]
     , div [ class "modal-footer" ] footer
     ]
 

@@ -1,8 +1,6 @@
 module Routing exposing (parser, navigate, routeFromResult, routeToPath)
 
 import Dict exposing (Dict)
-import Http
-import Maybe exposing (andThen)
 import Models exposing (..)
 import Navigation
 import String
