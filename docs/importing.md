@@ -1,5 +1,7 @@
 # Importing data
 
+This document describe [#input-data-schema](the schema supported) by the application and [#normalizing-spa-census-information](how to build) it from the SPA-2014 census.
+
 ## Input data schema
 
 This tool can import data using the following schema, where each table is stored in a CSV file with headers.
@@ -14,6 +16,7 @@ This tool can import data using the following schema, where each table is stored
 | lng           | Float                     |
 | location_id   | String                    |
 | facility_type | String                    |
+| ownership     | String                    |
 | contact_name  | String                    |
 | contact_email | String                    |
 | contact_phone | String                    |
@@ -22,11 +25,13 @@ This tool can import data using the following schema, where each table is stored
 
 ### Services
 
-| Field | Type   |
-|-------|--------|
-| id    | String |
-| name  | String |
+| Field   | Type   |
+|---------|--------|
+| id      | String |
+| name:en | String |
+| name:am | String |
 
+**note:** there should be a `name:LOCALE` column for each of the enabled locales of the application.
 
 ### facilities_services
 
@@ -63,6 +68,7 @@ data
 ├── input
     ├── facilities.csv
     ├── facilities_services.csv
+    ├── facility_types.csv
     ├── locations.csv
     └── services.csv
 ```
@@ -85,9 +91,11 @@ data
     ├── Facility.csv
     ├── FacilityService.csv
     ├── FacilityType.csv
+    ├── geoloc.csv
+    ├── i18n.csv
     ├── MedicalService.csv
     ├── OrganizationUnit.csv
-    └── geoloc.csv
+    └── ownership.csv
 ```
 
 And then run the following scripts to generate the normalized input files in the `data/input` directory:
@@ -95,3 +103,22 @@ And then run the following scripts to generate the normalized input files in the
 ```
 $ bin/normalize-spa-data data/raw data/input
 ```
+
+### SPA data internationalization
+
+The `i18n.csv` file is not actually part of the SPA result.
+It's schema depends of the desired locales.
+There should be one column for each locale.
+
+| Field         | Type                      |
+|---------------|---------------------------|
+| en            | String                    |
+| am            | String                    |
+
+Each row will contain the equivalent text that appear across the spa raw data.
+
+| en      | am           |
+|---------|--------------|
+| Tb test | የነቀርሳ ምርመራ |
+
+In the above sample when a the service english name "Tb test" will be translated to "የነቀርሳ ምርመራ" when generating the `services.csv` `name:en` and `name:am` columns.
