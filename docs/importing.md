@@ -1,6 +1,6 @@
 # Importing data
 
-This document describe [#input-data-schema](the schema supported) by the application and [#normalizing-spa-census-information](how to build) it from the SPA-2014 census.
+This document describe [the schema supported](#input-data-schema) by the application and [how to build](#normalizing-spa-census-information) it from the SPA-2014 census.
 
 ## Input data schema
 
