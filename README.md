@@ -54,6 +54,10 @@ After that, the application can be run in development mode as follows:
 $ bin/rails s
 ```
 
+## I18n support
+
+See [this guide](docs/i18n.md)
+
 ## Importing data
 
 See [this guide](docs/importing.md).
