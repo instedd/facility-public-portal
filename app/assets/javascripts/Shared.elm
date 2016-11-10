@@ -70,6 +70,7 @@ searchBar userInput submitMsg inputMsg trailing =
                     [ type' "search"
                     , placeholder <| t SearchHealthFacility
                     , value userInput
+                    , autofocus True
                     , Events.onInput inputMsg
                     ]
                     []
