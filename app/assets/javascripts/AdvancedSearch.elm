@@ -72,12 +72,12 @@ init facilityTypes ownerships search =
 
 initLocations : List Location -> Maybe Int -> Selector.Model Location
 initLocations locations selection =
-    Selector.init "location-input" locations .id .name selection
+    Selector.init locationInputId locations .id .name selection
 
 
 initServices : List Service -> Maybe Int -> Selector.Model Service
 initServices services selection =
-    Selector.init "service-input" services .id .name selection
+    Selector.init serviceInputId services .id .name selection
 
 
 fetchLocations : Maybe Int -> Cmd Msg
@@ -158,45 +158,45 @@ view model =
         viewService service =
             [ Html.text service.name ]
     in
-        Shared.modalWindow
-            [ text "Advanced Search"
-            , a [ href "#", class "right", onClick Toggle ] [ Shared.icon "close" ]
-            ]
-            [ Html.form [ action "#", method "GET" ]
+        [ Html.form [ action "#", method "GET", Html.Events.onSubmit (Perform (search model)) ] <|
+            Shared.modalWindow
+                [ text "Advanced Search"
+                , a [ href "#", class "right", onClick Toggle ] [ Shared.icon "close" ]
+                ]
                 [ field
                     [ label [ for "q" ] [ text "Facility name" ]
                     , input [ id "q", type' "text", value query, onInput (Private << SetName) ] []
                     ]
                 , field
-                    [ label [] [ text "Facility type" ]
-                    , select (Private << SetType) model.facilityTypes model.fType
+                    [ label [ for "t" ] [ text "Facility type" ]
+                    , select "t" (Private << SetType) model.facilityTypes model.fType
                     ]
                 , field
-                    [ label [] [ text "Ownership" ]
-                    , select (Private << SetOwnership) model.ownerships model.ownership
+                    [ label [ for "o" ] [ text "Ownership" ]
+                    , select "o" (Private << SetOwnership) model.ownerships model.ownership
                     ]
                 , field
-                    [ label [] [ text "Location" ]
+                    [ label [ for locationInputId ] [ text "Location" ]
                     , Html.App.map (Private << LocationSelectorMsg) (Selector.view viewLocation model.locationSelector)
                     ]
                 , field
-                    [ label [] [ text "Service" ]
+                    [ label [ for serviceInputId ] [ text "Service" ]
                     , Html.App.map (Private << ServiceSelectorMsg) (Selector.view viewService model.serviceSelector)
                     ]
                 ]
-            ]
-            [ a
-                [ href "#"
-                , class "btn-flat"
-                , hideSelectorsOnFocus
-                , onClick (Perform (search model))
+                [ Html.button
+                    [ class "btn-flat"
+                    , hideSelectorsOnFocus
+                    , onClick (Perform (search model))
+                    , type' "submit"
+                    ]
+                    [ text "Search" ]
                 ]
-                [ text "Search" ]
-            ]
+        ]
 
 
-select : (Maybe Int -> Msg) -> List { id : Int, name : String } -> Maybe Int -> Html Msg
-select tagger options choice =
+select : String -> (Maybe Int -> Msg) -> List { id : Int, name : String } -> Maybe Int -> Html Msg
+select domId tagger options choice =
     let
         selectedId =
             Maybe.withDefault 0 choice
@@ -245,3 +245,11 @@ search model =
 isEmpty : Model -> Bool
 isEmpty model =
     Models.isEmpty (search model)
+
+
+locationInputId =
+    "location-input"
+
+
+serviceInputId =
+    "service-input"
