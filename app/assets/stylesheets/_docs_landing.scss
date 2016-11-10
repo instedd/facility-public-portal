@@ -158,3 +158,10 @@ body.landing_editor {
     }
   }
 }
+
+// same media query as fitContent
+@media all and(max-width: 992px) {
+  .img-center {
+    img { width: 100%; }
+  }
+}
