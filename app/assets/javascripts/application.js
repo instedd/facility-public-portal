@@ -17,3 +17,15 @@
 //= require i18n
 //= require i18n/translations
 //= require_tree .
+
+$(function(){
+  // avoid opening the browser in mobile web app
+  // mailto: and links to other domains will be handled as usual
+  $(document).on('click', 'a[href]', function(){
+    var current = location.protocol + "//" + location.hostname;
+    if (this.href.startsWith(current)) {
+      event.preventDefault();
+      window.location = this.href;
+    }
+  });
+});
