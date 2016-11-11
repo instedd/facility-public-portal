@@ -106,22 +106,22 @@ $(document).ready(function() {
       var mapControl = document.getElementById("map-control");
       var isMobile = w <= 992; // same media query as application.css
       var paddingLeft = !isMobile && FPP._fitContentUsingPadding ? 340 : 0; // only perform padding if desktop
-      var group;
-
-      if (FPP.highlightedFacilityMarker == null) {
-        group = L.featureGroup(FPP.clusterGroup.getLayers());
-      } else {
-        group = L.featureGroup([FPP.highlightedFacilityMarker]);
-      }
       var fitBoundsOptions = { paddingTopLeft: [paddingLeft,0] };
 
+      var bounds;
+      if (FPP.highlightedFacilityMarker != null) {
+        bounds = L.latLngBounds([FPP.highlightedFacilityMarker.getLatLng()]);
+      } else {
+        bounds = L.featureGroup(FPP.clusterGroup.getLayers()).getBounds();
+      }
+
       if (FPP.userMarker) {
-        group.addLayer(FPP.userMarker.getLayers()[0]);
+        bounds.extend(FPP.userMarker.getLayers()[0].getLatLng());
       }
 
       // bounds are invalid when there are no elements
-      if (group.getBounds().isValid()) {
-        FPP.map.fitBounds(group.getBounds(), fitBoundsOptions);
+      if (bounds.isValid()) {
+        FPP.map.fitBounds(bounds, fitBoundsOptions);
       }
     },
 
