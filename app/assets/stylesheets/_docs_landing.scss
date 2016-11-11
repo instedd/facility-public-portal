@@ -23,7 +23,7 @@ body.docs, body.landing, body.landing_editor {
   }
 
   .content {
-    margin: 100px 120px;
+    margin: 0 120px;
     width: 75%;
     max-height: none;
 
@@ -95,13 +95,32 @@ body.docs, body.landing, body.landing_editor {
       margin-left: 0;
     }
     .content {
-      margin: 50px auto;
+      h1 {
+        font-size: 8vw;
+      }
+      margin: auto;
       width: 90%;
     }
   }
 }
 
 body.landing, body.preview {
+  .content ul.lang-selector {
+    font-size: 14px;
+    list-style: none;
+    margin: 20px 0px;
+
+    li {
+      display: inline;
+      &:before {
+        content: "";
+      }
+      &:not(:last-child):after {
+         content: "|";
+      }
+    }
+  }
+
   hr.divider {
     border: 0;
     margin: 50px 0 60px 0;

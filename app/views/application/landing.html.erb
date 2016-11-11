@@ -1,3 +1,16 @@
+<ul class="lang-selector right-align">
+  <% Settings.locales.to_h.each do |key,name| %>
+    <li class="lang">
+    <% active = key == I18n.locale %>
+    <% if active %>
+      <%= name %>
+    <% else %>
+      <a href="/?locale=<%= key %>"><%= name %></a>
+    <% end %>
+    </li>
+  <% end %>
+</ul>
+
 <h1>Master Facility Registry</h1>
 
 <% if @texts[:heading] %>
@@ -13,7 +26,6 @@
 <% end %>
 
 <%= link_to "Search", map_path, class: "btn btn-large" %>
-
 <hr class="divider">
 
 <% if @texts[:subsection] %>
