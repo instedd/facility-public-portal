@@ -100,7 +100,7 @@ update s msg model =
                 ApiSearch (Api.SearchSuccess results) ->
                     let
                         addFacilities =
-                            Map.resetFacilityMarkers results.items
+                            Map.resetFacilityMarkers results.items True
 
                         loadMore =
                             if shouldLoadMore results model.mapViewport then
@@ -109,7 +109,7 @@ update s msg model =
                                 Cmd.none
                     in
                         { model | results = Just results }
-                            ! [ loadMore, Map.fitContent, addFacilities ]
+                            ! [ loadMore, addFacilities ]
 
                 ApiSearch (Api.SearchFailed e) ->
                     Return.singleton model

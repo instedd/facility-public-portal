@@ -45,7 +45,7 @@ update s msg model =
         LocationDetected pos ->
             -- TODO remove old user marker in case he/she moved (?)
             Detected pos
-                ! [ Map.fitContent, Map.addUserMarker pos ]
+                ! [ Map.addUserMarker pos ]
 
         LocationFailed e ->
             -- TODO

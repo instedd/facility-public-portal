@@ -94,7 +94,7 @@ update s msg model =
                     let
                         addFacilities =
                             if initial then
-                                Map.resetFacilityMarkers results.items
+                                Map.resetFacilityMarkers results.items False
                             else
                                 Map.addFacilityMarkers results.items
 

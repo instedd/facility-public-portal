@@ -74,13 +74,12 @@ update s msg model =
 
                 ApiFetch (Api.FetchFacilitySuccess facility) ->
                     (Loaded (mapViewport model) facility (date model) (userLocation model) False Nothing)
-                        ! ((if (Models.contains (mapViewport model) facility.position) then
-                                []
-                            else
-                                [ Map.fitContent ]
-                           )
-                            ++ [ Map.setHighlightedFacilityMarker facility ]
-                          )
+                        ! [ let
+                                fitContent =
+                                    not (Models.contains (mapViewport model) facility.position)
+                            in
+                                Map.setHighlightedFacilityMarker facility fitContent
+                          ]
 
                 ApiFetch (Api.FetchFacilityFailed e) ->
                     Return.singleton model
