@@ -4,9 +4,7 @@ import Html exposing (Html, div)
 import Html.Attributes exposing (class)
 import Menu
 import Shared
-import Models
 import Navigation
-import Routing
 import UrlParser exposing (..)
 import String
 
@@ -15,6 +13,7 @@ type alias Flags =
     { contactEmail : String
     , locale : String
     , locales : List ( String, String )
+    , authenticated : Bool
     }
 
 
@@ -48,7 +47,7 @@ init flags route =
 
         settings =
             { contactEmail = flags.contactEmail
-            , showEdition = currentPage == Menu.Editor
+            , showEdition = flags.authenticated
             }
     in
         { settings = settings, currentPage = currentPage, menu = Menu.Closed } ! []
@@ -86,10 +85,10 @@ routeParser =
             oneOf
                 [ format Menu.ApiDoc <|
                     s "docs"
-                , format Menu.Editor <|
+                , format (\locale -> Menu.Editor) <|
                     oneOf
-                        [ s "edit"
-                        , s "preview"
+                        [ s "content" </> string </> s "edit"
+                        , s "content" </> string </> s "preview"
                         ]
                 , format Menu.LandingPage <|
                     s ""

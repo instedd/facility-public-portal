@@ -15,6 +15,14 @@ Rails.application.routes.draw do
   get 'map', to: 'application#map'
   get 'docs', to: 'docs#index'
 
+  scope :content do
+    get  '/edit', to: "landing_editor#index"
+    get  ':edit_locale/edit', to: 'landing_editor#edit'
+    post ':edit_locale/edit', to: 'landing_editor#save'
+    get  ':edit_locale/preview', to: 'landing_editor#preview'
+    post ':edit_locale/discard_draft', to: 'landing_editor#discard_draft'
+  end
+
   get 'edit', to: 'landing_editor#index'
   get 'preview', to: 'landing_editor#preview'
   post 'edit', to: 'landing_editor#edit'

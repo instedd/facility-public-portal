@@ -48,19 +48,6 @@ body.docs, body.landing, body.landing_editor {
     p {
       margin-top: 0;
     }
-    ul {
-      margin: 30px 0 30px 32px;
-      li {
-        list-style: none;
-        &:before {
-          content:"·";
-          margin-right: 4px;
-          font-size:26px;
-          vertical-align:middle;
-          line-height:20px;
-        }
-      }
-    }
     p > em > code {
       font-style: normal;
       font-size: 24px;
@@ -124,6 +111,22 @@ body.landing, body.preview {
     text-align: center;
   }
 
+  .content {
+    ul {
+      margin: 30px 0 30px 32px;
+      li {
+        list-style: none;
+        &:before {
+          content:"·";
+          margin-right: 4px;
+          font-size:26px;
+          vertical-align:middle;
+          line-height:20px;
+        }
+      }
+    }
+  }
+
   .editable-columns {
     .column {
       &:first-child {
@@ -142,6 +145,21 @@ body.landing, body.preview {
 }
 
 body.landing_editor {
+  .tabs .tab {
+    a {
+      background-color: $light-blue;
+      color: white;
+      &.active {
+        color: $light-blue;
+        background-color: inherit;
+      }
+    }
+  }
+  .tab-content {
+    padding: 20px;
+    background-color: white;
+  }
+
   form#edit_landing_texts{
     textarea {
       width: 100%;
@@ -151,10 +169,6 @@ body.landing_editor {
       border: 1px solid $grey3;
       border-radius: 5px;
       margin-bottom: 30px;
-    }
-
-    .actions {
-      float: right;
     }
   }
 }

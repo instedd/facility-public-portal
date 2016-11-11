@@ -16,8 +16,9 @@ ActiveRecord::Schema.define(version: 20161108151628) do
   enable_extension "plpgsql"
 
   create_table "landing_texts", force: :cascade do |t|
-    t.boolean  "preview",    default: true
-    t.jsonb    "texts"
+    t.boolean  "draft",      default: true, null: false
+    t.string   "locale",                    null: false
+    t.jsonb    "texts",                     null: false
     t.datetime "created_at",                null: false
     t.datetime "updated_at",                null: false
   end

@@ -6,7 +6,7 @@ class ApplicationController < ActionController::Base
   before_action :set_js_flags
 
   def landing
-    @texts = LandingText.where(preview: false).first.texts
+    @texts = LandingText.current(I18n.locale).try(:texts) || LandingText.empty_texts
     render 'landing', layout: 'content'
   end
 
@@ -47,8 +47,18 @@ class ApplicationController < ActionController::Base
       "mapboxToken" => Settings.mapbox_token,
       "locales" => Settings.locales,
       "locale" => I18n.locale,
+      "authenticated" => valid_credentials?,
       "facilityTypes" => ElasticsearchService.instance.get_facility_types,
       "ownerships" => ElasticsearchService.instance.get_ownerships
     }
+  end
+
+  def valid_credentials?
+    if auth_headers = request.headers["Authorization"]
+      expected = ActionController::HttpAuthentication::Basic.encode_credentials(Settings.admin_user, Settings.admin_pass)
+      return auth_headers.eql? expected
+    end
+
+    return false
   end
 end
