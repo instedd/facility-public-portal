@@ -13,6 +13,7 @@ type TranslationId
     | ReportAnIssue
     | FullDownload
     | LandingPage
+    | Editor
 
 
 t : TranslationId -> String

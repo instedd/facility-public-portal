@@ -2,6 +2,7 @@ module Menu
     exposing
         ( Model(..)
         , Item(..)
+        , Settings
         , toggle
         , anchor
         , fixedMenu
@@ -12,8 +13,8 @@ module Menu
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Shared exposing (icon, onClick)
-import Models exposing (Settings)
 import I18n exposing (..)
+import SelectList exposing (include, iff)
 
 
 type Model
@@ -25,6 +26,13 @@ type Item
     = Map
     | ApiDoc
     | LandingPage
+    | Editor
+
+
+type alias Settings =
+    { contactEmail : String
+    , showEdition : Bool
+    }
 
 
 toggle model =
@@ -46,41 +54,33 @@ menuContent settings active =
     let
         isActive item =
             class <| Shared.classNames [ ( "active", active == item ) ]
+
+        menuItem item link iconName label =
+            li []
+                [ a [ href link, isActive item ]
+                    [ icon iconName
+                    , text <| t label
+                    ]
+                ]
     in
         div [ class "menu" ]
             [ ul []
-                [ li []
-                    [ a [ href "/map", isActive Map ]
-                        [ icon "map"
-                        , text <| t I18n.Map
-                        ]
+                (SelectList.select
+                    [ include <| menuItem Map "/map" "map" I18n.Map
+                    , iff settings.showEdition <|
+                        menuItem Editor "/edit" "mode_edit" I18n.Editor
+                    , include <| menuItem LandingPage "/" "info" I18n.LandingPage
+                    , include <| menuItem ApiDoc "/docs" "code" I18n.ApiDocs
+                    , include <| hr [] []
+                    , include <|
+                        li []
+                            [ a [ href <| "mailto:" ++ settings.contactEmail ]
+                                [ icon "email"
+                                , text <| t I18n.Contact
+                                ]
+                            ]
                     ]
-                , li []
-                    [ a [ href "/", isActive LandingPage ]
-                        [ icon "info"
-                        , text <| t I18n.LandingPage
-                        ]
-                    ]
-                , li []
-                    [ a [ href "/docs", isActive ApiDoc ]
-                        [ icon "code"
-                        , text <| t I18n.ApiDocs
-                        ]
-                    ]
-                , li []
-                    [ a [ href "/data" ]
-                        [ icon "file_download"
-                        , text <| t I18n.FullDownload
-                        ]
-                    ]
-                , hr [] []
-                , li []
-                    [ a [ href <| "mailto:" ++ settings.contactEmail ]
-                        [ icon "email"
-                        , text <| t I18n.Contact
-                        ]
-                    ]
-                ]
+                )
             ]
 
 
@@ -110,6 +110,7 @@ sideMenu settings active model toggleMsg =
         ]
 
 
+fixedMenu : Settings -> Item -> Html msg
 fixedMenu settings active =
     div [ class "side-nav fixed" ]
         [ Shared.header []

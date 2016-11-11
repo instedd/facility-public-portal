@@ -23,7 +23,7 @@ type Msg
 
 
 type alias Model =
-    { settings : Models.Settings
+    { settings : Menu.Settings
     , currentPage : Menu.Item
     , menu : Menu.Model
     }
@@ -47,12 +47,8 @@ init flags route =
             Result.withDefault Menu.LandingPage route
 
         settings =
-            { fakeLocation = Nothing
-            , contactEmail = flags.contactEmail
-            , locale = flags.locale
-            , locales = flags.locales
-            , facilityTypes = []
-            , ownerships = []
+            { contactEmail = flags.contactEmail
+            , showEdition = currentPage == Menu.Editor
             }
     in
         { settings = settings, currentPage = currentPage, menu = Menu.Closed } ! []
@@ -88,8 +84,15 @@ routeParser =
     let
         matchers =
             oneOf
-                [ format Menu.ApiDoc (s "docs")
-                , format Menu.LandingPage (s "")
+                [ format Menu.ApiDoc <|
+                    s "docs"
+                , format Menu.Editor <|
+                    oneOf
+                        [ s "edit"
+                        , s "preview"
+                        ]
+                , format Menu.LandingPage <|
+                    s ""
                 ]
 
         parser location =
