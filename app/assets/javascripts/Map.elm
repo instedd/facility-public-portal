@@ -60,14 +60,26 @@ addFacilityMarkers facilities =
     jsCommand ( "addFacilityMarkers", list <| List.map encodeFacilitySummary facilities )
 
 
-resetFacilityMarkers : List FacilitySummary -> Cmd msg
-resetFacilityMarkers facilities =
-    jsCommand ( "resetFacilityMarkers", list <| List.map encodeFacilitySummary facilities )
+resetFacilityMarkers : List FacilitySummary -> Bool -> Cmd msg
+resetFacilityMarkers facilities fitContent =
+    jsCommand
+        ( "resetFacilityMarkers"
+        , object
+            [ ( "facilities", list <| List.map encodeFacilitySummary facilities )
+            , ( "fitContent", bool fitContent )
+            ]
+        )
 
 
-setHighlightedFacilityMarker : Facility -> Cmd msg
-setHighlightedFacilityMarker facility =
-    jsCommand ( "setHighlightedFacilityMarker", encodeFacility facility )
+setHighlightedFacilityMarker : Facility -> Bool -> Cmd msg
+setHighlightedFacilityMarker facility fitContent =
+    jsCommand
+        ( "setHighlightedFacilityMarker"
+        , object
+            [ ( "facility", encodeFacility facility )
+            , ( "fitContent", bool fitContent )
+            ]
+        )
 
 
 removeHighlightedFacilityMarker : Cmd msg

@@ -55,11 +55,15 @@ $(document).ready(function() {
       FPP.userMarker.addTo(FPP.map);
       FPP._userMarkerToFront();
       popup.openOn(FPP.map);
+      FPP.commands.fitContent();
     },
 
-    resetFacilityMarkers: function(facilities) {
+    resetFacilityMarkers: function(o) {
       FPP.commands.clearFacilityMarkers();
-      FPP.commands.addFacilityMarkers(facilities);
+      FPP.commands.addFacilityMarkers(o.facilities);
+      if (o.fitContent) {
+        FPP.commands.fitContent();
+      }
     },
 
     addFacilityMarkers: function(facilities) {
@@ -76,7 +80,9 @@ $(document).ready(function() {
       FPP.clusterGroup.clearLayers();
     },
 
-    setHighlightedFacilityMarker: function(facility) {
+    setHighlightedFacilityMarker: function(o) {
+      var facility = o.facility;
+
       if (FPP.highlightedFacilityMarker) {
         FPP.clusterGroup.removeLayer(FPP.highlightedFacilityMarker);
       }
@@ -84,7 +90,7 @@ $(document).ready(function() {
       $("#map").addClass("grey-facilities");
 
       var latLng = [facility.position.lat, facility.position.lng];
-      FPP.highlightedFacilityMarker =  L.marker(latLng, { facility: facility });
+      FPP.highlightedFacilityMarker = L.marker(latLng, { facility: facility });
 
       FPP.clusterGroup.addLayer(FPP.highlightedFacilityMarker);
 
@@ -92,6 +98,10 @@ $(document).ready(function() {
 
       // TODO: refresh only previous and new highlighted clusters
       FPP.clusterGroup.refreshClusters();
+
+      if (o.fitContent) {
+        FPP.commands.fitContent();
+      }
     },
 
     removeHighlightedFacilityMarker: function () {
