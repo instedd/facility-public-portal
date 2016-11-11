@@ -7,6 +7,18 @@
   .card-action {
     a { color: $blue; }
   }
+
+  &.fixed {
+    position: fixed;
+  }
+
+  form {
+    display: inline;
+    input.btn {
+      background-color: inherit;
+      color: $blue;
+    }
+  }
 }
 
 // same media query as fitContent

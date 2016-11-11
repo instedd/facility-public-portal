@@ -33,15 +33,20 @@ class LandingEditorController < ApplicationController
   end
 
   def preview
+    @in_preview = true
     @texts = LandingText.draft(@edit_locale).texts
     render '/application/landing', layout: 'content'
   end
 
   def discard_draft
     LandingText.discard_draft(@edit_locale)
-    redirect_to edit_path
+    redirect_to action: :edit, edit_locale: @edit_locale
   end
 
+  def publish_draft
+    LandingText.publish_draft(@edit_locale)
+    redirect_to action: :edit, edit_locale: @edit_locale
+  end
 
   private
 

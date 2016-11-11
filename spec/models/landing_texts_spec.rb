@@ -19,8 +19,8 @@ describe LandingText do
       draft = LandingText.draft(:en)
       expect(draft.texts["heading"]).to eq("foo")
 
-      expect(LandingText.where(draft: false).count).to eq(1)
-      expect(LandingText.where(draft: true).count).to eq(1)
+      expect(LandingText.published.count).to eq(1)
+      expect(LandingText.drafts.count).to eq(1)
     end
 
 
@@ -48,12 +48,12 @@ describe LandingText do
     end
   end
 
-  describe "published" do
+  describe "publishing" do
     it "allows to publish and retrieve texts" do
       texts = LandingText.empty_texts.tap { |t| t["heading"] = "foo" }
       LandingText.publish(:en, texts)
 
-      expect(LandingText.where(draft: false).count).to eq(1)
+      expect(LandingText.published.count).to eq(1)
       expect(LandingText.current(:en).texts["heading"]).to eq("foo")
     end
 
@@ -65,10 +65,29 @@ describe LandingText do
       texts["heading"] = "bar"
       expect {
         LandingText.publish(:en, texts)
-      }.not_to change{LandingText.where(draft: false).count}
+      }.not_to change{LandingText.published.count}
 
 
       expect(LandingText.current(:en).texts["heading"]).to eq("bar")
+    end
+
+    it "allows to publish a draft" do
+      texts = LandingText.empty_texts
+      texts["heading"] = "foo"
+
+      draft = LandingText.draft(:en)
+      draft.texts = texts
+      draft.save
+
+      expect(LandingText.drafts.count).to eq(1)
+
+      LandingText.publish_draft(:en)
+
+      expect(LandingText.drafts.count).to eq(0)
+      expect(LandingText.published.count).to eq(1)
+
+      current = LandingText.current(:en)
+      expect(current.texts).to eq(texts)
     end
   end
 end

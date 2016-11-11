@@ -20,6 +20,7 @@ Rails.application.routes.draw do
     get  ':edit_locale/edit', to: 'landing_editor#edit'
     post ':edit_locale/edit', to: 'landing_editor#save'
     get  ':edit_locale/preview', to: 'landing_editor#preview'
+    post ':edit_locale/publish_draft', to: 'landing_editor#publish_draft'
     post ':edit_locale/discard_draft', to: 'landing_editor#discard_draft'
   end
 
