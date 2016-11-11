@@ -171,9 +171,7 @@ $(document).ready(function() {
           classes.push('highlighted');
         }
 
-        if (representative.facilityType === "Health Center") {
-          classes.push('small');
-        }
+        classes.push('priority-' + representative.priority);
 
         return L.divIcon({className: classes.join(' ')});
       },
