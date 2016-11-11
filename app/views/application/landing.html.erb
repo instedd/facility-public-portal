@@ -4,11 +4,8 @@
       <p>Previewing landing page in <%= Settings.locales[@edit_locale] %></p>
     </div>
     <div class="card-action">
-      <%= form_tag url_for(controller: :landing_editor, action: :publish_draft, edit_locale: @edit_locale) do %>
-        <%= submit_tag 'Publish', class: "btn btn-flat" %>
-      <% end %>
-      </form>
-      <%= link_to "Back", url_for(controller: :landing_editor, action: :edit, edit_locale: @edit_locale) %>
+      <%= link_to "Publish", publish_draft_path(@edit_locale), class: 'ujs btn btn-flat', method: 'post' %>
+      <%= link_to "Back", edit_content_path(@edit_locale) %>
     </div>
   </div>
 <% else %>
