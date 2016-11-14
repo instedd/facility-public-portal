@@ -5,9 +5,9 @@ module Menu
         , Settings
         , toggle
         , anchor
-        , fixedMenu
-        , toggleMenu
-        , sideMenu
+        , fixed
+        , togglingContent
+        , sideBar
         , parseItem
         )
 
@@ -85,8 +85,8 @@ menuContent settings active =
             ]
 
 
-toggleMenu : Settings -> Item -> Model -> List (Html a) -> List (Html a)
-toggleMenu settings active model content =
+togglingContent : Settings -> Item -> Model -> List (Html a) -> List (Html a)
+togglingContent settings active model content =
     case model of
         Closed ->
             content
@@ -99,8 +99,8 @@ toggleMenu settings active model content =
             ]
 
 
-sideMenu : Settings -> Item -> Model -> msg -> Html msg
-sideMenu settings active model toggleMsg =
+sideBar : Settings -> Item -> Model -> msg -> Html msg
+sideBar settings active model toggleMsg =
     div [ id "mobile-menu", class "hide-on-large-only" ]
         [ div
             [ classList [ ( "side-nav", True ), ( "active", model == Open ) ] ]
@@ -111,8 +111,8 @@ sideMenu settings active model toggleMsg =
         ]
 
 
-fixedMenu : Settings -> Item -> Html msg
-fixedMenu settings active =
+fixed : Settings -> Item -> Html msg
+fixed settings active =
     div [ class "side-nav fixed" ]
         [ Shared.header []
         , menuContent settings active

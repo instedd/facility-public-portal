@@ -60,12 +60,12 @@ view model =
         mobileView =
             div [ class "hide-on-large-only" ]
                 [ Shared.header [ Menu.anchor ToggleMenu ]
-                , Menu.sideMenu model.settings model.currentPage model.menu ToggleMenu
+                , Menu.sideBar model.settings model.currentPage model.menu ToggleMenu
                 ]
 
         desktopMenu =
             div [ class "hide-on-med-and-down" ]
-                [ Menu.fixedMenu model.settings model.currentPage ]
+                [ Menu.fixed model.settings model.currentPage ]
     in
         div
             []

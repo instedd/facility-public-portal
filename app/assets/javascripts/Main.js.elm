@@ -434,10 +434,10 @@ mapView wmsg settings menuModel notice viewContent =
             div [ class viewContent.headerClass ] [ Shared.header [ Menu.anchor ToggleMenu ] ]
 
         togglingMenu =
-            Menu.toggleMenu menuSettings Menu.Map menuModel
+            Menu.togglingContent menuSettings Menu.Map menuModel
 
         mobileMenu =
-            Menu.sideMenu menuSettings Menu.Map menuModel ToggleMenu
+            Menu.sideBar menuSettings Menu.Map menuModel ToggleMenu
     in
         Shared.layout <|
             div [] <|
