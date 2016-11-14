@@ -23,7 +23,7 @@
         <%= label_tag 'right_column', 'Paragraph for the right column' %>
         <%= text_area_tag 'right_column', @texts[:right_column].to_s %>
         <div class='actions right-align'>
-          <%= link_to 'Discard draft', discard_draft_path(@edit_locale), class: "ujs btn btn-flat", method: 'post' %>
+          <%= link_to 'Discard draft', discard_draft_path(@edit_locale), class: "btn btn-flat", method: 'post' %>
           <%= submit_tag 'Save draft and Preview', class: "btn btn-large" %>
           <%= submit_tag 'Publish', class: "btn btn-large" %>
         </div>

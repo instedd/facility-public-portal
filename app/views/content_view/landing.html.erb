@@ -4,7 +4,7 @@
       <p>Previewing landing page in <%= Settings.locales[@edit_locale] %></p>
     </div>
     <div class="card-action">
-      <%= link_to "Publish", publish_draft_path(@edit_locale), class: 'ujs btn btn-flat', method: 'post' %>
+      <%= link_to "Publish", publish_draft_path(@edit_locale), class: 'btn btn-flat', method: 'post' %>
       <%= link_to "Back", edit_content_path(@edit_locale) %>
     </div>
   </div>
