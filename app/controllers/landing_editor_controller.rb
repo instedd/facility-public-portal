@@ -1,6 +1,7 @@
 class LandingEditorController < ApplicationController
   http_basic_authenticate_with name: Settings.admin_user, password: Settings.admin_pass
   before_action :set_editing_locale, except: :index
+  before_action { @js_flags["menuItem"] = :editor }
 
   def index
     redirect_to action: :edit, edit_locale: I18n.default_locale

@@ -8,6 +8,7 @@ module Menu
         , fixedMenu
         , toggleMenu
         , sideMenu
+        , parseItem
         )
 
 import Html exposing (..)
@@ -116,3 +117,22 @@ fixedMenu settings active =
         [ Shared.header []
         , menuContent settings active
         ]
+
+
+parseItem : String -> Item
+parseItem s =
+    case s of
+        "landing" ->
+            LandingPage
+
+        "editor" ->
+            Editor
+
+        "docs" ->
+            ApiDoc
+
+        "map" ->
+            Map
+
+        _ ->
+            LandingPage

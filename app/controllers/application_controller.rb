@@ -1,16 +1,28 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
-  before_filter :set_locale
-
-  skip_before_action :verify_authenticity_token, only: :report_facility
+  before_action :set_locale
   before_action :set_js_flags
 
+  skip_before_action :verify_authenticity_token, only: :report_facility
+
   def landing
+    @js_flags["menuItem"] = :landing
     @texts = LandingText.current(I18n.locale).try(:texts) || LandingText.empty_texts
     render 'landing', layout: 'content'
   end
 
   def map
+    @js_flags.merge!({
+      "menuItem" => :map,
+      "initialPosition" => [Settings.initial_position.lat, Settings.initial_position.lng],
+      "fakeUserPosition" => (params[:user_position] || Settings.user_position) == "fake",
+      "mapboxId" => Settings.mapbox_id,
+      "mapboxToken" => Settings.mapbox_token,
+      "locales" => Settings.locales,
+      "locale" => I18n.locale,
+      "facilityTypes" => ElasticsearchService.instance.get_facility_types,
+      "ownerships" => ElasticsearchService.instance.get_ownerships
+    })
   end
 
   def report_facility
@@ -28,6 +40,13 @@ class ApplicationController < ActionController::Base
 
   protected
 
+  def set_js_flags
+    @js_flags = {
+      "authenticated" => valid_credentials?,
+      "contactEmail" => Settings.report_email_to,
+    }
+  end
+
   def set_locale
     begin
       # if params or cookies are broken let's go with the default_locale
@@ -36,21 +55,6 @@ class ApplicationController < ActionController::Base
       I18n.locale = I18n.default_locale
     end
     cookies[:locale] = I18n.locale
-  end
-
-  def set_js_flags
-    @js_flags = {
-      "initialPosition" => [Settings.initial_position.lat, Settings.initial_position.lng],
-      "fakeUserPosition" => (params[:user_position] || Settings.user_position) == "fake",
-      "contactEmail" => Settings.report_email_to,
-      "mapboxId" => Settings.mapbox_id,
-      "mapboxToken" => Settings.mapbox_token,
-      "locales" => Settings.locales,
-      "locale" => I18n.locale,
-      "authenticated" => valid_credentials?,
-      "facilityTypes" => ElasticsearchService.instance.get_facility_types,
-      "ownerships" => ElasticsearchService.instance.get_ownerships
-    }
   end
 
   def valid_credentials?

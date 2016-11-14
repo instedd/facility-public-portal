@@ -1,6 +1,7 @@
 module MainMenu exposing (..)
 
 import Html exposing (Html, div)
+import Html.App
 import Html.Attributes exposing (class)
 import Menu
 import Shared
@@ -11,9 +12,8 @@ import String
 
 type alias Flags =
     { contactEmail : String
-    , locale : String
-    , locales : List ( String, String )
     , authenticated : Bool
+    , menuItem : String
     }
 
 
@@ -30,27 +30,23 @@ type alias Model =
 
 main : Program Flags
 main =
-    Navigation.programWithFlags routeParser
+    Html.App.programWithFlags
         { init = init
         , view = view
         , update = update
-        , urlUpdate = (\route model -> ( model, Cmd.none ))
         , subscriptions = always Sub.none
         }
 
 
-init : Flags -> Result String Menu.Item -> ( Model, Cmd Msg )
-init flags route =
+init : Flags -> ( Model, Cmd Msg )
+init flags =
     let
-        currentPage =
-            Result.withDefault Menu.LandingPage route
-
         settings =
             { contactEmail = flags.contactEmail
             , showEdition = flags.authenticated
             }
     in
-        { settings = settings, currentPage = currentPage, menu = Menu.Closed } ! []
+        { settings = settings, currentPage = Menu.parseItem flags.menuItem, menu = Menu.Closed } ! []
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -76,27 +72,3 @@ view model =
             [ desktopMenu
             , mobileView
             ]
-
-
-routeParser : Navigation.Parser (Result String Menu.Item)
-routeParser =
-    let
-        matchers =
-            oneOf
-                [ format Menu.ApiDoc <|
-                    s "docs"
-                , format (\locale -> Menu.Editor) <|
-                    oneOf
-                        [ s "content" </> string </> s "edit"
-                        , s "content" </> string </> s "preview"
-                        ]
-                , format Menu.LandingPage <|
-                    s ""
-                ]
-
-        parser location =
-            location.pathname
-                |> String.dropLeft 1
-                |> parse identity matchers
-    in
-        Navigation.makeParser parser
