@@ -55,7 +55,7 @@ header : LHtml a -> Html a
 header content =
     let
         logo =
-            a [ href "/" ] [ img [ id "logo", src "/logo.svg" ] [] ]
+            a [ id "logo", href "/" ] [ img [ src "/logo.svg" ] [] ]
     in
         nav [ id "TopNav", class "z-depth-0" ]
             [ div [ class "nav-wrapper" ] (logo :: content) ]
