@@ -56,6 +56,14 @@ describe LandingText do
       expect(content.texts).to eq(LandingText.empty_texts)
     end
 
+    it "automatically created new fields for content stored with old schema" do
+      old_text = { "old_field" => "some text" }
+      LandingText.create(locale: :en, draft: false, texts: old_text)
+
+      current = LandingText.current(:en)
+      expect(current.texts).to eq(old_text.merge(LandingText.empty_texts))
+    end
+
     it "allows to publish and retrieve texts" do
       texts = LandingText.empty_texts.tap { |t| t["heading"] = "foo" }
       LandingText.publish(:en, texts)

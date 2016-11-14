@@ -4,13 +4,14 @@ class LandingText < ActiveRecord::Base
   scope :published, -> { where(draft: false) }
 
   def self.current(locale)
-    ret = LandingText.published.where(locale: locale).first
+    current = LandingText.published.where(locale: locale).first
 
-    unless ret
-      ret = LandingText.create(draft: false, locale: locale, texts: empty_texts)
+    if current
+      current.texts = current.texts.reverse_merge(empty_texts)
+      current
+    else
+      LandingText.create(draft: false, locale: locale, texts: empty_texts)
     end
-
-    ret
   end
 
   def self.draft(locale)
