@@ -10,7 +10,7 @@ This can be done either via Homebrew or by [downloading the binaries](https://no
 Then install Elm and this project's dependencies:
 
 ```
-$ npm install -g elm
+$ npm install -g elm@0.17.1
 $ elm package install
 ```
 
