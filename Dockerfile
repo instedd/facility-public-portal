@@ -9,7 +9,7 @@ RUN wget https://nodejs.org/dist/v4.6.0/node-v4.6.0-linux-x64.tar.xz \
     && tar -xvf node-v4.6.0-linux-x64.tar.xz \
     && ln -s /opt/node-v4.6.0-linux-x64/bin/node /usr/local/bin/node \
     && ln -s /opt/node-v4.6.0-linux-x64/bin/npm /usr/local/bin/npm \
-    && npm install -g elm \
+    && npm install -g elm@0.17.1 \
     && ln -s /opt/node-v4.6.0-linux-x64/lib/node_modules/elm/binwrappers/* /usr/local/bin/
 
 WORKDIR /app

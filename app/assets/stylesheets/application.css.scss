@@ -2,7 +2,7 @@
 @import 'leaflet';
 @import 'leaflet.markercluster';
 @import 'variables';
-@import 'docs';
+@import 'cms';
 @import 'facility_details';
 @import 'modal';
 @import 'notice';
@@ -153,7 +153,12 @@ nav .nav-wrapper {
   padding: 10px;
 
   i { font-size: 25px; }
-  #logo { height: 50px; }
+  #logo {
+    padding: 0 7px;
+    & img {
+      height: 50px;
+    }
+  }
 }
 
 .menu {

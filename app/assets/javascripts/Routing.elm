@@ -1,8 +1,6 @@
 module Routing exposing (parser, navigate, routeFromResult, routeToPath)
 
 import Dict exposing (Dict)
-import Http
-import Maybe exposing (andThen)
 import Models exposing (..)
 import Navigation
 import String
@@ -24,13 +22,13 @@ routeToPath : Route -> String
 routeToPath route =
     case route of
         RootRoute ->
-            "/"
+            "/map"
 
         SearchRoute params ->
-            path "/search" params
+            path "/map/search" params
 
         FacilityRoute id ->
-            "/facilities/" ++ (toString id)
+            "/map/facilities/" ++ (toString id)
 
         NotFoundRoute ->
             "/not-found"
@@ -62,9 +60,9 @@ matchers =
             FacilityRoute id
     in
         oneOf
-            [ format makeRootRoute (s "")
-            , format makeSearchRoute (s "search")
-            , format makeFacilityRoute (s "facilities" </> int)
+            [ format makeSearchRoute (s "map" </> s "search")
+            , format makeFacilityRoute (s "map" </> s "facilities" </> int)
+            , format makeRootRoute (s "map")
             ]
 
 

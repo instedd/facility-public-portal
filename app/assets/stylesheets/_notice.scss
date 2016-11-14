@@ -7,6 +7,10 @@
   .card-action {
     a { color: $blue; }
   }
+
+  &.fixed {
+    position: fixed;
+  }
 }
 
 // same media query as fitContent

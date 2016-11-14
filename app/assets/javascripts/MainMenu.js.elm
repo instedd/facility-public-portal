@@ -1,15 +1,30 @@
 module MainMenu exposing (..)
 
-import Html exposing (..)
+import Html exposing (Html, div)
 import Html.App
+import Html.Attributes exposing (class)
 import Menu
 import Shared
+import Navigation
+import UrlParser exposing (..)
+import String
 
 
 type alias Flags =
     { contactEmail : String
-    , locale : String
-    , locales : List ( String, String )
+    , authenticated : Bool
+    , menuItem : String
+    }
+
+
+type Msg
+    = ToggleMenu
+
+
+type alias Model =
+    { settings : Menu.Settings
+    , currentPage : Menu.Item
+    , menu : Menu.Model
     }
 
 
@@ -23,24 +38,37 @@ main =
         }
 
 
+init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( { fakeLocation = Nothing
-      , contactEmail = flags.contactEmail
-      , locale = flags.locale
-      , locales = flags.locales
-      , facilityTypes = []
-      , ownerships = []
-      }
-    , Cmd.none
-    )
+    let
+        settings =
+            { contactEmail = flags.contactEmail
+            , showEdition = flags.authenticated
+            }
+    in
+        { settings = settings, currentPage = Menu.parseItem flags.menuItem, menu = Menu.Closed } ! []
 
 
-update msg model =
-    ( model, Cmd.none )
+update : Msg -> Model -> ( Model, Cmd Msg )
+update ToggleMenu model =
+    ( { model | menu = Menu.toggle model.menu }, Cmd.none )
 
 
+view : Model -> Html Msg
 view model =
-    div []
-        [ Shared.header []
-        , Menu.menuContent model Menu.ApiDoc
-        ]
+    let
+        mobileView =
+            div [ class "hide-on-large-only" ]
+                [ Shared.header [ Menu.anchor ToggleMenu ]
+                , Menu.sideBar model.settings model.currentPage model.menu ToggleMenu
+                ]
+
+        desktopMenu =
+            div [ class "hide-on-med-and-down" ]
+                [ Menu.fixed model.settings model.currentPage ]
+    in
+        div
+            []
+            [ desktopMenu
+            , mobileView
+            ]

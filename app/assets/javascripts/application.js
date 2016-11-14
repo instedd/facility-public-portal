@@ -21,7 +21,11 @@
 $(function(){
   // avoid opening the browser in mobile web app
   // mailto: and links to other domains will be handled as usual
-  $(document).on('click', 'a[href]', function(){
+  //
+  // this behaviour conflicts with jquery-ujs (which handles Rails's
+  // data-method links), so links with the data-method attributes are
+  // ignored.
+  $(document).on('click', 'a:not([data-method])[href]', function(){
     var current = location.protocol + "//" + location.hostname;
     if (this.href.startsWith(current)) {
       event.preventDefault();

@@ -422,6 +422,11 @@ localeControlView settings route =
 mapView : (a -> MainMsg) -> Settings -> Menu.Model -> Maybe Notice -> Shared.MapView a -> Html MainMsg
 mapView wmsg settings menuModel notice viewContent =
     let
+        menuSettings =
+            { contactEmail = settings.contactEmail
+            , showEdition = False
+            }
+
         hosting =
             Shared.lmap wmsg
 
@@ -429,10 +434,10 @@ mapView wmsg settings menuModel notice viewContent =
             div [ class viewContent.headerClass ] [ Shared.header [ Menu.anchor ToggleMenu ] ]
 
         togglingMenu =
-            Menu.toggleMenu settings Menu.Map menuModel
+            Menu.togglingContent menuSettings Menu.Map menuModel
 
         mobileMenu =
-            Menu.sideMenu settings Menu.Map menuModel ToggleMenu
+            Menu.sideBar menuSettings Menu.Map menuModel ToggleMenu
     in
         Shared.layout <|
             div [] <|

@@ -1,0 +1,58 @@
+<% if @in_preview %>
+  <div id="notice" class="card fixed">
+    <div class="card-content">
+      <p>Previewing landing page in <%= Settings.locales[@edit_locale] %></p>
+    </div>
+    <div class="card-action">
+      <%= link_to "Publish", publish_draft_path(@edit_locale), class: 'btn btn-flat', method: 'post' %>
+      <%= link_to "Back", edit_content_path(@edit_locale) %>
+    </div>
+  </div>
+<% else %>
+  <ul class="lang-selector right-align">
+    <% Settings.locales.to_h.each do |key,name| %>
+      <li class="lang">
+        <% active = key == I18n.locale %>
+        <% if active %>
+          <%= name %>
+        <% else %>
+          <a href="/?locale=<%= key %>"><%= name %></a>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% end %>
+
+<h1>Master Facility Registry</h1>
+
+<% if @texts[:heading] %>
+  <%= markdown(@texts[:heading]) %>
+<% end %>
+
+<div class="img-center">
+  <%= image_tag "desktop_mobile.png" %>
+</div>
+
+<% if @texts[:intro_to_search] %>
+  <%= markdown(@texts[:intro_to_search]) %>
+<% end %>
+
+<%= link_to "Search", map_path, class: "btn btn-large" %>
+<hr class="divider">
+
+<% if @texts[:subsection] %>
+  <%= markdown(@texts[:subsection]) %>
+<% end %>
+
+<div class="row editable-columns">
+  <div class="column col s12 m6">
+    <% if @texts[:left_column] %>
+      <%= markdown(@texts[:left_column]) %>
+    <% end %>
+  </div>
+  <div class="column col s12 m6">
+    <% if @texts[:right_column] %>
+      <%= markdown(@texts[:right_column]) %>
+    <% end %>
+  </div>
+</div>
