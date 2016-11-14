@@ -5,12 +5,6 @@ class ApplicationController < ActionController::Base
 
   skip_before_action :verify_authenticity_token, only: :report_facility
 
-  def landing
-    @js_flags["menuItem"] = :landing
-    @texts = LandingText.current(I18n.locale).try(:texts) || LandingText.empty_texts
-    render 'landing', layout: 'content'
-  end
-
   def map
     @js_flags.merge!({
       "menuItem" => :map,

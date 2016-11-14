@@ -1,13 +1,14 @@
-class LandingEditorController < ApplicationController
+class ContentEditionController < ApplicationController
   http_basic_authenticate_with name: Settings.admin_user, password: Settings.admin_pass
   before_action :set_editing_locale, except: :index
   before_action { @js_flags["menuItem"] = :editor }
 
-  def index
-    redirect_to action: :edit, edit_locale: I18n.default_locale
-  end
-
   def edit
+    unless @edit_locale
+      redirect_to action: :edit, edit_locale: I18n.default_locale
+      return
+    end
+
     @texts = LandingText.draft(@edit_locale).texts
     render layout: 'content'
   end
@@ -36,7 +37,7 @@ class LandingEditorController < ApplicationController
   def preview
     @in_preview = true
     @texts = LandingText.draft(@edit_locale).texts
-    render '/application/landing', layout: 'content'
+    render '/content_view/landing', layout: 'content'
   end
 
   def discard_draft

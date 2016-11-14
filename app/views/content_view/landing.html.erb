@@ -12,12 +12,12 @@
   <ul class="lang-selector right-align">
     <% Settings.locales.to_h.each do |key,name| %>
       <li class="lang">
-      <% active = key == I18n.locale %>
-      <% if active %>
-        <%= name %>
-      <% else %>
-        <a href="/?locale=<%= key %>"><%= name %></a>
-      <% end %>
+        <% active = key == I18n.locale %>
+        <% if active %>
+          <%= name %>
+        <% else %>
+          <a href="/?locale=<%= key %>"><%= name %></a>
+        <% end %>
       </li>
     <% end %>
   </ul>

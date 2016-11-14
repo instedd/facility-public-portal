@@ -1,4 +1,4 @@
-body.docs, body.landing, body.landing_editor {
+body.content_view, body.content_edition {
   background: $grey-background;
 
   main, footer {
@@ -104,7 +104,7 @@ body.docs, body.landing, body.landing_editor {
   }
 }
 
-body.landing, body.preview {
+body.content_view, body.preview {
   .content ul.lang-selector {
     font-size: 14px;
     list-style: none;
@@ -163,7 +163,7 @@ body.landing, body.preview {
   }
 }
 
-body.landing_editor {
+body.content_edition {
   .tabs .tab {
     a {
       background-color: $light-blue;

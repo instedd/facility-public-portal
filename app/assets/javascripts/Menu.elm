@@ -69,7 +69,7 @@ menuContent settings active =
                 (SelectList.select
                     [ include <| menuItem Map "/map" "map" I18n.Map
                     , iff settings.showEdition <|
-                        menuItem Editor "/content/edit" "mode_edit" I18n.Editor
+                        menuItem Editor "/content" "mode_edit" I18n.Editor
                     , include <| menuItem LandingPage "/" "info" I18n.LandingPage
                     , include <| menuItem ApiDoc "/docs" "code" I18n.ApiDocs
                     , include <| hr [] []

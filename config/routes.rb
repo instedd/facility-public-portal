@@ -1,5 +1,16 @@
 Rails.application.routes.draw do
-  root to: "application#landing"
+  root to: "content_view#landing"
+
+  get 'docs', to: 'content_view#docs'
+
+  scope :content do
+    root to: "content_edition#edit"
+    get  ':edit_locale/edit', to: 'content_edition#edit'
+    post ':edit_locale/edit', to: 'content_edition#save'
+    get  ':edit_locale/preview', to: 'content_edition#preview'
+    post ':edit_locale/publish_draft', to: 'content_edition#publish_draft'
+    post ':edit_locale/discard_draft', to: 'content_edition#discard_draft'
+  end
 
   scope :api do
     get 'search', to: 'api#search'
@@ -13,16 +24,6 @@ Rails.application.routes.draw do
   post 'facilities/:id/report', to: 'application#report_facility'
   get 'data', to: 'application#download_dataset'
   get 'map', to: 'application#map'
-  get 'docs', to: 'docs#index'
-
-  scope :content do
-    get  '/edit', to: "landing_editor#index"
-    get  ':edit_locale/edit', to: 'landing_editor#edit'
-    post ':edit_locale/edit', to: 'landing_editor#save'
-    get  ':edit_locale/preview', to: 'landing_editor#preview'
-    post ':edit_locale/publish_draft', to: 'landing_editor#publish_draft'
-    post ':edit_locale/discard_draft', to: 'landing_editor#discard_draft'
-  end
 
   get '*unmatched_route', :to => 'application#map'
 end
