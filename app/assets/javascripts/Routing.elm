@@ -25,10 +25,10 @@ routeToPath route =
             "/map"
 
         SearchRoute params ->
-            path "/search" params
+            path "/map/search" params
 
         FacilityRoute id ->
-            "/facilities/" ++ (toString id)
+            "/map/facilities/" ++ (toString id)
 
         NotFoundRoute ->
             "/not-found"
@@ -60,9 +60,9 @@ matchers =
             FacilityRoute id
     in
         oneOf
-            [ format makeRootRoute (s "map")
-            , format makeSearchRoute (s "search")
-            , format makeFacilityRoute (s "facilities" </> int)
+            [ format makeSearchRoute (s "map" </> s "search")
+            , format makeFacilityRoute (s "map" </> s "facilities" </> int)
+            , format makeRootRoute (s "map")
             ]
 
 
