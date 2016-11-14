@@ -1,5 +1,5 @@
-admin_user: "foo"
-admin_pass: "bar"
+admin_user: "admin"
+admin_pass: "admin"
 locales:
   es: Español
   # am: አማርኛ
