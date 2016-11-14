@@ -5,7 +5,7 @@ describe LandingText do
     it "automatically creates an empty draft if no content for a locale exists" do
       expect {
         LandingText.draft(:en)
-      }.to change{LandingText.count}.from(0).to(1)
+      }.to change{LandingText.drafts.count}.from(0).to(1)
 
       expect {
         LandingText.draft(:en)
@@ -42,13 +42,20 @@ describe LandingText do
 
       expect{
         LandingText.discard_draft(:en)
-       }.to change{LandingText.count}.from(2).to(1)
+       }.to change{LandingText.drafts.count}.from(2).to(1)
 
-      expect(LandingText.where(locale: :es).count).to eq(1)
+      expect(LandingText.drafts.where(locale: :es).count).to eq(1)
     end
   end
 
   describe "publishing" do
+    it "automatically created empty content if nothing exists" do
+      content = LandingText.current(:en)
+
+      expect(LandingText.count).to eq(1)
+      expect(content.texts).to eq(LandingText.empty_texts)
+    end
+
     it "allows to publish and retrieve texts" do
       texts = LandingText.empty_texts.tap { |t| t["heading"] = "foo" }
       LandingText.publish(:en, texts)

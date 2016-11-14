@@ -3,7 +3,7 @@ class ContentViewController < ApplicationController
 
   def landing
     @js_flags["menuItem"] = :landing
-    @texts = LandingText.current(I18n.locale).try(:texts) || LandingText.empty_texts
+    @texts = LandingText.current(I18n.locale).texts
     render 'landing', layout: 'content'
   end
 

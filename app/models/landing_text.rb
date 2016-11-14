@@ -3,19 +3,21 @@ class LandingText < ActiveRecord::Base
   scope :drafts, -> { where(draft: true) }
   scope :published, -> { where(draft: false) }
 
-  def self.empty
-    LandingText.new(draft: false, locale: nil, texts: empty_texts)
-  end
-
   def self.current(locale)
-    LandingText.published.where(locale: locale).first
+    ret = LandingText.published.where(locale: locale).first
+
+    unless ret
+      ret = LandingText.create(draft: false, locale: locale, texts: empty_texts)
+    end
+
+    ret
   end
 
   def self.draft(locale)
     draft = LandingText.drafts.where(locale: locale).first
 
     unless draft
-      real = LandingText.current(locale) || LandingText.empty
+      real = LandingText.current(locale)
       draft = LandingText.create locale: locale, draft: true, texts: real.texts
     end
 
@@ -23,12 +25,11 @@ class LandingText < ActiveRecord::Base
   end
 
   def self.publish(locale, texts)
-    current = LandingText.current(locale)
-    if !current
-      current = LandingText.empty
-      current.locale = locale
+    if current = LandingText.current(locale)
+      current.texts = texts
+    else
+      current = LandingText.new(draft: false, locale: locale, texts: texts)
     end
-    current.texts = texts
     current.save!
   end
 
