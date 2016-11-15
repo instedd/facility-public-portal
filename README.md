@@ -14,7 +14,7 @@ $ npm install -g elm@0.17.1
 $ elm package install
 ```
 
-Once  installed, Elm files will be automatically compiled as part of the Rails asset pipeline.
+Once installed, Elm modules will be automatically built and compiler errors will be displayed by the rails development server.
 
 ### Elasticsearch and PostgreSQL
 

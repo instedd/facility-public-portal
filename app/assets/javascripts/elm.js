@@ -1,0 +1,2 @@
+//= require Main
+//= require MainMenu

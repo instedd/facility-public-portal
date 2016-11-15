@@ -16,7 +16,9 @@
 //= require leaflet.markercluster
 //= require i18n
 //= require i18n/translations
-//= require_tree .
+//= require content
+//= require map
+//= require elm
 
 $(function(){
   // avoid opening the browser in mobile web app
