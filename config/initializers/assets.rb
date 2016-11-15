@@ -8,4 +8,12 @@ Rails.application.config.assets.version = '1.0'
 
 # Precompile additional assets.
 # application.js, application.css, and all non-JS/CSS in app/assets folder are already added.
-# Rails.application.config.assets.precompile += %w( search.js )
+
+elm_src_path = Rails.root.join("app", "assets", "elm")
+
+elm_entry_points = elm_src_path.children
+                               .select { |entry| entry.file? && entry.basename.to_s =~ /Main.*\.elm/ }
+                               .map    { |entry| entry.basename.to_s.gsub(/elm$/, "js") }
+
+Rails.application.config.assets.paths << elm_src_path
+Rails.application.config.assets.precompile += elm_entry_points

@@ -1,18 +1,4 @@
-# Elm integration for Sprockets 3.x (Rails 4.2)
-#
-# Revised version of a Sprockets 3.x processor for Elm. It supports
-# dependencies. One little quirk is that only .js.elm files are
-# requireable in application.js.
-#
-# How to use it?
-#
-# Put this file in your config/initializers/ and create
-# app/assets/javascripts/MyModule.js.elm and require it in your
-# application.js. For Elm modules that are imported by other Elm modules
-# add a file with .elm extension (no .js !).
-#
-# Don't forget to add app/assets/javascripts to your elm-package.json
-
+# Revised version of a Sprockets 3.x processor for Elm.
 require "open3"
 
 # Elm Sprockets integration
@@ -133,5 +119,5 @@ class ElmProcessor
   end
 end
 
-Sprockets.register_mime_type 'text/x-elm', extensions: ['.elm', '.js.elm']
+Sprockets.register_mime_type 'text/x-elm', extensions: ['.elm']
 Sprockets.register_transformer 'text/x-elm', 'application/javascript', ElmProcessor
