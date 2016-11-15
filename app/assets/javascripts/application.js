@@ -18,6 +18,7 @@
 //= require i18n/translations
 //= require content
 //= require map
+//= require elm
 
 $(function(){
   // avoid opening the browser in mobile web app

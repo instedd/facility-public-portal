@@ -1,5 +1,4 @@
 <% content_for :body do %>
-  <%= javascript_include_tag "MainMenu" %>
   <script>
     window.FPP = {
       settings: <%= raw(@js_flags.to_json) %>

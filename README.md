@@ -14,7 +14,7 @@ $ npm install -g elm@0.17.1
 $ elm package install
 ```
 
-Once installed, Elm modules of the form `Main*.elm` and all their dependencies will be automatically compiled by Elm.
+Once installed, Elm modules will be automatically built and compiler errors will be displayed by the rails development server.
 
 ### Elasticsearch and PostgreSQL
 
