@@ -34,6 +34,7 @@ type PrivateMsg
     | ToggleFacilityReport
     | ToggleCheckbox String
     | ReportFinalized
+    | MapMsg Map.Msg
 
 
 type Msg
@@ -111,6 +112,12 @@ update s msg model =
 
                 ToggleCheckbox name ->
                     ( toggleCheckbox name model, Cmd.none )
+
+                MapMsg (Map.MapViewportChanged mapViewport) ->
+                    ( setMapViewport mapViewport model, Cmd.none )
+
+                MapMsg _ ->
+                    ( model, Cmd.none )
 
         _ ->
             -- public events
@@ -202,7 +209,10 @@ reportWindow model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Map.facilityMarkerClicked FacilityClicked
+    Sub.batch
+        [ Sub.map (Private << MapMsg) Map.subscriptions
+        , Map.facilityMarkerClicked FacilityClicked
+        ]
 
 
 mapViewport : Model -> MapViewport
@@ -213,6 +223,16 @@ mapViewport model =
 
         Loaded mapViewport _ _ _ _ _ ->
             mapViewport
+
+
+setMapViewport : MapViewport -> Model -> Model
+setMapViewport mapViewport model =
+    case model of
+        Loading _ b c d ->
+            Loading mapViewport b c d
+
+        Loaded _ b c d e f ->
+            Loaded mapViewport b c d e f
 
 
 date : Model -> Maybe Date
