@@ -94,12 +94,6 @@ onClick message =
         (Json.Decode.succeed message)
 
 
-checkbox : String -> String -> Bool -> a -> Html a
-checkbox htmlId label v msg =
-    p []
-        [ input [ type' "checkbox", id htmlId, checked v, onClick msg ] []
-        , Html.label [ for htmlId ] [ text label ]
-        ]
 
 
 modalWindow : LHtml a -> LHtml a -> LHtml a -> LHtml a
