@@ -122,3 +122,7 @@ Each row will contain the equivalent text that appear across the spa raw data.
 | Tb test | የነቀርሳ ምርመራ |
 
 In the above sample when a the service english name "Tb test" will be translated to "የነቀርሳ ምርመራ" when generating the `services.csv` `name:en` and `name:am` columns.
+
+### Normalizing Resourcemap information
+
+

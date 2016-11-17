@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+APP_PATH = File.expand_path('../../config/application',  __dir__)
+require_relative '../config/boot'
+require_relative '../config/environment'
+
+require 'csv'
+
+unless ARGV.size == 2
+  puts "Usage: #{__FILE__} /input/csv/dir /output/csv/dir"
+  exit 1
+end
+
+ARGV.each do |dir|
+  unless Dir.exists? dir
+    puts "The directory #{dir} does not exist"
+    exit 1
+  end
+end
+
+INPUT_PATH = ARGV[0]
+OUTPUT_PATH = ARGV[1]
+
+def csv_enumerator(filename)
+  Enumerator.new do |out|
+    CSV.foreach(filename, headers: true, converters: [:numeric]) do |row|
+      out << row
+    end
+  end
+end
+
+filenames = {
+  sites: "sites.csv"
+  # facilities: "Facility.csv",
+  # facility_types: "FacilityType.csv",
+  # geoloc: "geoloc.csv",
+  # contact_info: "ContactInfo.csv",
+  # facilities_services: "FacilityService.csv",
+  # services: "MedicalService.csv",
+  # locations: "OrganizationUnit.csv",
+  # ownerships: "ownership.csv"
+}
+
+dataset = filenames.map_values do |filename|
+  csv_enumerator(File.join(INPUT_PATH, filename))
+end
