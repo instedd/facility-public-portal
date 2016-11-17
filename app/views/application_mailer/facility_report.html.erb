@@ -19,6 +19,10 @@
         <% if @report["other"] %>
           <li>There is an unspecified problem with the facility</li><% end %>
       </ul>
+      <% if @report["message"] %>
+        Message:
+        <pre><%= @report["message"] %></pre>
+      <% end %>
     </p>
   </body>
 </html>
