@@ -26,24 +26,36 @@ type Model
     | Loaded MapViewport Facility (Maybe Date) UserLocation.Model Bool (Maybe FacilityReport)
 
 
+type Msg
+    = Close
+    | FacilityClicked Int
+    | Private PrivateMsg
+    | UnhandledError String
+
+
 type PrivateMsg
     = ApiFetch Api.FetchFacilityMsg
     | CurrentDate Date
     | UserLocationMsg UserLocation.Msg
     | ToggleMobileFocus
     | ToggleFacilityReport
-    | ToggleCheckbox String
-    | ReportMessageInput String
-    | ReportFinalized
+    | Report ReportMsg
     | MapMsg Map.Msg
 
 
-type Msg
-    = Close
-    | FacilityClicked Int
-    | Private PrivateMsg
-    | FacilityReportMsg FacilityReportResult
-    | UnhandledError String
+type ReportMsg
+    = Toggle FacilityIssue
+    | MessageInput String
+    | Send
+    | ReportResult FacilityReportResult
+
+
+type FacilityIssue
+    = WrongLocation
+    | Closed
+    | ContactMissing
+    | InnacurateServices
+    | Other
 
 
 type alias FacilityReport =
@@ -104,21 +116,11 @@ update s msg model =
                     else
                         ( openReportWindow model, Cmd.none )
 
-                ReportFinalized ->
-                    case model of
-                        Loading _ _ _ _ ->
-                            Utils.unreachable ()
+                Report (ReportResult result) ->
+                    -- TODO
+                    ( model, Cmd.none )
 
-                        Loaded _ _ _ _ _ Nothing ->
-                            Utils.unreachable ()
-
-                        Loaded _ facility _ _ _ (Just report) ->
-                            if reportIsCompleted report then
-                                ( closeReportWindow model, sendReport facility report )
-                            else
-                                ( model, Cmd.none )
-
-                ToggleCheckbox name ->
+                Report msg ->
                     case model of
                         Loading _ _ _ _ ->
                             Utils.unreachable ()
@@ -127,32 +129,32 @@ update s msg model =
                             Utils.unreachable ()
 
                         Loaded mapViewport facility date userLocation b (Just report) ->
-                            let
-                                updatedReport =
-                                    toggleCheckbox name report
+                            case msg of
+                                Send ->
+                                    if reportIsCompleted report then
+                                        Return.singleton (closeReportWindow model)
+                                            |> Return.command (sendReport facility report)
+                                    else
+                                        Return.singleton model
 
-                                updatedModel =
-                                    Loaded mapViewport facility date userLocation b (Just updatedReport)
-                            in
-                                ( updatedModel, Cmd.none )
+                                Toggle issue ->
+                                    let
+                                        updatedReport =
+                                            toggleCheckbox issue report
+                                    in
+                                        Return.singleton
+                                            (Loaded mapViewport facility date userLocation b (Just updatedReport))
 
-                ReportMessageInput text ->
-                    case model of
-                        Loading _ _ _ _ ->
-                            Utils.unreachable ()
+                                MessageInput text ->
+                                    let
+                                        updatedReport =
+                                            { report | message = text |> String.trim |> Utils.discardEmpty }
+                                    in
+                                        Return.singleton
+                                            (Loaded mapViewport facility date userLocation b (Just updatedReport))
 
-                        Loaded _ _ _ _ _ Nothing ->
-                            Utils.unreachable ()
-
-                        Loaded mapViewport facility date userLocation b (Just report) ->
-                            let
-                                updatedReport =
-                                    { report | message = text |> String.trim |> Utils.discardEmpty }
-
-                                updatedModel =
-                                    Loaded mapViewport facility date userLocation b (Just updatedReport)
-                            in
-                                ( updatedModel, Cmd.none )
+                                ReportResult result ->
+                                    Utils.unreachable ()
 
                 MapMsg (Map.MapViewportChanged mapViewport) ->
                     ( setMapViewport mapViewport model, Cmd.none )
@@ -181,17 +183,7 @@ view model =
         , content =
             [ case model of
                 Loading _ _ _ _ ->
-                    div
-                        [ class "preloader-wrapper small active" ]
-                        [ div [ class "spinner-layer spinner-blue-only" ]
-                            [ div [ class "circle-clipper left" ]
-                                [ div [ class "circle" ] [] ]
-                            , div [ class "gap-patch" ]
-                                [ div [ class "circle" ] [] ]
-                            , div [ class "circle-clipper right" ]
-                                [ div [ class "circle" ] [] ]
-                            ]
-                        ]
+                    spinner
 
                 Loaded _ facility date _ _ _ ->
                     facilityDetail [ hideOnMobileMapFocused ] date facility
@@ -203,15 +195,35 @@ view model =
                 [ classList [ hideOnMobileDetailsFocused ] ]
                 [ mobileFocusToggleView ]
             ]
-        , modal = reportWindow model
+        , modal =
+            case model of
+                Loading _ _ _ _ ->
+                    []
+
+                Loaded _ _ _ _ _ Nothing ->
+                    []
+
+                Loaded _ _ _ _ _ (Just report) ->
+                    reportWindow report
         }
 
 
-mobileFocusToggleView =
-    a
-        [ href "#"
-        , Shared.onClick (Private ToggleMobileFocus)
+spinner =
+    div
+        [ class "preloader-wrapper small active" ]
+        [ div [ class "spinner-layer spinner-blue-only" ]
+            [ div [ class "circle-clipper left" ]
+                [ div [ class "circle" ] [] ]
+            , div [ class "gap-patch" ]
+                [ div [ class "circle" ] [] ]
+            , div [ class "circle-clipper right" ]
+                [ div [ class "circle" ] [] ]
+            ]
         ]
+
+
+mobileFocusToggleView =
+    a [ href "#", Shared.onClick (Private ToggleMobileFocus) ]
         [ text "Show details" ]
 
 
@@ -219,59 +231,59 @@ userLocationView model =
     Html.App.map (Private << UserLocationMsg) (UserLocation.view (userLocation model))
 
 
-reportWindow : Model -> List (Html Msg)
-reportWindow model =
-    case model of
-        Loading _ _ _ _ ->
-            []
-
-        Loaded _ _ _ _ _ Nothing ->
-            []
-
-        Loaded _ _ _ _ _ (Just report) ->
-            let
-                notEmpty =
-                    if reportIsCompleted report then
-                        " hide"
-                    else
-                        ""
-            in
-                if isReportWindowOpen model then
-                    Shared.modalWindow
-                        [ text <| t ReportAnIssue
-                        , a [ href "#", class "right", Shared.onClick (Private ToggleFacilityReport) ] [ Shared.icon "close" ]
+reportWindow : FacilityReport -> List (Html Msg)
+reportWindow report =
+    let
+        completed =
+            reportIsCompleted report
+    in
+        Shared.modalWindow
+            [ text <| t ReportAnIssue
+            , a [ href "#", class "right", Shared.onClick (Private ToggleFacilityReport) ] [ Shared.icon "close" ]
+            ]
+            [ Html.form [ action "#", method "GET" ]
+                [ issueToggle WrongLocation "Wrong location" report.wrong_location
+                , issueToggle Closed "Facility closed" report.closed
+                , issueToggle ContactMissing "Incorrect contact information" report.contact_info_missing
+                , issueToggle InnacurateServices "Inaccurate service list" report.inaccurate_services
+                , issueToggle Other "Other" report.other
+                , div
+                    [ class "input-field col s12", style [ ( "margin-top", "40px" ) ] ]
+                    [ Html.textarea
+                        [ class "materialize-textarea"
+                        , placeholder "Detailed description (optional)"
+                        , style [ ( "height", "6rem" ) ]
+                        , Events.onInput (Private << Report << MessageInput)
                         ]
-                        [ Html.form [ action "#", method "GET" ]
-                            [ checkbox "wrong_location" "Wrong location" report.wrong_location (Private (ToggleCheckbox "wrong_location"))
-                            , checkbox "closed" "Facility closed" report.closed (Private (ToggleCheckbox "closed"))
-                            , checkbox "contact_info_missing" "Incorrect contact information" report.contact_info_missing (Private (ToggleCheckbox "contact_info_missing"))
-                            , checkbox "inaccurate_services" "Inaccurate service list" report.inaccurate_services (Private (ToggleCheckbox "inaccurate_services"))
-                            , checkbox "other" "Other" report.other (Private (ToggleCheckbox "other"))
-                            , div
-                                [ class "input-field col s12", style [ ( "margin-top", "40px" ) ] ]
-                                [ Html.textarea
-                                    [ class "materialize-textarea"
-                                    , placeholder "Detailed description (optional)"
-                                    , style [ ( "height", "6rem" ) ]
-                                    , Events.onInput (Private << ReportMessageInput)
-                                    ]
-                                    []
-                                ]
-                            ]
-                        ]
-                        [ div [ class ("warning" ++ notEmpty) ] [ text "Please select at least 1 issue to report" ]
-                        , a [ href "#", class "btn-flat", Shared.onClick (Private ReportFinalized) ] [ text "Send report" ]
-                        ]
-                else
-                    []
+                        []
+                    ]
+                ]
+            ]
+            [ div
+                [ classList [ ( "warning", True ), ( "hide", completed ) ] ]
+                [ text "Please select at least 1 issue to report" ]
+            , a
+                [ href "#"
+                , classList [ ( "btn-flat", True ), ( "disabled", not completed ) ]
+                , Shared.onClick (Private (Report Send))
+                ]
+                [ text "Send report" ]
+            ]
 
 
-checkbox : String -> String -> Bool -> Msg -> Html Msg
-checkbox htmlId label v msg =
-    div [ class "input-field col s12" ]
-        [ input [ type' "checkbox", id htmlId, checked v, Shared.onClick msg ] []
-        , Html.label [ for htmlId ] [ text label ]
-        ]
+issueToggle : FacilityIssue -> String -> Bool -> Html Msg
+issueToggle issue label v =
+    let
+        msg =
+            Private (Report (Toggle issue))
+
+        htmlId =
+            "issue-toggle-" ++ toString issue
+    in
+        div [ class "input-field col s12" ]
+            [ input [ type' "checkbox", id htmlId, checked v, Shared.onClick msg ] []
+            , Html.label [ for htmlId ] [ text label ]
+            ]
 
 
 subscriptions : Model -> Sub Msg
@@ -322,26 +334,23 @@ setDate date model =
             Loaded a b (Just date) d e f
 
 
-toggleCheckbox : String -> FacilityReport -> FacilityReport
-toggleCheckbox name report =
-    case name of
-        "wrong_location" ->
+toggleCheckbox : FacilityIssue -> FacilityReport -> FacilityReport
+toggleCheckbox issue report =
+    case issue of
+        WrongLocation ->
             { report | wrong_location = not report.wrong_location }
 
-        "closed" ->
+        Closed ->
             { report | closed = not report.closed }
 
-        "contact_info_missing" ->
+        ContactMissing ->
             { report | contact_info_missing = not report.contact_info_missing }
 
-        "inaccurate_services" ->
+        InnacurateServices ->
             { report | inaccurate_services = not report.inaccurate_services }
 
-        "other" ->
+        Other ->
             { report | other = not report.other }
-
-        _ ->
-            Debug.crash "Not implemented"
 
 
 openReportWindow : Model -> Model
@@ -380,13 +389,13 @@ closeReportWindow model =
 isReportWindowOpen : Model -> Bool
 isReportWindowOpen model =
     case model of
-        Loading a b c d ->
+        Loading _ _ _ _ ->
             False
 
-        Loaded a b c d e Nothing ->
+        Loaded _ _ _ _ _ Nothing ->
             False
 
-        Loaded a b c d e (Just _) ->
+        Loaded _ _ _ _ _ (Just _) ->
             True
 
 
@@ -462,13 +471,16 @@ sendReport facility report =
         url =
             "/facilities/" ++ toString facility.id ++ "/report"
 
+        resultTag result =
+            Private (Report (ReportResult result))
+
         request =
             encodeReport report
                 |> Json.Encode.encode 0
                 |> Http.string
                 |> Http.post (Decode.succeed ()) url
     in
-        Task.perform (always (FacilityReportMsg ReportFailed)) (always (FacilityReportMsg ReportSuccess)) request
+        Task.perform (always (resultTag ReportFailed)) (always (resultTag ReportSuccess)) request
 
 
 currentDate : Cmd Msg
