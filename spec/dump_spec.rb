@@ -56,7 +56,7 @@ RSpec.describe Dump do
   end
 
   it "generates flat csv dump of current facilities" do
-    export = dump_and_read
+    export = dump_and_read(dataset).index_by { |f| f["id"].to_i }
 
     f1 = export[1]
     f1_services_en = f1.delete("services:en")
@@ -100,12 +100,47 @@ RSpec.describe Dump do
   end
 
   it "pages elasticsearch results if needed" do
-    export = dump_and_read(1)
+    export = dump_and_read(dataset, [:en], 1)
     expect(export.size).to eq(2)
   end
 
-  def dump_and_read(page_size = 100)
-    locales = [:en, :es]
+
+  it "drops separators in service names" do
+    # workaround. we should escape the separator but seems like overkill.
+    dataset = {
+      facilities: [
+       {
+         "id" => "F1",
+         "name" => "FOO",
+         "lat" => 10.696144,
+         "lng" => 38.370941,
+         "location_id" => "L1",
+         "ownership" => "Public",
+         "facility_type" => "Health Center",
+         "contact_name" => "John Doe",
+         "contact_email" => "john@example.com",
+         "contact_phone" => "123",
+         "last_update" => nil
+       }
+     ],
+     services: [
+       {"id" => "S1", "name:en" => "Foo|Bar"},
+       {"id" => "S2", "name:en" => "Baz"}
+     ],
+     facilities_services: [
+       { "facility_id" => "F1", "service_id" => "S1" },
+       { "facility_id" => "F1", "service_id" => "S2" }
+     ],
+     locations: [{"id" => "L1", "name" => "Amhara", "parent_id" => "-----------------"}],
+     facility_types: []
+    }
+
+    export = dump_and_read(dataset, [:en])
+
+    expect(export.first["services:en"].split("|").sort).to eq(["Baz", "FooBar"])
+  end
+
+  def dump_and_read(dataset, locales = [:en, :es], page_size = 100)
     output_file = Tempfile.new("out")
 
     index_dataset(dataset, locales)
@@ -113,7 +148,6 @@ RSpec.describe Dump do
 
     CSV.read(output_file.path, headers: true, converters: [:blank_to_nil])
        .map(&:to_h)
-       .index_by { |f| f["id"].to_i }
   end
 
 end

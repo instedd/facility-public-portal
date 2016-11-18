@@ -36,7 +36,10 @@ class Dump
             f["contact_phone"],
           ] \
           + pad_right(f["adm"], max_administrative_level) \
-          + @locales.map { |l| f["service_names:#{l}"].join("|") }
+          + @locales.map { |l|
+              f["service_names:#{l}"].map { |n| n.gsub("|", "") }
+                                    .join("|")
+            }
         end
 
         break unless page[:next_from]
