@@ -86,6 +86,9 @@ class Indexing
       index_entries = batch.map do |f|
         f = f.to_h.symbolize_keys
         location = locations_by_id[f[:location_id]]
+        unless location
+          location = {path_names: [], path_ids: [], facility_count: 0}
+        end
         location[:facility_count] += 1
 
         services = services_by_facility[f[:id]] || []
