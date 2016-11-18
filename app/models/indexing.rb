@@ -2,9 +2,10 @@ class Indexing
 
   attr_accessor :logger
 
-  def initialize(dataset, service)
+  def initialize(dataset, service, locales)
     @dataset = dataset
     @service = service
+    @locales = locales
 
     @logger = Logger.new(STDOUT)
     @logger.level = Logger::INFO
@@ -59,6 +60,7 @@ class Indexing
       end
 
       l[:path_ids] = path_ids.reverse
+      l[:level] = path_ids.length
       l[:path_names] = path_names.reverse
 
       if parent = locations_by_id[l[:parent_id]]
@@ -120,7 +122,7 @@ class Indexing
           last_updated: nil # TODO
         })
 
-        Settings.locales.to_h.each_key do |lang|
+        @locales.each do |lang|
           f["service_names:#{lang}".to_sym] = services.map { |s| s["name:#{lang}".to_sym] }.sort!
         end
 
@@ -149,24 +151,10 @@ class Indexing
     logger.info "Done!"
   end
 
-  def self.index_csv_tables(csv_files_path)
-    csv_enumerator = Proc.new do |filename|
-      (Enumerator.new do |out|
-         CSV.foreach(File.join(csv_files_path, filename), headers: true, converters: [:blank_to_nil, :numeric]) do |row|
-           out << row
-         end
-       end)
-    end
-
-    dataset = {
-      facilities: csv_enumerator.call("facilities.csv"),
-      services: csv_enumerator.call("services.csv"),
-      facilities_services: csv_enumerator.call("facilities_services.csv"),
-      facility_types: csv_enumerator.call("facility_types.csv"),
-      locations: csv_enumerator.call("locations.csv"),
-    }
-
-    self.new(dataset, ElasticsearchService.instance).run
+  def self.index_dataset(dataset)
+    process = self.new(dataset, ElasticsearchService.instance, Settings.locales.keys)
+    process.run
+    ElasticsearchService.instance.refresh_index
   end
 
   private

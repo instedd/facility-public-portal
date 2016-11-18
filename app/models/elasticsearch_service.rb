@@ -130,12 +130,37 @@ class ElasticsearchService
       body: search_body
     })
 
-    { items: result["hits"]["hits"].map { |r| api_latlng r["_source"] },
-      from: from,
-      size: size
-    }.tap do |h|
-      h[:next_from] = h[:from] + h[:size] if result["hits"]["hits"].count == h[:size]
-    end
+    page_result(result, from, size)
+  end
+
+  def max_administrative_level
+    result = client.search({
+      index: @index_name,
+      type: 'location',
+      body: {
+        query: { match_all: {} },
+        size: 0,
+        aggregations: {
+          max_level: {max: { field: :level }}
+        }
+      },
+    })
+
+    result["aggregations"]["max_level"]["value"].to_i
+  end
+
+  def dump_facilities(from:, size:)
+    result = client.search({
+      index: @index_name,
+      type: "facility",
+      body: {
+        query: { match_all: {} },
+        from: from,
+        size: size
+      }
+    })
+
+    page_result(result, from, size)
   end
 
   def get_facility_types
@@ -236,6 +261,11 @@ class ElasticsearchService
     result["hits"]["hits"].map { |r| r["_source"] }
   end
 
+
+  def refresh_index
+    client.indices.refresh index: @index_name
+  end
+
   def self.instance
     @@instance ||= self.new(ENV['ELASTICSEARCH_URL'] || 'localhost',
                             ENV['ELASTICSEARCH_INDEX'] || 'fpp',
@@ -279,5 +309,14 @@ class ElasticsearchService
     end
 
     client.bulk body: actions
+  end
+
+  def page_result(result, from, size)
+    { items: result["hits"]["hits"].map { |r| api_latlng r["_source"] },
+      from: from,
+      size: size
+    }.tap do |h|
+      h[:next_from] = h[:from] + h[:size] if result["hits"]["hits"].count == h[:size]
+    end
   end
 end

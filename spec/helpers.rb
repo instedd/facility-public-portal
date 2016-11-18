@@ -15,12 +15,16 @@ module Helpers
     elasticsearch_service.setup_mappings
   end
 
-  def index_dataset(dataset)
+  def index_dataset(dataset, locales = Settings.locales.keys)
     dataset = dataset.map_values { |records| records.map(&:with_indifferent_access) }
-    process = Indexing.new(dataset, elasticsearch_service)
+    process = Indexing.new(dataset, elasticsearch_service, locales)
     process.logger.level = :unknown
     process.run
 
-    elasticsearch_client.indices.refresh index: TESTING_INDEX
+    elasticsearch_service.refresh_index
+  end
+
+  def dump_dataset(output_path, page_size, locales = Settings.locales.keys)
+    Dump.new(output_path, elasticsearch_service, page_size, locales).run
   end
 end
