@@ -185,8 +185,8 @@ view model =
                 Loading _ _ _ _ ->
                     spinner
 
-                Loaded _ facility date _ _ _ ->
-                    facilityDetail [ hideOnMobileMapFocused ] date facility
+                Loaded _ facility date userLocation _ _ ->
+                    facilityDetail [ hideOnMobileMapFocused ] date userLocation facility
             ]
         , toolbar =
             [ userLocationView model ]
@@ -492,8 +492,8 @@ currentDate =
         Task.perform notFailing (Utils.dateFromEpochMillis >> CurrentDate >> Private) Time.now
 
 
-facilityDetail : List ( String, Bool ) -> Maybe Date -> Facility -> Html Msg
-facilityDetail cssClasses now facility =
+facilityDetail : List ( String, Bool ) -> Maybe Date -> UserLocation.Model -> Facility -> Html Msg
+facilityDetail cssClasses now userLocation facility =
     let
         lastUpdatedSub =
             case facility.lastUpdated of
@@ -505,11 +505,12 @@ facilityDetail cssClasses now facility =
                         |> Maybe.map (\date -> String.concat [ "Last updated ", Utils.timeAgo date date, " ago" ])
                         |> Maybe.withDefault ""
 
-        contactInfo =
-            [ contactEntry "local_post_office" "mailto:" facility.contactEmail
+        informationLinks =
+            [ viewOnMapEntry
+            , contactEntry "local_post_office" "mailto:" facility.contactEmail
             , contactEntry "local_phone" "tel:" facility.contactPhone
               -- , contactEntry "public" ... facility.url
-              -- , contactEntry "directions" ... facility.address
+            , directionsEntry userLocation facility
             ]
     in
         div [ classList <| ( "facilityDetail", True ) :: cssClasses ]
@@ -525,7 +526,7 @@ facilityDetail cssClasses now facility =
             , div [ class "content expand" ]
                 [ div [ class "detailSection pic" ] [ div [ class "no-photo" ] [ Shared.icon "photo", text "No photo" ] ]
                 , div [ class "detailSection actions" ] [ facilityActions ]
-                , div [ class "detailSection contact" ] [ facilityContactDetails contactInfo ]
+                , div [ class "detailSection contact" ] [ ul [] informationLinks ]
                 , div [ class "detailSection services" ]
                     [ span [] [ text <| t Services ]
                     , if List.isEmpty facility.services then
@@ -535,6 +536,30 @@ facilityDetail cssClasses now facility =
                     ]
                 ]
             ]
+
+
+directionsEntry : UserLocation.Model -> Facility -> Html a
+directionsEntry userLocation facility =
+    let
+        encodeLatLng ( lat, lng ) =
+            String.join "," [ toString lat, toString lng ]
+
+        encodedOrigin =
+            UserLocation.toMaybe userLocation
+                |> Maybe.map encodeLatLng
+                |> Maybe.withDefault ""
+
+        encodedDestination =
+            encodeLatLng facility.position
+
+        link =
+            String.join "/"
+                [ "https://maps.google.com/maps/dir"
+                , encodedOrigin
+                , encodedDestination
+                ]
+    in
+        infoEntry "directions" (Just link) "Get directions"
 
 
 contactEntry : String -> String -> Maybe String -> Html a
@@ -552,12 +577,21 @@ contactEntry iconName scheme value =
         label =
             span [] [ text <| Maybe.withDefault "Unavailable" value ]
     in
+        infoEntry iconName uri (Maybe.withDefault "Unavailable" value)
+
+
+infoEntry : String -> Maybe String -> String -> Html a
+infoEntry iconName uri labelText =
+    let
+        label =
+            span [] [ text <| labelText ]
+    in
         case uri of
             Nothing ->
                 li [] [ Shared.icon iconName, label ]
 
             Just uri ->
-                li [] [ a [ href uri ] [ Shared.icon iconName, label ] ]
+                li [] [ a [ href uri, target "_blank" ] [ Shared.icon iconName, label ] ]
 
 
 viewOnMapEntry : Html Msg
@@ -569,11 +603,6 @@ viewOnMapEntry =
             ]
             [ Shared.icon "location_on", span [] [ text "View on map" ] ]
         ]
-
-
-facilityContactDetails : List (Html Msg) -> Html Msg
-facilityContactDetails contactInfo =
-    ul [] (viewOnMapEntry :: contactInfo)
 
 
 facilityActions : Html Msg

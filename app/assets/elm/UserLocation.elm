@@ -1,4 +1,12 @@
-module UserLocation exposing (Model, Msg, init, update, view)
+module UserLocation
+    exposing
+        ( Model
+        , Msg
+        , init
+        , update
+        , view
+        , toMaybe
+        )
 
 import Models exposing (LatLng, Settings)
 import Geolocation
@@ -92,3 +100,13 @@ view model =
                 a [ href "#", onClick GotoLocation, class "detected" ]
                     [ icon "my_location" ]
         ]
+
+
+toMaybe : Model -> Maybe LatLng
+toMaybe model =
+    case model of
+        Detected latLng ->
+            Just latLng
+
+        _ ->
+            Nothing
