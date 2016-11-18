@@ -77,8 +77,8 @@ RSpec.describe Dump do
       "location_2" => "North Wello",
       "location_3" => "Bugna"
     })
-    expect(f1_services_en.split("|").sort).to eq(["Child vaccination", "Iron Tablets"])
-    expect(f1_services_es.split("|").sort).to eq(["Tabletas de hierro", "Vacunación de menores"])
+    expect(f1_services_en.split(",").sort).to eq(["Child vaccination", "Iron Tablets"])
+    expect(f1_services_es.split(",").sort).to eq(["Tabletas de hierro", "Vacunación de menores"])
 
     expect(export[2]).to eq({
       "id" => "2",
@@ -124,7 +124,7 @@ RSpec.describe Dump do
        }
      ],
      services: [
-       {"id" => "S1", "name:en" => "Foo|Bar"},
+       {"id" => "S1", "name:en" => "Foo,Bar"},
        {"id" => "S2", "name:en" => "Baz"}
      ],
      facilities_services: [
@@ -137,7 +137,7 @@ RSpec.describe Dump do
 
     export = dump_and_read(dataset, [:en])
 
-    expect(export.first["services:en"].split("|").sort).to eq(["Baz", "FooBar"])
+    expect(export.first["services:en"].split(",").sort).to eq(["Baz", "FooBar"])
   end
 
   def dump_and_read(dataset, locales = [:en, :es], page_size = 100)

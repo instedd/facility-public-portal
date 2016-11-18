@@ -13,7 +13,7 @@ class Dump
   def run
     max_administrative_level = @service.max_administrative_level
 
-    CSV.open(@output_path, "wb") do |csv|
+    CSV.open(@output_path, "wb", force_quotes: true) do |csv|
       csv << ["id", "source_id", "name", "lat", "lng", "facility_type", "ownership", "contact_name", "contact_email", "contact_phone"] \
               + (1..max_administrative_level).map { |l| "location_#{l}" } \
               + @locales.map { |locale| "services:#{locale}" }
@@ -37,8 +37,8 @@ class Dump
           ] \
           + pad_right(f["adm"], max_administrative_level) \
           + @locales.map { |l|
-              f["service_names:#{l}"].map { |n| n.gsub("|", "") }
-                                    .join("|")
+              f["service_names:#{l}"].map { |n| n.gsub(",", "") }
+                                    .join(",")
             }
         end
 
