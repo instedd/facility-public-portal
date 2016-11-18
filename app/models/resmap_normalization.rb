@@ -63,7 +63,7 @@ class ResmapNormalization
       end
 
       sorted_types = @facility_types.values.to_a
-      sorted_types.sort_by! { |v| v[:count] }
+      sorted_types.sort_by! { |v| -v[:count] }
       result[:facility_types] = sorted_types.map.with_index(1) do |t,i|
         { name: t["label"], priority: i }
       end
@@ -75,7 +75,7 @@ class ResmapNormalization
     puts ""
     puts "sites imported"
     sorted_types = @facility_types.values.to_a
-    sorted_types.sort_by! { |v| v[:count] }
+    sorted_types.sort_by! { |v| -v[:count] }
     sorted_types.each do |t|
       puts "#{t["label"]}: #{t[:count]}"
     end

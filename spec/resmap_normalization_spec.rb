@@ -200,8 +200,8 @@ RSpec.describe ResmapNormalization do
       ],
       facility_types: [
         # facility types priority are given according to # of facilities of that type
-        { name: "Health Center", priority: 1 },
-        { name: "Health Post", priority: 2 }
+        { name: "Health Post", priority: 1 },
+        { name: "Health Center", priority: 2 },
       ],
     })
   end
