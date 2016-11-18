@@ -75,6 +75,13 @@ menuContent settings active =
                     , include <| hr [] []
                     , include <|
                         li []
+                            [ a [ href <| "/data" ]
+                                [ icon "file_download"
+                                , text <| t I18n.FullDownload
+                                ]
+                            ]
+                    , include <|
+                        li []
                             [ a [ href <| "mailto:" ++ settings.contactEmail ]
                                 [ icon "email"
                                 , text <| t I18n.Contact

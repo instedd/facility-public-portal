@@ -246,25 +246,6 @@ mobileBackHeader =
         ]
 
 
-
--- Keeping this here for when adv search is extracted from suggest, to edit it.
---downloadFooter : Model -> Html a
---downloadFooter model =
---    let
---        css =   if Suggest.hasSuggestionsToShow model.suggest then
---                    "footer hide-on-med-and-down hide"
---                else
---                    "footer hide-on-med-and-down"
---    in
---        div
---            [ class css ]
---            [ a [ href "/data" ]
---                [ Shared.icon "file_download"
---                , span [] [ text "Download full dataset" ]
---                ]
---            ]
-
-
 suggestionInput model =
     let
         close =
