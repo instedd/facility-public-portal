@@ -28,18 +28,58 @@ def csv_enumerator(filename)
   end
 end
 
+def write_output(filename, data, headers)
+  full_filename = File.join(OUTPUT_PATH, filename)
+  puts "Writing #{full_filename}"
+
+  CSV.open(full_filename, "wb") do |csv|
+    csv << csv_headers(headers)
+    data.each do |f|
+      csv << headers.flat_map { |h| csv_value(h, f) }
+    end
+  end
+end
+
+# if header has name:locale then name:loc1, name:loc2, ... name:locN is returned
+def csv_headers(headers)
+  headers.flat_map { |h|
+    name, locale = h.split ':'
+    if locale.nil?
+      name
+    else
+      Settings.locales.keys.map { |l| "name:#{l}" }
+    end
+  }
+end
+
+# if header has name:locale then name:loc1, name:loc2, ... name:locN values are returned using i18n for translation
+def csv_value(header, source_row)
+  name, locale = header.split ':'
+  raw_value = source_row[name.to_sym]
+  if locale.nil?
+    raw_value
+  else
+    Settings.locales.keys.map { |l| i18n_lookup(raw_value, locale.to_sym, l) }
+  end
+end
+
 filenames = {
-  sites: "sites.csv"
-  # facilities: "Facility.csv",
-  # facility_types: "FacilityType.csv",
-  # geoloc: "geoloc.csv",
-  # contact_info: "ContactInfo.csv",
-  # facilities_services: "FacilityService.csv",
-  # services: "MedicalService.csv",
-  # locations: "OrganizationUnit.csv",
-  # ownerships: "ownership.csv"
+  sites: "sites.csv",
+  facility_types: "facility_type.csv",
+  general_services: "general_services.csv",
+  locations: "hierarchy_administrative_boundaries.csv",
 }
 
 dataset = filenames.map_values do |filename|
   csv_enumerator(File.join(INPUT_PATH, filename))
 end
+
+normalizer = ResmapNormalization.new(dataset)
+result = normalizer.run
+normalizer.stats
+
+write_output "facilities.csv", result[:facilities], ["id", "name", "lat", "lng", "location_id", "facility_type", "ownership", "contact_name", "contact_email", "contact_phone", "last"]
+write_output "services.csv", result[:services], ["id", "name"]
+write_output "facilities_services.csv", result[:facilities_services], ["facility_id", "service_id"]
+write_output "facility_types.csv", result[:facility_types], ["name", "priority"]
+write_output "locations.csv", result[:locations], ["id", "name", "parent_id"]

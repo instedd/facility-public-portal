@@ -17,6 +17,7 @@ RSpec.describe ResmapNormalization do
           "pocname" => "John Doe",
           "poc_phonenumber" => "456787654",
           "poc_email" => "jdoe@example.org",
+          "general_services" => "growth_monitoring, hiv_care_support",
           "last updated" => "Tue, 11 Oct 2016 07:19:08 +0000"
         },
         {
@@ -32,6 +33,23 @@ RSpec.describe ResmapNormalization do
           "pocname" => "",
           "poc_phonenumber" => "",
           "poc_email" => "",
+          "general_services" => "lab_dx",
+          "last updated" => ""
+        },
+        {
+          "resmap-id" => 1021323,
+          "name" => "3 Fero Health Center",
+          "lat" => 6.96437,
+          "long" => 38.47822,
+          "administrative_boundaries" => "938E631B-5EE7-42D1-976A-04D26334CE4F",
+          "facility_type" => "health_post",
+          "managing_authority" => "priv",
+          "managing_authority-1" => "Private",
+          "managing_authority-2" => "",
+          "pocname" => "",
+          "poc_phonenumber" => "",
+          "poc_email" => "",
+          "general_services" => "lab_dx",
           "last updated" => ""
         },
         {
@@ -77,6 +95,28 @@ RSpec.describe ResmapNormalization do
           "id" => 14,
           "label" => "Health Post"
         }
+      ],
+      general_services: [
+        {
+          "code" => "growth_monitoring",
+          "id" => 1,
+          "label" => "Growth Monitoring"
+        },
+        {
+          "code" => "curativecare_u5",
+          "id" => 2,
+          "label" => "Curative Care u5"
+        },
+        {
+          "code" => "hiv_care_support",
+          "id" => 11,
+          "label" => "HIV Care and Support"
+        },
+        {
+          "code" => "lab_dx",
+          "id" => 13,
+          "label" => "Laboratory Diagnostics"
+        },
       ]
     }
 
@@ -109,6 +149,19 @@ RSpec.describe ResmapNormalization do
           contact_phone: "",
           contact_email: "",
           last_update: ""
+        },
+        {
+          id: "1021323",
+          name: "3 Fero Health Center",
+          lat: 6.96437,
+          lng: 38.47822,
+          location_id: "938E631B-5EE7-42D1-976A-04D26334CE4F",
+          facility_type: "Health Post",
+          ownership: "Private",
+          contact_name: nil,
+          contact_phone: "",
+          contact_email: "",
+          last_update: ""
         }
       ],
       locations: [
@@ -132,7 +185,24 @@ RSpec.describe ResmapNormalization do
           name: "Harari Region",
           parent_id: "CB4135DA-3059-4D93-BBD8-C0564CEE1A6A",
         },
-      ]
+      ],
+      services: [
+        { id: "growth_monitoring", name: "Growth Monitoring" },
+        { id: "curativecare_u5", name: "Curative Care u5" },
+        { id: "hiv_care_support", name: "HIV Care and Support" },
+        { id: "lab_dx", name: "Laboratory Diagnostics" },
+      ],
+      facilities_services: [
+        { facility_id: "1021321", service_id: "growth_monitoring" },
+        { facility_id: "1021321", service_id: "hiv_care_support" },
+        { facility_id: "1021322", service_id: "lab_dx" },
+        { facility_id: "1021323", service_id: "lab_dx" }
+      ],
+      facility_types: [
+        # facility types priority are given according to # of facilities of that type
+        { name: "Health Center", priority: 1 },
+        { name: "Health Post", priority: 2 }
+      ],
     })
   end
 end
