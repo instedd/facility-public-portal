@@ -14,7 +14,7 @@ class Dump
     max_administrative_level = @service.max_administrative_level
 
     CSV.open(@output_path, "wb") do |csv|
-      csv << ["id", "name", "lat", "lng", "facility_type", "ownership", "contact_name", "contact_email", "contact_phone"] \
+      csv << ["id", "source_id", "name", "lat", "lng", "facility_type", "ownership", "contact_name", "contact_email", "contact_phone"] \
               + (1..max_administrative_level).map { |l| "location_#{l}" } \
               + @locales.map { |locale| "services:#{locale}" }
 
@@ -25,6 +25,7 @@ class Dump
         page[:items].each do |f|
           csv << [
             f["id"],
+            f["source_id"],
             f["name"],
             f["lat"],
             f["lng"],

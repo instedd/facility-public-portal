@@ -64,6 +64,7 @@ RSpec.describe Dump do
 
     expect(f1).to eq({
       "id" => "1",
+      "source_id" => "F1",
       "name" => "FOO",
       "lat" => "10.696144",
       "lng" => "38.370941",
@@ -81,6 +82,7 @@ RSpec.describe Dump do
 
     expect(export[2]).to eq({
       "id" => "2",
+      "source_id" => "F2",
       "name" => "BAR",
       "lat" => "10.696144",
       "lng" => "38.370941",
