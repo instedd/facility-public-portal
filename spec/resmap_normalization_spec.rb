@@ -62,61 +62,79 @@ RSpec.describe ResmapNormalization do
           "last updated" => ""
         }
       ],
-      locations: [
+      fields: [
         {
-          "ID" => "CB4135DA-3059-4D93-BBD8-C0564CEE1A6A",
-          "ParentID" => "",
-          "ItemName" => "Ethiopia",
+          "fields" => [
+            { "code" => "facility_type",
+              "config" => {
+                "options" => [
+                  {
+                    "code" => "health_center",
+                    "id" => 13,
+                    "label" => "Health Center"
+                  },
+                  {
+                    "code" => "health_post",
+                    "id" => 14,
+                    "label" => "Health Post"
+                  }
+                ]
+              }
+            },
+            { "code" => "general_services",
+              "config" => {
+                "options" => [
+                  {
+                    "code" => "growth_monitoring",
+                    "id" => 1,
+                    "label" => "Growth Monitoring"
+                  },
+                  {
+                    "code" => "curativecare_u5",
+                    "id" => 2,
+                    "label" => "Curative Care u5"
+                  },
+                  {
+                    "code" => "hiv_care_support",
+                    "id" => 11,
+                    "label" => "HIV Care and Support"
+                  },
+                  {
+                    "code" => "lab_dx",
+                    "id" => 13,
+                    "label" => "Laboratory Diagnostics"
+                  }
+                ]
+              }
+            }
+          ]
         },
         {
-          "ID" => "9203F461-AF75-40D3-BCFE-1CEEE788BD9E",
-          "ParentID" => "CB4135DA-3059-4D93-BBD8-C0564CEE1A6A",
-          "ItemName" => "Somali Region",
-        },
-        {
-          "ID" => "938E631B-5EE7-42D1-976A-04D26334CE4F",
-          "ParentID" => "9203F461-AF75-40D3-BCFE-1CEEE788BD9E",
-          "ItemName" => "Jijiga Zone",
-        },
-        {
-          "ID" => "1F38BF47-0955-48F0-AA57-4A5E97006850",
-          "ParentID" => "CB4135DA-3059-4D93-BBD8-C0564CEE1A6A",
-          "ItemName" => "Harari Region",
-        },
-      ],
-      facility_types: [
-        {
-          "code" => "health_center",
-          "id" => 13,
-          "label" => "Health Center"
-        },
-        {
-          "code" => "health_post",
-          "id" => 14,
-          "label" => "Health Post"
+          "fields" => [
+            { "code" => "administrative_boundaries",
+              "config" => {
+                "hierarchy" => [
+                  { "id" => "CB4135DA-3059-4D93-BBD8-C0564CEE1A6A",
+                    "name" => "Ethiopia",
+                    "sub" => [
+                      { "id" => "9203F461-AF75-40D3-BCFE-1CEEE788BD9E",
+                        "name" => "Somali Region",
+                        "sub" => [
+                          { "id" => "938E631B-5EE7-42D1-976A-04D26334CE4F",
+                            "name" => "Jijiga Zone",
+                          }
+                        ]
+                      },
+                      { "id" => "1F38BF47-0955-48F0-AA57-4A5E97006850",
+                        "name" => "Harari Region",
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
         }
-      ],
-      general_services: [
-        {
-          "code" => "growth_monitoring",
-          "id" => 1,
-          "label" => "Growth Monitoring"
-        },
-        {
-          "code" => "curativecare_u5",
-          "id" => 2,
-          "label" => "Curative Care u5"
-        },
-        {
-          "code" => "hiv_care_support",
-          "id" => 11,
-          "label" => "HIV Care and Support"
-        },
-        {
-          "code" => "lab_dx",
-          "id" => 13,
-          "label" => "Laboratory Diagnostics"
-        },
       ]
     }
 

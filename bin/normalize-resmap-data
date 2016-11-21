@@ -28,16 +28,10 @@ def csv_enumerator(filename)
   end
 end
 
-filenames = {
-  sites: "sites.csv",
-  facility_types: "facility_type.csv",
-  general_services: "general_services.csv",
-  locations: "hierarchy_administrative_boundaries.csv",
+dataset = {
+  sites: csv_enumerator(File.join(INPUT_PATH, "sites.csv")),
+  fields: JSON.parse(File.read(File.join(INPUT_PATH, "fields.json")))
 }
-
-dataset = filenames.map_values do |filename|
-  csv_enumerator(File.join(INPUT_PATH, filename))
-end
 
 normalizer = ResmapNormalization.new(dataset)
 result = normalizer.run

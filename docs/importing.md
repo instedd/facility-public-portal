@@ -1,6 +1,6 @@
 # Importing data
 
-This document describe [the schema supported](#input-data-schema) by the application and [how to build](#normalizing-spa-census-information) it from the SPA-2014 census.
+This document describe [the schema supported](#input-data-schema) by the application and [how to build](#normalizing-resourcemap-information) it from the a resourcemap collection.
 
 ## Input data schema
 
@@ -125,4 +125,48 @@ In the above sample when a the service english name "Tb test" will be translated
 
 ### Normalizing Resourcemap information
 
+To import data from raw CSV exports of SPA results, store raw files as follows:
 
+```
+data
+├── input
+└── raw
+    ├── fields.json
+    ├── sites.csv
+    └── i18n.csv
+```
+
+The `sites.csv` file can be downloaded from the ResourceMap export option. The `fields.json` file, which contains the metadata and field description of the collection, can be downloaded from `http://resourcemap.instedd.org/en/collections/COLLECTION_ID/fields.json`.
+
+And then run the following scripts to generate the normalized input files in the `data/input` directory:
+
+```
+$ bin/normalize-resmap-data data/raw data/input
+```
+
+Note: currently [ResmapNormalization](https://github.com/instedd/facility-public-portal/blob/master/app/models/resmap_normalization.rb) supports the schema of [Ethiopia MFR - Official Collection](http://resourcemap.instedd.org/en/collections/1890). The following fields are expected to exist:
+
+* `facility_type` (select one)
+* `general_services` (select many)
+* `administrative_boundaries` (hierarchy)
+* `managing_authority` (hierarchy)
+* `pocname`, `poc_email`, `poc_phonenumber` (text)
+
+### Resourcemap data internationalization
+
+The `i18n.csv` is a translation table.
+It's schema depends of the desired locales.
+There should be one column for each locale.
+
+| Field         | Type                      |
+|---------------|---------------------------|
+| en            | String                    |
+| am            | String                    |
+
+Each row will contain the equivalent text that appear across the spa raw data.
+
+| en      | am           |
+|---------|--------------|
+| Tb test | የነቀርሳ ምርመራ |
+
+In the above sample when a the service english name "Tb test" will be translated to "የነቀርሳ ምርመራ" when generating the `services.csv` `name:en` and `name:am` columns.

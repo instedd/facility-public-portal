@@ -9,10 +9,11 @@ class ResmapNormalization
   def run
     @sites_ignored = 0
 
-    @facility_types = @dataset[:facility_types].map(&:to_h).index_by { |type| type["code"] }
-    @facility_types.each do |k, v|
-      v[:count] = 0
-    end
+    # index facility types by id
+    # count number of facility types to determine priority
+    @facility_types = field_options("facility_type").to_a
+    @facility_types.each { |type| type[:count] = 0 }
+    @facility_types_by_code = @facility_types.index_by { |type| type[:id] }
 
     {}.tap do |result|
       result[:facilities_services] = []
@@ -22,7 +23,8 @@ class ResmapNormalization
           @sites_ignored += 1
         else
           id = f["resmap-id"].to_s
-          fac_type = @facility_types[f["facility_type"]]
+
+          fac_type = @facility_types_by_code[f["facility_type"]]
           fac_type[:count] += 1
 
           facilities << {
@@ -31,8 +33,8 @@ class ResmapNormalization
             lat: f["lat"],
             lng: f["long"],
             location_id: f["administrative_boundaries"],
+            facility_type: fac_type[:name],
             ownership: [f["managing_authority-1"], f["managing_authority-2"]].select(&:present?).join(" - "),
-            facility_type: fac_type["label"],
             contact_name: nil_if_empty(f["pocname"]),
             contact_email: f["poc_email"],
             contact_phone: f["poc_phonenumber"],
@@ -47,25 +49,13 @@ class ResmapNormalization
         facilities
       end
 
-      result[:locations] = @dataset[:locations].map do |l|
-        {
-          id: l["ID"],
-          name: l["ItemName"],
-          parent_id: l["ParentID"],
-        }
-      end
+      result[:locations] = field_hierarchy("administrative_boundaries")
 
-      result[:services] = @dataset[:general_services].map do |s|
-        {
-          id: s["code"],
-          name: s["label"],
-        }
-      end
+      result[:services] = field_options("general_services")
 
-      sorted_types = @facility_types.values.to_a
-      sorted_types.sort_by! { |v| -v[:count] }
-      result[:facility_types] = sorted_types.map.with_index(1) do |t,i|
-        { name: t["label"], priority: i }
+      @facility_types.sort_by! { |type| -type[:count] }
+      result[:facility_types] = @facility_types.map.with_index(1) do |type,i|
+        { name: type[:name], priority: i }
       end
     end
   end
@@ -74,14 +64,45 @@ class ResmapNormalization
     puts "#{@sites_ignored} sites ignored"
     puts ""
     puts "sites imported"
-    sorted_types = @facility_types.values.to_a
-    sorted_types.sort_by! { |v| -v[:count] }
-    sorted_types.each do |t|
-      puts "#{t["label"]}: #{t[:count]}"
+    @facility_types.each do |type|
+      puts "#{type[:name]}: #{type[:count]}"
     end
   end
 
   def nil_if_empty(v)
     v.empty? ? nil : v
+  end
+
+  def field_hierarchy(code)
+    hierarchy = field_config(code)["hierarchy"]
+    res = []
+    fill_hierarchy(res, hierarchy, "")
+    res
+  end
+
+  def fill_hierarchy(target, input, parent_id)
+    input.each do |node|
+      target << { id: node["id"], name: node["name"], parent_id: parent_id }
+
+      if node["sub"]
+        fill_hierarchy(target, node["sub"], node["id"])
+      end
+    end
+  end
+
+  def field_options(code)
+    options = field_config(code)["options"]
+    options.map { |opt|
+      {id: opt["code"], name: opt["label"] }
+    }
+  end
+
+  def field_config(code)
+    @dataset[:fields].each do |layer|
+      layer["fields"].each do |field|
+        return field["config"] if field["code"] == code
+      end
+    end
+    raise "no field for code #{code}"
   end
 end
