@@ -46,13 +46,17 @@
 
 <div class="row editable-columns">
   <div class="column col s12 m6">
-    <% if @texts[:left_column] %>
-      <%= markdown(@texts[:left_column]) %>
-    <% end %>
+    <div class="column-content">
+      <% if @texts[:left_column] %>
+        <%= markdown(@texts[:left_column]) %>
+      <% end %>
+    </div>
   </div>
   <div class="column col s12 m6">
-    <% if @texts[:right_column] %>
-      <%= markdown(@texts[:right_column]) %>
-    <% end %>
+    <div class="column-content">
+      <% if @texts[:right_column] %>
+        <%= markdown(@texts[:right_column]) %>
+      <% end %>
+    </div>
   </div>
 </div>

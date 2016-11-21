@@ -148,17 +148,14 @@ body.content_view, body.preview {
 
   .editable-columns {
     .column {
-      &:first-child {
-        margin-right: 10px;
-        margin-bottom: 10px;
+      margin-bottom: 10px;
+
+      .column-content {
+        background-color: white;
+        border-radius: 5px;
+        border: 1px solid $grey3;
+        min-height: 250px;
       }
-      background-color: white;
-      border-radius: 5px;
-      border: 1px solid $grey3;
-      display: inline-block;
-      padding: 15px 25px;
-      width: 48%;
-      min-height: 250px;
     }
   }
 }
