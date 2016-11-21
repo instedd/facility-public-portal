@@ -53,8 +53,7 @@
   }
 }
 
-// same media query as fitContent
-@media all and(max-width: 992px) {
+@media all and(max-width: $width-breakpoint) {
   .modal.open {
     width: 100%;
     height: 100%;

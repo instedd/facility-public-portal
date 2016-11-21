@@ -13,8 +13,7 @@
   }
 }
 
-// same media query as fitContent
-@media all and(max-width: 992px) {
+@media all and(max-width: $width-breakpoint) {
   #notice {
     top: 40%;
     width: 90%;

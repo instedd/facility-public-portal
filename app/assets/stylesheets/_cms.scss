@@ -90,7 +90,7 @@ body.content_view, body.content_edition {
     font-size: 12px;
   }
 
-  @media all and(max-width: 992px) {
+  @media all and(max-width: $width-breakpoint) {
     main, footer {
       margin-left: 0;
     }
@@ -150,6 +150,10 @@ body.content_view, body.preview {
     .column {
       margin-bottom: 10px;
 
+      @media all and(min-width: $width-breakpoint) {
+        &:first-child { padding-left: 0; }
+        &.last-child  { padding-right: 0; }
+      }
       .column-content {
         background-color: white;
         border-radius: 5px;
@@ -190,8 +194,7 @@ body.content_edition {
   }
 }
 
-// same media query as fitContent
-@media all and(max-width: 992px) {
+@media all and(max-width: $width-breakpoint) {
   .img-center {
     img { width: 100%; }
   }

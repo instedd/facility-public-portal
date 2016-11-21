@@ -7,6 +7,9 @@ $grey3: #dadada;
 $grey-background: #F7F7F7;
 $code-background: #EAEAEA;
 
+// same media query as fitContent
+$width-breakpoint: 992px;
+
 .spinner-blue-only {
   border-color: $blue;
 }

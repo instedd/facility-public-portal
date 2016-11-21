@@ -348,8 +348,7 @@ input[type="checkbox"]:checked + label:before {
   font-family: 'Roboto', sans-serif;
 }
 
-// same media query as fitContent
-@media all and(max-width: 992px) {
+@media all and(max-width: $width-breakpoint) {
   #map-control {
     //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
     border-radius: 0;
