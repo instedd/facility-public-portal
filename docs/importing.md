@@ -152,6 +152,8 @@ Note: currently [ResmapNormalization](https://github.com/instedd/facility-public
 * `managing_authority` (hierarchy)
 * `pocname`, `poc_email`, `poc_phonenumber` (text)
 
+After the normalization is done, you might want to tweak the generated `facility_types.csv` file to choose, for each type of facility, the size of the marker the in map. The higher the prioity the bigger the marker size.
+
 ### Resourcemap data internationalization
 
 The `i18n.csv` is a translation table.
