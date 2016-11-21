@@ -7,9 +7,13 @@
   display: block;
   opacity: 1;
   margin: 0 auto;
-  max-height: 80%;
   width: 400px;
-  overflow-y: visible;
+  // overflow-y set to 'scroll' to allow scrolling in mobile view
+  // also. having a max-height with overflow-y:visible causes overflowed
+  // items to be rendered at strange places.
+  // see https://github.com/instedd/facility-public-portal/issues/110
+  max-height: 95%;
+  overflow-y: scroll;
 
   select {
     display: block;
