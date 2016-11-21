@@ -1,20 +1,20 @@
 module Main exposing (..)
 
-import Map
-import Models exposing (..)
-import Navigation
-import Routing
-import Shared
+import AppFacilityDetails
 import AppHome
 import AppSearch
-import AppFacilityDetails
-import UserLocation
 import Html exposing (Html, div, span, p, text, a)
 import Html.Attributes exposing (id, class, style, href, attribute, classList)
-import Utils
+import Map
 import Menu
-import SelectList exposing (..)
+import Models exposing (..)
+import Navigation
 import Return exposing (..)
+import Routing
+import SelectList exposing (..)
+import Shared
+import UserLocation
+import Utils
 
 
 type alias Flags =
@@ -46,9 +46,9 @@ main =
 
 type MainModel
     = -- pending map to be initialized from flag
-      InitializingVR (Result String Route) LatLng Settings
+      Initializing (Result String Route) LatLng Settings
       -- map initialized pending to determine which view/route to load
-    | InitializedVR MapViewport Settings (Maybe Notice)
+    | Initialized MapViewport Settings (Maybe Notice)
     | Page CommonPageState PagedModel
 
 
@@ -100,7 +100,7 @@ init flags route =
             }
 
         model =
-            InitializingVR route flags.initialPosition settings
+            Initializing route flags.initialPosition settings
 
         cmds =
             [ Map.initializeMap flags.initialPosition ]
@@ -111,10 +111,10 @@ init flags route =
 subscriptions : MainModel -> Sub MainMsg
 subscriptions model =
     case model of
-        InitializingVR _ _ _ ->
+        Initializing _ _ _ ->
             Map.mapViewportChanged MapViewportChangedVR
 
-        InitializedVR _ _ _ ->
+        Initialized _ _ _ ->
             Sub.none
 
         Page _ pagedModel ->
@@ -152,10 +152,10 @@ mainUpdate msg mainModel =
 
         _ ->
             case mainModel of
-                InitializingVR route _ settings ->
+                Initializing route _ settings ->
                     case msg of
                         MapViewportChangedVR mapViewport ->
-                            (InitializedVR mapViewport settings Nothing)
+                            (Initialized mapViewport settings Nothing)
                                 ! [ Routing.navigate (Routing.routeFromResult route) ]
 
                         _ ->
@@ -251,7 +251,7 @@ mainUpdate msg mainModel =
 mainUrlUpdate : Result String Route -> MainModel -> ( MainModel, Cmd MainMsg )
 mainUrlUpdate result mainModel =
     case mainModel of
-        InitializingVR _ _ _ ->
+        Initializing _ _ _ ->
             Debug.crash "urlUpdates should be handled after map is initialized"
 
         _ ->
@@ -312,10 +312,10 @@ mainUrlUpdate result mainModel =
 mapViewport : MainModel -> MapViewport
 mapViewport mainModel =
     case mainModel of
-        InitializingVR _ _ _ ->
+        Initializing _ _ _ ->
             Debug.crash "mapViewport should not be called before map is initialized"
 
-        InitializedVR mapViewport _ _ ->
+        Initialized mapViewport _ _ ->
             mapViewport
 
         Page _ pagedModel ->
@@ -333,10 +333,10 @@ mapViewport mainModel =
 getSettings : MainModel -> Settings
 getSettings mainModel =
     case mainModel of
-        InitializingVR _ _ settings ->
+        Initializing _ _ settings ->
             settings
 
-        InitializedVR mapViewport settings _ ->
+        Initialized mapViewport settings _ ->
             settings
 
         Page common _ ->
@@ -385,10 +385,10 @@ mainView mainModel =
                     SearchModel pagedModel ->
                         mapView SearchMsg common.settings common.menu common.notice <| withControls <| AppSearch.view pagedModel
 
-        InitializingVR _ _ settings ->
+        Initializing _ _ settings ->
             mapView identity settings Menu.Closed Nothing { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
 
-        InitializedVR _ settings notice ->
+        Initialized _ settings notice ->
             mapView identity settings Menu.Closed notice { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
 
 
@@ -507,13 +507,13 @@ navigateBack =
 notice : MainModel -> Maybe Notice
 notice mainModel =
     case mainModel of
-        InitializedVR _ _ notice ->
+        Initialized _ _ notice ->
             notice
 
         Page common _ ->
             common.notice
 
-        InitializingVR _ _ _ ->
+        Initializing _ _ _ ->
             Nothing
 
 
@@ -536,24 +536,24 @@ withErrorNotice msg mainModel =
 withNotice : Notice -> MainModel -> MainModel
 withNotice notice mainModel =
     case mainModel of
-        InitializedVR mapViewport settings _ ->
-            InitializedVR mapViewport settings (Just notice)
+        Initialized mapViewport settings _ ->
+            Initialized mapViewport settings (Just notice)
 
         Page common pagedModel ->
             Page { common | notice = Just notice } pagedModel
 
-        InitializingVR _ _ _ ->
+        Initializing _ _ _ ->
             mainModel
 
 
 withoutNotice : MainModel -> MainModel
 withoutNotice mainModel =
     case mainModel of
-        InitializedVR mapViewport settings _ ->
-            InitializedVR mapViewport settings Nothing
+        Initialized mapViewport settings _ ->
+            Initialized mapViewport settings Nothing
 
         Page common pagedModel ->
             Page { common | notice = Nothing } pagedModel
 
-        InitializingVR _ _ _ ->
+        Initializing _ _ _ ->
             mainModel
