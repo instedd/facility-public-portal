@@ -20,7 +20,7 @@ ElasticsearchService.instance.setup_mappings
 
 
 def import(path)
-  dataset = SpaNormalization.read_csv_dataset(path)
+  dataset = Indexing.read_csv_dataset(path)
   Indexing.index_dataset(dataset)
   Dump.dump_zip("data/full_dataset.zip")
 end
