@@ -16,10 +16,11 @@ $(document).ready(function() {
       FPP.map = L.map('map', {
         zoomControl: false,
         attributionControl: false,
+        maxBounds: FPP.settings.mapBounds,
         bounceAtZoomLimits: false
       });
       FPP._fitContentUsingPadding = false;
-      L.control.zoom({position: 'topright'}).addTo(FPP.map)
+      L.control.zoom({position: 'topright'}).addTo(FPP.map);
 
       L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={accessToken}', FPP.mapSettings).addTo(FPP.map);
 

@@ -9,6 +9,10 @@ class ApplicationController < ActionController::Base
     @js_flags.merge!({
       "menuItem" => :map,
       "initialPosition" => [Settings.initial_position.lat, Settings.initial_position.lng],
+      "mapBounds" => [
+        [Settings.map_bounds.top, Settings.map_bounds.left],
+        [Settings.map_bounds.bottom, Settings.map_bounds.right]
+      ],
       "fakeUserPosition" => (params[:user_position] || Settings.user_position) == "fake",
       "mapboxId" => Settings.mapbox_id,
       "mapboxToken" => Settings.mapbox_token,
