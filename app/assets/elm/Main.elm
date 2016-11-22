@@ -63,7 +63,7 @@ type PagedModel
 
 
 type MainMsg
-    = MapViewportChangedVR MapViewport
+    = MapViewportChanged MapViewport
     | Navigate Route
     | NavigateBack
     | HomeMsg AppHome.Msg
@@ -112,7 +112,7 @@ subscriptions : MainModel -> Sub MainMsg
 subscriptions model =
     case model of
         Initializing _ _ _ ->
-            Map.mapViewportChanged MapViewportChangedVR
+            Map.mapViewportChanged MapViewportChanged
 
         Initialized _ _ _ ->
             Sub.none
@@ -154,7 +154,7 @@ mainUpdate msg mainModel =
             case mainModel of
                 Initializing route _ settings ->
                     case msg of
-                        MapViewportChangedVR mapViewport ->
+                        MapViewportChanged mapViewport ->
                             (Initialized mapViewport settings Nothing)
                                 ! [ Routing.navigate (Routing.routeFromResult route) ]
 
