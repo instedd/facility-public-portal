@@ -63,23 +63,4 @@ class SpaNormalization
       ]
     end
   end
-
-  def self.read_csv_dataset(csv_files_path)
-    csv_enumerator = Proc.new do |filename|
-      (Enumerator.new do |out|
-         CSV.foreach(File.join(csv_files_path, filename), headers: true, converters: [:blank_to_nil, :numeric]) do |row|
-           out << row
-         end
-       end)
-    end
-
-    {
-      facilities: csv_enumerator.call("facilities.csv"),
-      services: csv_enumerator.call("services.csv"),
-      facilities_services: csv_enumerator.call("facilities_services.csv"),
-      facility_types: csv_enumerator.call("facility_types.csv"),
-      locations: csv_enumerator.call("locations.csv"),
-    }
-  end
-
 end

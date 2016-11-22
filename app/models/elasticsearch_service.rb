@@ -19,7 +19,11 @@ class ElasticsearchService
         facility: {
           properties: {
             id: {
-              type: 'long',
+              type: 'long'
+            },
+            source_id: {
+              type: 'string',
+              index: 'not_analyzed'
             },
             name: {
               type: 'string',

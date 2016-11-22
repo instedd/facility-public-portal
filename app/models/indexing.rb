@@ -86,6 +86,9 @@ class Indexing
       index_entries = batch.map do |f|
         f = f.to_h.symbolize_keys
         location = locations_by_id[f[:location_id]]
+        unless location
+          location = {path_names: [], path_ids: [], facility_count: 0}
+        end
         location[:facility_count] += 1
 
         services = services_by_facility[f[:id]] || []
@@ -155,6 +158,24 @@ class Indexing
     process = self.new(dataset, ElasticsearchService.instance, Settings.locales.keys)
     process.run
     ElasticsearchService.instance.refresh_index
+  end
+
+  def self.read_csv_dataset(csv_files_path)
+    csv_enumerator = Proc.new do |filename|
+      (Enumerator.new do |out|
+         CSV.foreach(File.join(csv_files_path, filename), headers: true, converters: [:blank_to_nil, :numeric]) do |row|
+           out << row
+         end
+       end)
+    end
+
+    {
+      facilities: csv_enumerator.call("facilities.csv"),
+      services: csv_enumerator.call("services.csv"),
+      facilities_services: csv_enumerator.call("facilities_services.csv"),
+      facility_types: csv_enumerator.call("facility_types.csv"),
+      locations: csv_enumerator.call("locations.csv"),
+    }
   end
 
   private
