@@ -1,6 +1,6 @@
 # Importing data
 
-This document describe [the schema supported](#input-data-schema) by the application and [how to build](#normalizing-resourcemap-information) it from the a resourcemap collection.
+This document describes [the schema supported](#input-data-schema) by the application and [how to build](#normalizing-resourcemap-information) it from the a resourcemap collection.
 
 ## Input data schema
 
@@ -31,7 +31,7 @@ This tool can import data using the following schema, where each table is stored
 | name:en | String |
 | name:am | String |
 
-**note:** there should be a `name:LOCALE` column for each of the enabled locales of the application.
+**Note:** there should be a `name:LOCALE` column for each of the enabled locales of the application.
 
 ### facilities_services
 
@@ -48,6 +48,10 @@ This tool can import data using the following schema, where each table is stored
 | name     | String |
 | priority | Int    |
 
+
+**Note**: The priority of a facility type can be used to decide which facilities will be displayed in lower zoom levels.
+If a facility's type doesn't have a corresponding entry in the `facilities` table it will be assigned the lowest priority.
+
 ### locations
 
 | Field     | Type   |
@@ -56,9 +60,6 @@ This tool can import data using the following schema, where each table is stored
 | name      | String |
 | parent_id | String |
 
-
-The priority of a facility type can be used to decide which facilities will be displayed in lower zoom levels.
-If a facility's type doesn't have a corresponding entry in the `facilities` table it will be assigned the lowest priority.
 
 ## Importing CSV data
 
