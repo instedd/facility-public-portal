@@ -161,38 +161,44 @@ nav .nav-wrapper {
   }
 }
 
-.menu {
+#map-control .menu,
+.side-nav .menu {
   margin-top: 0;
   margin-bottom: 0;
   border: none;
 
-  ul {
-    margin: 10px 0;
-  }
-
   hr {
     border: 0;
     border-top: 1px solid #ccc;
-    margin: 15px 0;
+    margin: 14px 0 20px 0;
   }
 
   li {
-    padding: 14px 0px;
+    height: 50px;
+    padding: 0px;
+    margin: 0;
     a {
+      line-height: 48px;
+      font-weight: 500;
+      font-size: 14px;
+
       color: black;
-      padding-left: 55px;
-      min-height: auto;
+      display: inline-block;
+      padding: 0 0 0 55px;
       position: relative;
 
-      i {
+      i.material-icons {
+        line-height: inherit;
         position: absolute;
         left: 17px;
-        top: -5px;
-        display: inline-block;
-        vertical-align: middle;
+        color: inherit;
       }
 
-      &.active, &:hover {
+      &:hover {
+        background-color: inherit;
+      }
+
+      &.active {
         color: $blue;
       }
     }
@@ -415,10 +421,10 @@ input[type="checkbox"]:checked + label:before {
       &.active {
         transform: translateX(0);
       }
+      ul {
+        margin: 30px 0;
+      }
     }
-
-    // FIXME
-    li a i { top: 0; }
 
     .overlay {
       position: absolute;
