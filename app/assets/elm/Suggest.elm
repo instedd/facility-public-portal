@@ -246,7 +246,7 @@ viewBody model =
     if model.advanced then
         Utils.mapHtml (Private << AdvancedSearchMsg) <|
             [ div [ class "hide-on-med-and-down" ] <|
-                AdvancedSearch.embededView model.advancedSearch
+                AdvancedSearch.embeddedView model.advancedSearch
             ]
     else
         case model.suggestions of

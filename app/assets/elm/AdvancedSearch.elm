@@ -5,7 +5,7 @@ module AdvancedSearch
         , init
         , update
         , subscriptions
-        , embededView
+        , embeddedView
         , modalView
         , isEmpty
         )
@@ -161,10 +161,10 @@ modalView model =
     ]
 
 
-embededView : Model -> List (Html Msg)
-embededView model =
+embeddedView : Model -> List (Html Msg)
+embeddedView model =
     [ Html.form
-        [ class "advanced-search embeded"
+        [ class "advanced-search embedded"
         , action "#"
         , method "GET"
         , Html.Events.onSubmit (Perform (search model))
