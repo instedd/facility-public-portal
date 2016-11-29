@@ -15,10 +15,6 @@
   max-height: 95%;
   overflow-y: scroll;
 
-  select {
-    display: block;
-  }
-
   .modal-content {
     padding: 0;
 
@@ -39,10 +35,6 @@
       padding: 24px 24px 0 24px;
       label {
         color: $color_mountain_mist_approx;
-      }
-
-      .field {
-        margin-bottom: 10px;
       }
     }
   }

@@ -1,6 +1,8 @@
 module Utils exposing (..)
 
 import Http
+import Html exposing (Html)
+import Html.App
 import String
 import Date exposing (Date)
 import Time
@@ -185,3 +187,9 @@ performMessage msg =
 perform : msg -> ( model, Cmd msg ) -> ( model, Cmd msg )
 perform msg =
     Return.command (performMessage msg)
+
+
+mapHtml : (a -> b) -> List (Html a) -> List (Html b)
+mapHtml f lhtml =
+    List.map (Html.App.map f) <|
+        lhtml

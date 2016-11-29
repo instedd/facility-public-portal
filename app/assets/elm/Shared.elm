@@ -61,25 +61,6 @@ header content =
             [ div [ class "nav-wrapper" ] (logo :: content) ]
 
 
-searchBar : String -> a -> (String -> a) -> Html a -> Html a
-searchBar userInput submitMsg inputMsg trailing =
-    div [ class "search-box" ]
-        [ div [ class "search" ]
-            [ Html.form [ action "#", method "GET", autocomplete False, Events.onSubmit submitMsg ]
-                [ input
-                    [ type' "search"
-                    , placeholder <| t SearchHealthFacility
-                    , value userInput
-                    , autofocus True
-                    , Events.onInput inputMsg
-                    ]
-                    []
-                , trailing
-                ]
-            ]
-        ]
-
-
 icon : String -> Html a
 icon name =
     i [ class "material-icons" ] [ text name ]
@@ -92,8 +73,6 @@ onClick message =
         , stopPropagation = True
         }
         (Json.Decode.succeed message)
-
-
 
 
 modalWindow : LHtml a -> LHtml a -> LHtml a -> LHtml a

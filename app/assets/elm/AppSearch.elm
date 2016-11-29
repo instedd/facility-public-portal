@@ -196,8 +196,8 @@ setSuggest model s =
 view : Model -> MapView Msg
 view model =
     let
-        anySuggestion =
-            Suggest.hasSuggestionsToShow model.suggest
+        suggestContent =
+            Suggest.hasContent model.suggest
 
         onlyMobile =
             ( "hide-on-large-only", True )
@@ -207,9 +207,6 @@ view model =
 
         hideOnMobileListingFocused =
             ( "hide-on-med-and-down", not model.mobileFocusMap )
-
-        hideOnSuggestions =
-            ( "hide", anySuggestion )
     in
         { headerClass = classNames [ hideOnMobileListingFocused ]
         , content =
@@ -217,19 +214,20 @@ view model =
                 [ classList [ onlyMobile, hideOnMobileMapFocused ] ]
                 [ mobileBackHeader ]
             , suggestionInput model
-            , div
-                [ classList [ hideOnSuggestions, hideOnMobileMapFocused, ( "content expand", True ) ] ]
-                [ searchResults model ]
+            , div [ classList [ hideOnMobileMapFocused, ( "content expand", True ) ] ] <|
+                if suggestContent then
+                    Utils.mapHtml (Private << SuggestMsg) (Suggest.viewBody model.suggest)
+                else
+                    [ searchResults model ]
             ]
-                ++ suggestionItems model
         , toolbar =
             [ userLocationView model ]
         , bottom =
-            if (model.mobileFocusMap && not anySuggestion) then
+            if (model.mobileFocusMap && not suggestContent) then
                 [ mobileFocusToggleView ]
             else
                 []
-        , modal = List.map (Html.App.map (Private << SuggestMsg)) (Suggest.advancedSearchWindow model.suggest)
+        , modal = Utils.mapHtml (Private << SuggestMsg) (Suggest.mobileAdvancedSearch model.suggest)
         }
 
 
@@ -252,10 +250,6 @@ suggestionInput model =
             a [ href "#", Shared.onClick ClearSearch ] [ icon "close" ]
     in
         Suggest.viewInputWith (Private << SuggestMsg) model.suggest close
-
-
-suggestionItems model =
-    (List.map (Html.App.map (Private << SuggestMsg)) (Suggest.viewSuggestions model.suggest))
 
 
 userLocationView model =

@@ -5,7 +5,8 @@ module AdvancedSearch
         , init
         , update
         , subscriptions
-        , view
+        , embededView
+        , modalView
         , isEmpty
         )
 
@@ -144,8 +145,36 @@ subscriptions =
         ]
 
 
-view : Model -> List (Html Msg)
-view model =
+modalView : Model -> List (Html Msg)
+modalView model =
+    [ Html.form
+        [ class "advanced-search"
+        , action "#"
+        , method "GET"
+        , Html.Events.onSubmit (Perform (search model))
+        ]
+      <|
+        Shared.modalWindow
+            [ text "Advanced Search", a [ href "#", class "right", onClick Toggle ] [ Shared.icon "close" ] ]
+            (fields model)
+            [ submit model ]
+    ]
+
+
+embededView : Model -> List (Html Msg)
+embededView model =
+    [ Html.form
+        [ class "advanced-search embeded"
+        , action "#"
+        , method "GET"
+        , Html.Events.onSubmit (Perform (search model))
+        ]
+        (fields model ++ [ div [ class "submit" ] [ submit model ] ])
+    ]
+
+
+fields : Model -> List (Html Msg)
+fields model =
     let
         query =
             Maybe.withDefault "" model.q
@@ -158,41 +187,38 @@ view model =
         viewService service =
             [ Html.text service.name ]
     in
-        [ Html.form [ action "#", method "GET", Html.Events.onSubmit (Perform (search model)) ] <|
-            Shared.modalWindow
-                [ text "Advanced Search"
-                , a [ href "#", class "right", onClick Toggle ] [ Shared.icon "close" ]
-                ]
-                [ field
-                    [ label [ for "q" ] [ text "Facility name" ]
-                    , input [ id "q", type' "text", value query, onInput (Private << SetName) ] []
-                    ]
-                , field
-                    [ label [ for "t" ] [ text "Facility type" ]
-                    , select "t" (Private << SetType) model.facilityTypes model.fType
-                    ]
-                , field
-                    [ label [ for "o" ] [ text "Ownership" ]
-                    , select "o" (Private << SetOwnership) model.ownerships model.ownership
-                    ]
-                , field
-                    [ label [ for locationInputId ] [ text "Location" ]
-                    , Html.App.map (Private << LocationSelectorMsg) (Selector.view viewLocation model.locationSelector)
-                    ]
-                , field
-                    [ label [ for serviceInputId ] [ text "Service" ]
-                    , Html.App.map (Private << ServiceSelectorMsg) (Selector.view viewService model.serviceSelector)
-                    ]
-                ]
-                [ Html.button
-                    [ class "btn-flat"
-                    , hideSelectorsOnFocus
-                    , onClick (Perform (search model))
-                    , type' "submit"
-                    ]
-                    [ text "Search" ]
-                ]
+        [ field
+            [ label [ for "q" ] [ text "Facility name" ]
+            , input [ id "q", type' "text", value query, onInput (Private << SetName) ] []
+            ]
+        , field
+            [ label [ for "t" ] [ text "Facility type" ]
+            , select "t" (Private << SetType) model.facilityTypes model.fType
+            ]
+        , field
+            [ label [ for "o" ] [ text "Ownership" ]
+            , select "o" (Private << SetOwnership) model.ownerships model.ownership
+            ]
+        , field
+            [ label [ for locationInputId ] [ text "Location" ]
+            , Html.App.map (Private << LocationSelectorMsg) (Selector.view viewLocation model.locationSelector)
+            ]
+        , field
+            [ label [ for serviceInputId ] [ text "Service" ]
+            , Html.App.map (Private << ServiceSelectorMsg) (Selector.view viewService model.serviceSelector)
+            ]
         ]
+
+
+submit : Model -> Html Msg
+submit model =
+    Html.button
+        [ class "btn-flat"
+        , hideSelectorsOnFocus
+        , onClick (Perform (search model))
+        , type' "submit"
+        ]
+        [ text "Search" ]
 
 
 select : String -> (Maybe Int -> Msg) -> List { id : Int, name : String } -> Maybe Int -> Html Msg

@@ -148,10 +148,10 @@ setSuggest model s =
 view : Model -> MapView Msg
 view model =
     { headerClass = ""
-    , content = suggestionInput model :: (suggestionItems model)
+    , content = suggestionInput model :: (suggestionsBody model)
     , toolbar = [ userLocationView model ]
     , bottom = []
-    , modal = List.map (Html.App.map (Private << SuggestMsg)) (Suggest.advancedSearchWindow model.suggest)
+    , modal = Utils.mapHtml (Private << SuggestMsg) (Suggest.mobileAdvancedSearch model.suggest)
     }
 
 
@@ -159,8 +159,8 @@ suggestionInput model =
     Html.App.map (Private << SuggestMsg) (Suggest.viewInput model.suggest)
 
 
-suggestionItems model =
-    (List.map (Html.App.map (Private << SuggestMsg)) (Suggest.viewSuggestions model.suggest))
+suggestionsBody model =
+    Utils.mapHtml (Private << SuggestMsg) (Suggest.viewBody model.suggest)
 
 
 userLocationView model =
