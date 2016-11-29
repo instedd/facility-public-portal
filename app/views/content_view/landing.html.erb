@@ -37,7 +37,7 @@
   <%= markdown(@texts[:intro_to_search]) %>
 <% end %>
 
-<%= link_to "Search", map_path, class: "btn btn-large" %>
+<%= link_to (I18n.t "search"), map_path, class: "btn btn-large" %>
 <hr class="divider">
 
 <% if @texts[:subsection] %>

@@ -20,6 +20,7 @@
 # available at http://guides.rubyonrails.org/i18n.html.
 
 en:
+  search: Search
   search_health_facility: Search health facilities
   map: Map
   api_docs: API Docs
