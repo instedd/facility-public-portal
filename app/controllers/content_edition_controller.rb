@@ -15,6 +15,7 @@ class ContentEditionController < ApplicationController
 
   def save
     texts = {
+      title: params[:title],
       heading: params[:heading],
       subsection: params[:subsection],
       left_column: params[:left_column],

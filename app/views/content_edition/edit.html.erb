@@ -12,6 +12,9 @@
     </ul>
     <div class="tab-content">
       <%= form_tag edit_content_path(@edit_locale), id: "edit_landing_texts" do %>
+        <%= label_tag 'title', "Title" %>
+        <%= text_area_tag 'title', @texts[:title].to_s, class: "small" %>
+        <%= label_tag 'intro_to_search', 'Text after the desktop and cell phone image and before the SEARCH button' %>
         <%= label_tag 'heading', "Heading" %>
         <%= text_area_tag 'heading', @texts[:heading].to_s %>
         <%= label_tag 'intro_to_search', 'Text after the desktop and cell phone image and before the SEARCH button' %>

@@ -3,6 +3,8 @@ APP_PATH = File.expand_path('../../config/application',  __dir__)
 require_relative '../config/boot'
 require_relative '../config/environment'
 
+title = "Master Facility Registry"
+
 heading = "Welcome to the Registry for all health facilities in the country"
 
 subsection = <<-TEXT
@@ -31,6 +33,7 @@ Every facility in each county has a list of services to help find whatever is ne
 TEXT
 
 LandingText.create draft: false, locale: :en, texts: {
+  "title" => title,
   "heading" => heading,
   "subsection" => subsection,
   "left_column" => left_column,

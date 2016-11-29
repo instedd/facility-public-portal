@@ -50,6 +50,7 @@ class LandingText < ActiveRecord::Base
 
   def self.empty_texts
     {
+      "title" => "",
       "heading" => "",
       "subsection" => "",
       "left_column" => "",

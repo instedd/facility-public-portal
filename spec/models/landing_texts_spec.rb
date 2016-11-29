@@ -26,7 +26,7 @@ describe LandingText do
 
     it "creates drafts with all required sections" do
       draft = LandingText.draft(:en)
-      expect(draft.texts.keys).to match_array(["heading", "intro_to_search", "left_column", "right_column", "subsection"])
+      expect(draft.texts.keys).to match_array(["title", "heading", "intro_to_search", "left_column", "right_column", "subsection"])
     end
 
     it "creates drafts with empty texts" do
