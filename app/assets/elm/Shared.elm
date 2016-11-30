@@ -4,10 +4,10 @@ import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
+import I18n exposing (..)
 import Json.Decode
 import Models
 import String
-import I18n exposing (..)
 
 
 type alias LHtml a =

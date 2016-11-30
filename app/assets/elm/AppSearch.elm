@@ -1,18 +1,18 @@
 module AppSearch exposing (Model, Msg(..), PrivateMsg, init, restoreCmd, view, update, subscriptions, mapViewport, userLocation)
 
 import Api
-import Map
+import Debounce
 import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
+import Map
 import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, FacilitySummary, FacilityType, Ownership, shouldLoadMore, emptySearch)
-import Shared exposing (MapView, icon, classNames)
-import Utils exposing (perform)
-import UserLocation
-import Suggest
-import Debounce
 import Return exposing (..)
+import Shared exposing (MapView, icon, classNames)
+import Suggest
+import UserLocation
+import Utils exposing (perform)
 
 
 type alias Model =
@@ -216,7 +216,7 @@ view model =
             , suggestionInput model
             , div [ classList [ hideOnMobileMapFocused, ( "content expand", True ) ] ] <|
                 if suggestContent then
-                    Utils.mapHtml (Private << SuggestMsg) (Suggest.viewBody model.suggest)
+                    Shared.lmap (Private << SuggestMsg) (Suggest.viewBody model.suggest)
                 else
                     [ searchResults model ]
             ]
@@ -227,7 +227,7 @@ view model =
                 [ mobileFocusToggleView ]
             else
                 []
-        , modal = Utils.mapHtml (Private << SuggestMsg) (Suggest.mobileAdvancedSearch model.suggest)
+        , modal = Shared.lmap (Private << SuggestMsg) (Suggest.mobileAdvancedSearch model.suggest)
         }
 
 

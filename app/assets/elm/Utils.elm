@@ -1,14 +1,14 @@
 module Utils exposing (..)
 
-import Http
+import Date exposing (Date)
+import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.App
-import String
-import Date exposing (Date)
-import Time
-import Task
-import Dict exposing (Dict)
+import Http
 import Return
+import String
+import Task
+import Time
 
 
 (&>) : Maybe a -> (a -> Maybe b) -> Maybe b
@@ -187,9 +187,3 @@ performMessage msg =
 perform : msg -> ( model, Cmd msg ) -> ( model, Cmd msg )
 perform msg =
     Return.command (performMessage msg)
-
-
-mapHtml : (a -> b) -> List (Html a) -> List (Html b)
-mapHtml f lhtml =
-    List.map (Html.App.map f) <|
-        lhtml

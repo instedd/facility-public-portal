@@ -1,15 +1,15 @@
 module AppHome exposing (Model, Msg(..), PrivateMsg, init, view, update, subscriptions, mapViewport, userLocation)
 
 import Api
+import Debounce
 import Html.App
 import Map
 import Models exposing (Settings, MapViewport, LatLng, SearchResult, FacilityType, Ownership, SearchSpec, shouldLoadMore, emptySearch)
-import Shared exposing (MapView)
-import Utils exposing (perform)
-import UserLocation
-import Suggest
-import Debounce
 import Return exposing (..)
+import Shared exposing (MapView)
+import Suggest
+import UserLocation
+import Utils exposing (perform)
 
 
 type alias Model =
@@ -151,7 +151,7 @@ view model =
     , content = suggestionInput model :: (suggestionsBody model)
     , toolbar = [ userLocationView model ]
     , bottom = []
-    , modal = Utils.mapHtml (Private << SuggestMsg) (Suggest.mobileAdvancedSearch model.suggest)
+    , modal = Shared.lmap (Private << SuggestMsg) (Suggest.mobileAdvancedSearch model.suggest)
     }
 
 
@@ -160,7 +160,7 @@ suggestionInput model =
 
 
 suggestionsBody model =
-    Utils.mapHtml (Private << SuggestMsg) (Suggest.viewBody model.suggest)
+    Shared.lmap (Private << SuggestMsg) (Suggest.viewBody model.suggest)
 
 
 userLocationView model =

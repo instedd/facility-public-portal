@@ -28,9 +28,9 @@ import Models exposing (MapViewport, SearchSpec, FacilityType, Ownership, emptyS
 import Return
 import Shared exposing (icon)
 import String
-import Utils exposing (perform)
 import Svg
 import Svg.Attributes
+import Utils exposing (perform)
 
 
 type alias Config =
@@ -244,7 +244,7 @@ filterIcon model =
 viewBody : Model -> List (Html Msg)
 viewBody model =
     if model.advanced then
-        Utils.mapHtml (Private << AdvancedSearchMsg) <|
+        Shared.lmap (Private << AdvancedSearchMsg) <|
             [ div [ class "hide-on-med-and-down" ] <|
                 AdvancedSearch.embeddedView model.advancedSearch
             ]
@@ -315,7 +315,7 @@ suggestion s =
 
 mobileAdvancedSearch : Model -> List (Html Msg)
 mobileAdvancedSearch model =
-    Utils.mapHtml (Private << AdvancedSearchMsg) <|
+    Shared.lmap (Private << AdvancedSearchMsg) <|
         if model.advanced then
             [ div [ class "hide-on-large-only" ] <|
                 AdvancedSearch.modalView model.advancedSearch
