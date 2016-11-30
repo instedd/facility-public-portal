@@ -2,6 +2,7 @@
 @import 'leaflet';
 @import 'leaflet.markercluster';
 @import 'variables';
+@import 'advanced_search';
 @import 'cms';
 @import 'facility_details';
 @import 'modal';
@@ -18,6 +19,11 @@ nav .nav-wrapper {
   i {
     height: 62px;
   }
+}
+
+// materailize hides native select elements by default to display it's own javascript component
+select {
+  display: block;
 }
 
 #map {
@@ -266,26 +272,26 @@ nav .nav-wrapper {
         //Instead of the line below you could use @include box-shadow($shadow-1, $shadow-2, $shadow-3, $shadow-4, $shadow-5, $shadow-6, $shadow-7, $shadow-8, $shadow-9, $shadow-10)
         box-shadow: none !important;
       }
-      + .actions {
-        position: absolute;
-        right: 0;
-        top: 10px;
-        cursor: pointer;
+    }
+    .actions {
+      position: absolute;
+      right: 0;
+      top: 10px;
+      cursor: pointer;
 
-        i, a i, a svg {
-          color: $color_mountain_mist_approx;
-          margin-left: 5px;
-          width: 24px;
-          height: 24px;
-        }
-        a:hover i, a.active i {
-          color: $blue;
-        }
-        a svg {
-          fill: $color_mountain_mist_approx;
-          &.active {
-            fill: $blue;
-          }
+      i, a i, a svg {
+        color: $color_mountain_mist_approx;
+        margin-left: 5px;
+        width: 24px;
+        height: 24px;
+      }
+      a:hover i, a.active i {
+        color: $blue;
+      }
+      a svg {
+        fill: $color_mountain_mist_approx;
+        &.active {
+          fill: $blue;
         }
       }
     }

@@ -1,4 +1,19 @@
-module Suggest exposing (Config, Model, Msg(..), PrivateMsg, init, empty, update, subscriptions, hasSuggestionsToShow, viewInput, viewInputWith, viewSuggestions, advancedSearchWindow)
+module Suggest
+    exposing
+        ( Config
+        , Model
+        , Msg(..)
+        , PrivateMsg
+        , init
+        , empty
+        , update
+        , subscriptions
+        , hasContent
+        , viewInput
+        , viewInputWith
+        , viewBody
+        , mobileAdvancedSearch
+        )
 
 import AdvancedSearch
 import Api
@@ -6,16 +21,16 @@ import Debounce
 import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick, onInput, onSubmit)
 import I18n exposing (..)
 import List
 import Models exposing (MapViewport, SearchSpec, FacilityType, Ownership, emptySearch, querySearch)
 import Return
 import Shared exposing (icon)
 import String
-import Utils exposing (perform)
 import Svg
 import Svg.Attributes
+import Utils exposing (perform)
 
 
 type alias Config =
@@ -23,7 +38,12 @@ type alias Config =
 
 
 type alias Model =
-    { query : String, advancedSearch : AdvancedSearch.Model, suggestions : Maybe (List Models.Suggestion), d : Debounce.State, advanced : Bool }
+    { query : String
+    , advancedSearch : AdvancedSearch.Model
+    , suggestions : Maybe (List Models.Suggestion)
+    , d : Debounce.State
+    , advanced : Bool
+    }
 
 
 type PrivateMsg
@@ -43,9 +63,9 @@ type Msg
     | UnhandledError String
 
 
-hasSuggestionsToShow : Model -> Bool
-hasSuggestionsToShow model =
-    (model.query /= "") && (model.suggestions /= Nothing)
+hasContent : Model -> Bool
+hasContent model =
+    model.advanced || (model.query /= "") && (model.suggestions /= Nothing)
 
 
 empty : Models.Settings -> ( Model, Cmd Msg )
@@ -157,15 +177,40 @@ viewInput model =
 
 viewInputWith : (Msg -> a) -> Model -> Html a -> Html a
 viewInputWith wmsg model trailing =
-    Shared.searchBar
-        model.query
-        (wmsg <| Search (querySearch model.query))
-        (wmsg << Private << Input)
-        (div [ class "actions" ]
-            [ trailing
-            , Html.App.map wmsg (advancedSearchIcon model)
+    let
+        submitMsg =
+            wmsg <| Search (querySearch model.query)
+
+        inputMsg =
+            wmsg << Private << Input
+
+        actions =
+            div [ class "actions" ]
+                [ trailing
+                , Html.App.map wmsg (advancedSearchIcon model)
+                ]
+
+        inputBar =
+            if model.advanced then
+                span [ class "advanced-search-title" ] [ text "Advanced search" ]
+            else
+                Html.form [ action "#", method "GET", autocomplete False, onSubmit submitMsg ]
+                    [ input
+                        [ type' "search"
+                        , placeholder <| t SearchHealthFacility
+                        , value model.query
+                        , autofocus True
+                        , onInput inputMsg
+                        ]
+                        []
+                    ]
+    in
+        div [ class "search-box" ]
+            [ div [ class "search" ]
+                [ inputBar
+                , actions
+                ]
             ]
-        )
 
 
 advancedSearchIcon : Model -> Html Msg
@@ -196,14 +241,20 @@ filterIcon model =
             ]
 
 
-viewSuggestions : Model -> List (Html Msg)
-viewSuggestions model =
-    case model.suggestions of
-        Nothing ->
-            []
+viewBody : Model -> List (Html Msg)
+viewBody model =
+    if model.advanced then
+        Shared.lmap (Private << AdvancedSearchMsg) <|
+            [ div [ class "hide-on-med-and-down" ] <|
+                AdvancedSearch.embeddedView model.advancedSearch
+            ]
+    else
+        case model.suggestions of
+            Nothing ->
+                []
 
-        Just s ->
-            [ suggestionsContent s ]
+            Just s ->
+                [ suggestionsContent s ]
 
 
 suggestionsContent : List Models.Suggestion -> Html Msg
@@ -262,12 +313,15 @@ suggestion s =
                 ]
 
 
-advancedSearchWindow : Model -> List (Html Msg)
-advancedSearchWindow model =
-    if model.advanced then
-        List.map (Html.App.map (Private << AdvancedSearchMsg)) (AdvancedSearch.view model.advancedSearch)
-    else
-        []
+mobileAdvancedSearch : Model -> List (Html Msg)
+mobileAdvancedSearch model =
+    Shared.lmap (Private << AdvancedSearchMsg) <|
+        if model.advanced then
+            [ div [ class "hide-on-large-only" ] <|
+                AdvancedSearch.modalView model.advancedSearch
+            ]
+        else
+            []
 
 
 setAdvancedSearch : Model -> AdvancedSearch.Model -> Model

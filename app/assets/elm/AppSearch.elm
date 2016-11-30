@@ -1,18 +1,18 @@
 module AppSearch exposing (Model, Msg(..), PrivateMsg, init, restoreCmd, view, update, subscriptions, mapViewport, userLocation)
 
 import Api
-import Map
+import Debounce
 import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
+import Map
 import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, FacilitySummary, FacilityType, Ownership, shouldLoadMore, emptySearch)
-import Shared exposing (MapView, icon, classNames)
-import Utils exposing (perform)
-import UserLocation
-import Suggest
-import Debounce
 import Return exposing (..)
+import Shared exposing (MapView, icon, classNames)
+import Suggest
+import UserLocation
+import Utils exposing (perform)
 
 
 type alias Model =
@@ -196,8 +196,8 @@ setSuggest model s =
 view : Model -> MapView Msg
 view model =
     let
-        anySuggestion =
-            Suggest.hasSuggestionsToShow model.suggest
+        suggestContent =
+            Suggest.hasContent model.suggest
 
         onlyMobile =
             ( "hide-on-large-only", True )
@@ -207,9 +207,6 @@ view model =
 
         hideOnMobileListingFocused =
             ( "hide-on-med-and-down", not model.mobileFocusMap )
-
-        hideOnSuggestions =
-            ( "hide", anySuggestion )
     in
         { headerClass = classNames [ hideOnMobileListingFocused ]
         , content =
@@ -217,19 +214,20 @@ view model =
                 [ classList [ onlyMobile, hideOnMobileMapFocused ] ]
                 [ mobileBackHeader ]
             , suggestionInput model
-            , div
-                [ classList [ hideOnSuggestions, hideOnMobileMapFocused, ( "content expand", True ) ] ]
-                [ searchResults model ]
+            , div [ classList [ hideOnMobileMapFocused, ( "content expand", True ) ] ] <|
+                if suggestContent then
+                    Shared.lmap (Private << SuggestMsg) (Suggest.viewBody model.suggest)
+                else
+                    [ searchResults model ]
             ]
-                ++ suggestionItems model
         , toolbar =
             [ userLocationView model ]
         , bottom =
-            if (model.mobileFocusMap && not anySuggestion) then
+            if (model.mobileFocusMap && not suggestContent) then
                 [ mobileFocusToggleView ]
             else
                 []
-        , modal = List.map (Html.App.map (Private << SuggestMsg)) (Suggest.advancedSearchWindow model.suggest)
+        , modal = Shared.lmap (Private << SuggestMsg) (Suggest.mobileAdvancedSearch model.suggest)
         }
 
 
@@ -252,10 +250,6 @@ suggestionInput model =
             a [ href "#", Shared.onClick ClearSearch ] [ icon "close" ]
     in
         Suggest.viewInputWith (Private << SuggestMsg) model.suggest close
-
-
-suggestionItems model =
-    (List.map (Html.App.map (Private << SuggestMsg)) (Suggest.viewSuggestions model.suggest))
 
 
 userLocationView model =

@@ -1,12 +1,14 @@
 module Utils exposing (..)
 
-import Http
-import String
 import Date exposing (Date)
-import Time
-import Task
 import Dict exposing (Dict)
+import Html exposing (Html)
+import Html.App
+import Http
 import Return
+import String
+import Task
+import Time
 
 
 (&>) : Maybe a -> (a -> Maybe b) -> Maybe b
