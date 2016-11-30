@@ -5,10 +5,15 @@
 @import 'advanced_search';
 @import 'cms';
 @import 'facility_details';
+@import 'map';
+@import 'menu';
 @import 'modal';
 @import 'notice';
 @import 'autocomplete';
 
+
+$topnav_height: 72px;
+$searchbar_height: 56px;
 
 html, body, #container, #elm, #map {
   height: 100%;
@@ -26,84 +31,107 @@ select {
   display: block;
 }
 
-#map {
-  z-index: 1;
-
-  .userMarker-outer {
-    stroke-opacity: 0;
-    fill-opacity: 0.3;
-    fill: #333333;
-  }
-
-  .userMarker {
-    stroke: white;
-    stroke-width: 2;
-    stroke-opacity: 1;
-    fill: #F44336;
-    fill-opacity: 1;
-  }
-
-  .facilityMarker, .facilityMarker-highlighted {
-    stroke: white;
-    stroke-width: 2;
-    stroke-opacity: 1;
-    fill-opacity: 1;
-  }
-
-  .clusterMarker {
-    border-radius: 50%;
-    background-color: $blue;
-    border: 2px solid white;
-
-    width: 18px !important;
-    height: 18px !important;
-    margin-left: -9px !important;
-    margin-top: -9px !important;
-
-    &.priority-0, &.priority-1 {
-      width: 10px !important;
-      height: 10px !important;
-      margin-left: -5px !important;
-      margin-top: -5px !important;
-      border: 1px solid white;
-    }
-  }
-
-  &.grey-facilities {
-    .clusterMarker {
-      background-color: #a0a0a0;
-    }
-    .clusterMarker.highlighted {
-      background-color: $blue;
-    }
-  }
-
-  .leaflet-overlay-pane {
-    z-index: 610;
-  }
-}
-
-#map-control, #map-toolbar {
+#map-control .panels,
+#map-toolbar {
   transition: all ease-in-out .25s;
-  background: rgb(255,255,255);
   border-radius: 5px;
   box-sizing: border-box;
-  position: absolute;
+  background: rgb(255,255,255);
   display: flex;
 }
 
 #map-control {
+  position: absolute;
   left: 40px;
   top: 12px;
-  width: 390px;
-  min-width: 318px;
+  display: flex;
+  flex-direction: row;
   max-height: 95%;
-  flex-direction: column;
-  overflow: hidden;
-  z-index: 3;
+
+  .panels {
+    z-index: 3;
+    overflow-x: hidden; // to clip rounded corners of the contenet with border-radius
+    flex-grow: 1;
+
+    .control-content {
+      .control-content-top {
+        height: $searchbar_height;
+      }
+      .control-content-bottom {
+        border-top: 1px solid #bcbcbc;
+      }
+    }
+
+    .side {
+      width: 390px;
+      min-width: 318px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+
+      .TopNav {
+        border-left: 1px solid rgba(0,0,0,0.1);
+      }
+      .control-content {
+        flex-grow: 1;
+        position: relative;
+        border-left: 1px solid #bcbcbc;
+        .overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0,0,0,0.5);
+          z-index: 5;
+        }
+      }
+    }
+  }
+
+
+  @media all and(min-width: $width-breakpoint) {
+    &.expansible {
+      .panels {
+        border-radius: 5px 5px 0 5px;
+      }
+    }
+
+    &.expanded {
+      width: 96%;
+      height: 95%;
+    }
+
+    &:not(.expanded) .main {
+      display: none;
+    }
+  }
 
   .preloader-wrapper {
     margin: 40px auto;
+  }
+
+  .toggle {
+    z-index: 2;
+
+    .spacing {
+      height: $topnav_height;
+      background: transparent;
+    }
+    .toggle-btn {
+      display: flex;
+      cursor: pointer;
+      border-radius: 0 5px 5px 0;
+      color: white;
+      background: $color_mountain_mist_approx;
+      height: $searchbar_height;
+      i { margin: auto; }
+    }
   }
 
   .footer {
@@ -120,6 +148,7 @@ select {
 }
 
 #map-toolbar {
+  position: absolute;
   right: 12px;
   bottom: 24px;
   height: 32px;
@@ -153,9 +182,9 @@ select {
   }
 }
 
-#TopNav {
+.TopNav {
   background: $blue;
-  height: 72px;
+  height: $topnav_height;
   padding: 10px;
 
   i { font-size: 25px; }
@@ -163,50 +192,6 @@ select {
     padding: 0 7px;
     & img {
       height: 50px;
-    }
-  }
-}
-
-#map-control .menu,
-.side-nav .menu {
-  margin-top: 0;
-  margin-bottom: 0;
-  border: none;
-
-  hr {
-    border: 0;
-    border-top: 1px solid #ccc;
-    margin: 14px 0 20px 0;
-  }
-
-  li {
-    height: 50px;
-    padding: 0px;
-    margin: 0;
-    a {
-      line-height: 48px;
-      font-weight: 500;
-      font-size: 14px;
-
-      color: black;
-      display: inline-block;
-      padding: 0 0 0 55px;
-      position: relative;
-
-      i.material-icons {
-        line-height: inherit;
-        position: absolute;
-        left: 17px;
-        color: inherit;
-      }
-
-      &:hover {
-        background-color: inherit;
-      }
-
-      &.active {
-        color: $blue;
-      }
     }
   }
 }
@@ -251,7 +236,6 @@ select {
   -ms-flex-direction: row;
   flex-direction: row;
   position: relative;
-  border-bottom: 1px solid #bcbcbc;
   .search {
     -webkit-box-flex: 1;
     -moz-box-flex: 1;
@@ -363,11 +347,14 @@ input[type="checkbox"]:checked + label:before {
 @media all and(max-width: $width-breakpoint) {
   #map-control {
     //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
-    border-radius: 0;
     width: 100%;
     left: 0;
     top: 0;
     max-height: none;
+
+    .panels {
+      border-radius: 0;
+    }
 
     .content {
       max-height: none;
@@ -419,27 +406,5 @@ input[type="checkbox"]:checked + label:before {
   .facilityDetail .title {
     min-height: 72px;
     max-height: 85px;
-  }
-
-  #mobile-menu {
-    .side-nav {
-      transition: 0.25s;
-      &.active {
-        transform: translateX(0);
-      }
-      ul {
-        margin: 30px 0;
-      }
-    }
-
-    .overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.65);
-      z-index: 5;
-    }
   }
 }

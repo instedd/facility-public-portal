@@ -1,24 +1,25 @@
 module AppFacilityDetails exposing (Model, Msg(..), PrivateMsg, init, view, update, subscriptions, mapViewport, userLocation)
 
-import Models exposing (Settings, MapViewport, Facility)
+import Api
+import Date exposing (Date)
 import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
-import Shared exposing (MapView, classNames)
-import Api
-import Date exposing (Date)
-import Utils exposing (perform)
-import Time
-import String
-import Task
-import Map
-import UserLocation
 import Http
+import I18n exposing (..)
 import Json.Decode as Decode
 import Json.Encode exposing (..)
-import I18n exposing (..)
+import Layout exposing (MapView)
+import Map
+import Models exposing (Settings, MapViewport, Facility)
 import Return exposing (..)
+import Shared exposing (classNames)
+import String
+import Task
+import Time
+import UserLocation
+import Utils exposing (perform)
 
 
 type Model
@@ -179,7 +180,7 @@ view model =
         hideOnMobileDetailsFocused =
             ( "hide-on-med-and-down", not (mobileFocusMap model) )
     in
-        { headerClass = classNames [ hideOnMobileDetailsFocused ]
+        { headerClasses = classNames [ hideOnMobileDetailsFocused ]
         , content =
             [ case model of
                 Loading _ _ _ _ ->
@@ -188,6 +189,7 @@ view model =
                 Loaded _ facility date userLocation _ _ ->
                     facilityDetail [ hideOnMobileMapFocused ] date userLocation facility
             ]
+        , expandedContent = Nothing
         , toolbar =
             [ userLocationView model ]
         , bottom =

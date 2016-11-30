@@ -12,6 +12,7 @@ module Suggest
         , viewInput
         , viewInputWith
         , viewBody
+        , advancedSearch
         , mobileAdvancedSearch
         )
 
@@ -255,6 +256,12 @@ viewBody model =
 
             Just s ->
                 [ suggestionsContent s ]
+
+
+advancedSearch : Model -> List (Html Msg)
+advancedSearch model =
+    Shared.lmap (Private << AdvancedSearchMsg) <|
+        AdvancedSearch.embeddedView model.advancedSearch
 
 
 suggestionsContent : List Models.Suggestion -> Html Msg

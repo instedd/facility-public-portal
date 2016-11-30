@@ -1,0 +1,56 @@
+#map {
+  z-index: 1;
+
+  .userMarker-outer {
+    stroke-opacity: 0;
+    fill-opacity: 0.3;
+    fill: #333333;
+  }
+
+  .userMarker {
+    stroke: white;
+    stroke-width: 2;
+    stroke-opacity: 1;
+    fill: #F44336;
+    fill-opacity: 1;
+  }
+
+  .facilityMarker, .facilityMarker-highlighted {
+    stroke: white;
+    stroke-width: 2;
+    stroke-opacity: 1;
+    fill-opacity: 1;
+  }
+
+  .clusterMarker {
+    border-radius: 50%;
+    background-color: $blue;
+    border: 2px solid white;
+
+    width: 18px !important;
+    height: 18px !important;
+    margin-left: -9px !important;
+    margin-top: -9px !important;
+
+    &.priority-0, &.priority-1 {
+      width: 10px !important;
+      height: 10px !important;
+      margin-left: -5px !important;
+      margin-top: -5px !important;
+      border: 1px solid white;
+    }
+  }
+
+  &.grey-facilities {
+    .clusterMarker {
+      background-color: #a0a0a0;
+    }
+    .clusterMarker.highlighted {
+      background-color: $blue;
+    }
+  }
+
+  .leaflet-overlay-pane {
+    z-index: 610;
+  }
+}

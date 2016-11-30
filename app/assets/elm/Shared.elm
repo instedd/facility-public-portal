@@ -14,51 +14,16 @@ type alias LHtml a =
     List (Html a)
 
 
-type alias MapView a =
-    { headerClass : String
-    , content : LHtml a
-    , toolbar : LHtml a
-    , bottom : LHtml a
-    , modal : LHtml a
-    }
-
-
-classNames : List ( String, Bool ) -> String
+classNames : List ( String, Bool ) -> List String
 classNames list =
     list
         |> List.filter snd
         |> List.map fst
-        |> String.join " "
 
 
 lmap : (a -> b) -> LHtml a -> LHtml b
 lmap =
     List.map << Html.App.map
-
-
-mapCanvas : Html a
-mapCanvas =
-    div [ id "map" ] []
-
-
-layout : Html a -> Html a
-layout content =
-    div [ id "container" ] [ mapCanvas, content ]
-
-
-controlStack : List (Html a) -> Html a
-controlStack content =
-    div [ id "map-control", class "z-depth-1" ] content
-
-
-header : LHtml a -> Html a
-header content =
-    let
-        logo =
-            a [ id "logo", href "/" ] [ img [ src "/logo.svg" ] [] ]
-    in
-        nav [ id "TopNav", class "z-depth-0" ]
-            [ div [ class "nav-wrapper" ] (logo :: content) ]
 
 
 icon : String -> Html a

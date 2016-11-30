@@ -3,11 +3,12 @@ module MainMenu exposing (..)
 import Html exposing (Html, div)
 import Html.App
 import Html.Attributes exposing (class)
+import Layout
 import Menu
-import Shared
 import Navigation
-import UrlParser exposing (..)
+import Shared
 import String
+import UrlParser exposing (..)
 
 
 type alias Flags =
@@ -59,7 +60,7 @@ view model =
     let
         mobileView =
             div [ class "hide-on-large-only" ]
-                [ Shared.header [ Menu.anchor ToggleMenu ]
+                [ Layout.header [ Menu.anchor ToggleMenu ] []
                 , Menu.sideBar model.settings model.currentPage model.menu ToggleMenu
                 ]
 

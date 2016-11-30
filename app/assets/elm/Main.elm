@@ -5,6 +5,7 @@ import AppHome
 import AppSearch
 import Html exposing (Html, div, span, p, text, a)
 import Html.Attributes exposing (id, class, style, href, attribute, classList)
+import Layout
 import Map
 import Menu
 import Models exposing (..)
@@ -53,7 +54,12 @@ type MainModel
 
 
 type alias CommonPageState =
-    { settings : Settings, menu : Menu.Model, route : Route, notice : Maybe Notice }
+    { settings : Settings
+    , menu : Menu.Model
+    , route : Route
+    , expanded : ExpandedState
+    , notice : Maybe Notice
+    }
 
 
 type PagedModel
@@ -70,12 +76,17 @@ type MainMsg
     | FacilityDetailsMsg AppFacilityDetails.Msg
     | SearchMsg AppSearch.Msg
     | ToggleMenu
+    | ToggleExpand
     | DismissNotice
 
 
 type FacilityDetailsContext
     = FromUnkown
     | FromSearch AppSearch.Model
+
+
+type alias ExpandedState =
+    Bool
 
 
 type alias Notice =
@@ -146,6 +157,15 @@ mainUpdate msg mainModel =
 
                 _ ->
                     ( mainModel, Cmd.none )
+
+        ToggleExpand ->
+            case mainModel of
+                Page common pagedModel ->
+                    singleton <|
+                        Page { common | expanded = not common.expanded } pagedModel
+
+                _ ->
+                    singleton mainModel
 
         DismissNotice ->
             ( withoutNotice mainModel, Cmd.none )
@@ -266,7 +286,12 @@ mainUrlUpdate result mainModel =
                     Routing.routeFromResult result
 
                 common =
-                    { settings = getSettings mainModel, menu = Menu.Closed, route = route, notice = notice mainModel }
+                    { settings = getSettings mainModel
+                    , menu = Menu.Closed
+                    , route = route
+                    , expanded = False
+                    , notice = notice mainModel
+                    }
             in
                 case route of
                     RootRoute ->
@@ -377,22 +402,28 @@ mainView mainModel =
             in
                 case pagedModel of
                     HomeModel pagedModel ->
-                        mapView HomeMsg common.settings common.menu common.notice <| withControls <| AppHome.view pagedModel
+                        AppHome.view pagedModel
+                            |> withControls
+                            |> mapView HomeMsg common
 
                     FacilityDetailsModel pagedModel _ ->
-                        mapView FacilityDetailsMsg common.settings common.menu common.notice <| withControls <| AppFacilityDetails.view pagedModel
+                        AppFacilityDetails.view pagedModel
+                            |> withControls
+                            |> mapView FacilityDetailsMsg common
 
                     SearchModel pagedModel ->
-                        mapView SearchMsg common.settings common.menu common.notice <| withControls <| AppSearch.view pagedModel
+                        AppSearch.view pagedModel
+                            |> withControls
+                            |> mapView SearchMsg common
 
-        Initializing _ _ settings ->
-            mapView identity settings Menu.Closed Nothing { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
+        Initializing _ _ _ ->
+            loadingView Nothing
 
-        Initialized _ settings notice ->
-            mapView identity settings Menu.Closed notice { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
+        Initialized _ _ notice ->
+            loadingView notice
 
 
-prependToolbar : Html a -> Shared.MapView a -> Shared.MapView a
+prependToolbar : Html a -> Layout.MapView a -> Layout.MapView a
 prependToolbar item view =
     { view | toolbar = item :: view.toolbar }
 
@@ -419,8 +450,17 @@ localeControlView settings route =
             List.map localeAnchor settings.locales
 
 
-mapView : (a -> MainMsg) -> Settings -> Menu.Model -> Maybe Notice -> Shared.MapView a -> Html MainMsg
-mapView wmsg settings menuModel notice viewContent =
+loadingView : Maybe Notice -> Html MainMsg
+loadingView notice =
+    Layout.overMap <|
+        select
+            [ include <| Layout.sideControl (Layout.header [] []) []
+            , maybe <| Maybe.map noticePopup notice
+            ]
+
+
+mapView : (a -> MainMsg) -> CommonPageState -> Layout.MapView a -> Html MainMsg
+mapView wmsg { settings, menu, expanded, notice } viewContent =
     let
         menuSettings =
             { contactEmail = settings.contactEmail
@@ -430,31 +470,45 @@ mapView wmsg settings menuModel notice viewContent =
         hosting =
             Shared.lmap wmsg
 
-        header =
-            div [ class viewContent.headerClass ] [ Shared.header [ Menu.anchor ToggleMenu ] ]
-
         togglingMenu =
-            Menu.togglingContent menuSettings Menu.Map menuModel
+            Menu.togglingContent menuSettings Menu.Map menu
 
         mobileMenu =
-            Menu.sideBar menuSettings Menu.Map menuModel ToggleMenu
+            Menu.sideBar menuSettings Menu.Map menu ToggleMenu
+
+        header =
+            Layout.header [ Menu.anchor ToggleMenu ] viewContent.headerClasses
+
+        collapsedView =
+            togglingMenu (hosting viewContent.content)
+
+        expandedView =
+            viewContent.expandedContent
+                |> Maybe.map
+                    (\{ side, main } ->
+                        { side = togglingMenu (hosting side)
+                        , main = Menu.dimWhenOpen (hosting main) menu
+                        }
+                    )
+
+        mapControl =
+            Layout.expansibleControl header expanded ToggleExpand collapsedView expandedView
     in
-        Shared.layout <|
-            div [] <|
-                select
-                    [ include <|
-                        Shared.controlStack (header :: togglingMenu (hosting viewContent.content))
-                    , unless (List.isEmpty viewContent.bottom) <|
-                        div [ id "bottom-action", class "z-depth-1" ] (hosting viewContent.bottom)
-                    , include <|
-                        div [ id "map-toolbar", class "z-depth-1" ] (hosting viewContent.toolbar)
-                    , unless (List.isEmpty viewContent.modal) <|
-                        div [ id "modal", class "modal open" ] (hosting viewContent.modal)
-                    , include <|
-                        mobileMenu
-                    , maybe <|
-                        Maybe.map noticePopup notice
-                    ]
+        Layout.overMap <|
+            select
+                [ include <|
+                    mapControl
+                , unless (List.isEmpty viewContent.bottom) <|
+                    div [ id "bottom-action", class "z-depth-1" ] (hosting viewContent.bottom)
+                , include <|
+                    div [ id "map-toolbar", class "z-depth-1" ] (hosting viewContent.toolbar)
+                , unless (List.isEmpty viewContent.modal) <|
+                    div [ id "modal", class "modal open" ] (hosting viewContent.modal)
+                , include <|
+                    mobileMenu
+                , maybe <|
+                    Maybe.map noticePopup notice
+                ]
 
 
 noticePopup : Notice -> Html MainMsg

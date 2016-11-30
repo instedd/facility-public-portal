@@ -6,10 +6,11 @@ import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
+import Layout exposing (MapView)
 import Map
 import Models exposing (Settings, MapViewport, SearchSpec, SearchResult, Facility, LatLng, FacilitySummary, FacilityType, Ownership, shouldLoadMore, emptySearch)
 import Return exposing (..)
-import Shared exposing (MapView, icon, classNames)
+import Shared exposing (icon, classNames)
 import Suggest
 import UserLocation
 import Utils exposing (perform)
@@ -207,19 +208,24 @@ view model =
 
         hideOnMobileListingFocused =
             ( "hide-on-med-and-down", not model.mobileFocusMap )
-    in
-        { headerClass = classNames [ hideOnMobileListingFocused ]
-        , content =
-            [ div
+
+        header =
+            div
                 [ classList [ onlyMobile, hideOnMobileMapFocused ] ]
                 [ mobileBackHeader ]
-            , suggestionInput model
-            , div [ classList [ hideOnMobileMapFocused, ( "content expand", True ) ] ] <|
-                if suggestContent then
-                    Shared.lmap (Private << SuggestMsg) (Suggest.viewBody model.suggest)
-                else
-                    [ searchResults model ]
-            ]
+    in
+        { headerClasses = classNames [ hideOnMobileListingFocused ]
+        , content =
+            (::) header <|
+                Layout.contentWithTopBar
+                    (suggestionInput model)
+                    [ div [ classList [ hideOnMobileMapFocused, ( "content expand", True ) ] ] <|
+                        if suggestContent then
+                            Shared.lmap (Private << SuggestMsg) (Suggest.viewBody model.suggest)
+                        else
+                            [ searchResults model ]
+                    ]
+        , expandedContent = Nothing
         , toolbar =
             [ userLocationView model ]
         , bottom =
@@ -232,7 +238,7 @@ view model =
 
 
 mobileBackHeader =
-    nav [ id "TopNav", class "z-depth-0" ]
+    nav [ class "TopNav z-depth-0" ]
         [ a
             [ href "#!"
             , class "nav-back"
