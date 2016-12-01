@@ -80,61 +80,7 @@ class ElasticsearchService
   end
 
   def search_facilities(params)
-    validate_search(params)
-
-    size = params[:size].to_i
-    size = 1000 if size == 0
-    from = params[:from].to_i || 0
-
-    search_body = {
-      size: size,
-      from: from,
-      _source: [ "id", "name", "priority", "facility_type", "position", "adm" ],
-      query: { bool: { must: [] } },
-      sort: {}
-    }
-
-    if params[:q]
-      search_body[:query][:bool][:must] << { match_phrase_prefix: { name: params[:q] } }
-    end
-
-    if params[:service]
-      search_body[:query][:bool][:must] << { match: { service_ids: params[:service] } }
-    end
-
-    if params[:type]
-      search_body[:query][:bool][:must] << { match: { facility_type_id: params[:type] } }
-    end
-
-    if params[:ownership]
-      search_body[:query][:bool][:must] << { match: { ownership_id: params[:ownership] } }
-    end
-
-    if params[:location]
-      search_body[:query][:bool][:must] << { match: { adm_ids: params[:location] } }
-    end
-
-    if params[:lat] && params[:lng]
-      search_body[:sort] = {
-        _geo_distance: {
-          position: {
-            lat: params[:lat],
-            lon: params[:lng]
-          },
-          order: "asc",
-          unit:  "km",
-          distance_type: "plane"
-        }
-      }
-    end
-
-    result = client.search({
-      index: @index_name,
-      type: 'facility',
-      body: search_body
-    })
-
-    page_result(result, from, size)
+    list_facilities(params, {_source: [ "id", "name", "priority", "facility_type", "position", "adm" ]})
   end
 
   def max_administrative_level
@@ -153,18 +99,8 @@ class ElasticsearchService
     result["aggregations"]["max_level"]["value"].to_i
   end
 
-  def dump_facilities(from:, size:)
-    result = client.search({
-      index: @index_name,
-      type: "facility",
-      body: {
-        query: { match_all: {} },
-        from: from,
-        size: size
-      }
-    })
-
-    page_result(result, from, size)
+  def dump_facilities(params)
+    list_facilities(params, {})
   end
 
   def get_facility_types
@@ -322,5 +258,62 @@ class ElasticsearchService
     }.tap do |h|
       h[:next_from] = h[:from] + h[:size] if result["hits"]["hits"].count == h[:size]
     end
+  end
+
+  def list_facilities(params, search_body)
+    validate_search(params)
+
+    size = params[:size].to_i
+    size = 1000 if size == 0
+    from = params[:from].to_i || 0
+
+    search_body.merge!({
+      size: size,
+      from: from,
+      query: { bool: { must: [] } },
+      sort: {}
+    })
+
+    if params[:q]
+      search_body[:query][:bool][:must] << { match_phrase_prefix: { name: params[:q] } }
+    end
+
+    if params[:service]
+      search_body[:query][:bool][:must] << { match: { service_ids: params[:service] } }
+    end
+
+    if params[:type]
+      search_body[:query][:bool][:must] << { match: { facility_type_id: params[:type] } }
+    end
+
+    if params[:ownership]
+      search_body[:query][:bool][:must] << { match: { ownership_id: params[:ownership] } }
+    end
+
+    if params[:location]
+      search_body[:query][:bool][:must] << { match: { adm_ids: params[:location] } }
+    end
+
+    if params[:lat] && params[:lng]
+      search_body[:sort] = {
+        _geo_distance: {
+          position: {
+            lat: params[:lat],
+            lon: params[:lng]
+          },
+          order: "asc",
+          unit:  "km",
+          distance_type: "plane"
+        }
+      }
+    end
+
+    result = client.search({
+      index: @index_name,
+      type: 'facility',
+      body: search_body
+    })
+
+    page_result(result, from, size)
   end
 end

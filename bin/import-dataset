@@ -13,7 +13,6 @@ input_path = ARGV[0]
 
 ENV["ELASTICSEARCH_LOG"] ||= "0"
 
-File.delete("data/full_dataset.zip") if File.exists?("data/full_dataset.zip")
 ElasticsearchService.instance.drop_index rescue nil
 ElasticsearchService.instance.setup_index
 ElasticsearchService.instance.setup_mappings
@@ -22,7 +21,6 @@ ElasticsearchService.instance.setup_mappings
 def import(path)
   dataset = Indexing.read_csv_dataset(path)
   Indexing.index_dataset(dataset)
-  Dump.dump_zip("data/full_dataset.zip")
 end
 
 if File.file? input_path

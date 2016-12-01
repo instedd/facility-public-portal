@@ -141,12 +141,12 @@ RSpec.describe Dump do
   end
 
   def dump_and_read(dataset, locales = [:en, :es], page_size = 100)
-    output_file = Tempfile.new("out")
+    output_io = StringIO.new
 
     index_dataset(dataset, locales)
-    dump_dataset(output_file.path, page_size, locales)
+    dump_dataset(output_io, page_size, locales)
 
-    CSV.read(output_file.path, headers: true, converters: [:blank_to_nil])
+    CSV.parse(output_io.string, headers: true, converters: [:blank_to_nil])
        .map(&:to_h)
   end
 
