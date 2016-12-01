@@ -1,4 +1,16 @@
-module AppSearch exposing (Model, Msg(..), PrivateMsg, init, restoreCmd, view, update, subscriptions, mapViewport, userLocation)
+module AppSearch
+    exposing
+        ( Model
+        , Msg(..)
+        , PrivateMsg
+        , init
+        , restoreCmd
+        , view
+        , update
+        , subscriptions
+        , mapViewport
+        , userLocation
+        )
 
 import Api
 import Debounce
@@ -225,7 +237,10 @@ view model =
                         else
                             [ searchResults model ]
                     ]
-        , expandedContent = Nothing
+        , expandedContent =
+            Suggest.expandedView model.suggest model.results
+                |> Layout.mapExpandedView (Private << SuggestMsg)
+                |> Just
         , toolbar =
             [ userLocationView model ]
         , bottom =

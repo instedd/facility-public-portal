@@ -14,6 +14,7 @@ module Suggest
         , viewBody
         , advancedSearch
         , mobileAdvancedSearch
+        , expandedView
         )
 
 import AdvancedSearch
@@ -24,10 +25,12 @@ import Html.App
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import I18n exposing (..)
+import Layout
 import List
 import Models exposing (MapViewport, SearchSpec, FacilityType, Ownership, emptySearch, querySearch)
 import Return
 import Shared exposing (icon)
+import String
 import String
 import Svg
 import Svg.Attributes
@@ -193,7 +196,7 @@ viewInputWith wmsg model trailing =
 
         inputBar =
             if model.advanced then
-                span [ class "advanced-search-title" ] [ text "Advanced search" ]
+                span [ class "title" ] [ text "Advanced Search" ]
             else
                 Html.form [ action "#", method "GET", autocomplete False, onSubmit submitMsg ]
                     [ input
@@ -212,6 +215,45 @@ viewInputWith wmsg model trailing =
                 , actions
                 ]
             ]
+
+
+expandedView : Model -> Maybe Models.SearchResult -> Layout.ExpandedView Msg
+expandedView model results =
+    let
+        sideTop =
+            div [ class "search-box" ]
+                [ div [ class "search" ]
+                    [ span [ class "title" ] [ text "Advanced Search" ]
+                    , div [ class "actions" ] []
+                    ]
+                ]
+
+        sideBottom =
+            advancedSearch model
+
+        resultList =
+            results
+                |> Maybe.map .items
+                |> Maybe.withDefault []
+
+        mainTop =
+            text <| (toString (List.length resultList)) ++ " facilities"
+
+        mainBottom =
+            resultList
+                |> List.map (\f -> li [] [ text f.name ])
+                |> ul []
+                |> (flip (::)) []
+    in
+        { side =
+            Layout.contentWithTopBar
+                sideTop
+                sideBottom
+        , main =
+            Layout.contentWithTopBar
+                mainTop
+                mainBottom
+        }
 
 
 advancedSearchIcon : Model -> Html Msg

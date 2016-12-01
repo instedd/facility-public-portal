@@ -54,10 +54,19 @@ select {
     flex-grow: 1;
 
     .control-content {
+      display: flex;
+      flex-direction: column;
       .control-content-top {
-        height: $searchbar_height;
+        min-height: $searchbar_height;
+
+        .title {
+          font-size: 16px;
+          color: $color_mountain_mist_approx;
+          line-height: 3rem;
+        }
       }
       .control-content-bottom {
+        overflow-y: scroll;
         border-top: 1px solid #bcbcbc;
       }
     }
@@ -120,7 +129,7 @@ select {
     z-index: 2;
 
     .spacing {
-      height: $topnav_height;
+      min-height: $topnav_height;
       background: transparent;
     }
     .toggle-btn {
@@ -129,7 +138,7 @@ select {
       border-radius: 0 5px 5px 0;
       color: white;
       background: $color_mountain_mist_approx;
-      height: $searchbar_height;
+      min-height: $searchbar_height;
       i { margin: auto; }
     }
   }
@@ -184,7 +193,7 @@ select {
 
 .TopNav {
   background: $blue;
-  height: $topnav_height;
+  min-height: $topnav_height;
   padding: 10px;
 
   i { font-size: 25px; }

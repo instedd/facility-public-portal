@@ -1,16 +1,18 @@
 module Layout
     exposing
         ( MapView
+        , ExpandedView
         , overMap
         , sideControl
         , expansibleControl
         , header
         , contentWithTopBar
+        , mapExpandedView
         )
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Shared exposing (LHtml, icon, onClick)
+import Shared exposing (LHtml, icon, onClick, lmap)
 import String
 
 
@@ -68,8 +70,10 @@ expansibleControl header expanded toggleMsg collapsedView expandedContent =
                 mapControl { expansible = True, expanded = expanded }
                     [ div [ class "panels z-depth-1" ]
                         [ -- mobile view: rendered separately and toggled via CSS
-                          div [ class "side hide-on-large-only" ]
-                            (header :: collapsedView)
+                          div [ class "side hide-on-large-only" ] <|
+                            mapControlColumn
+                                header
+                                collapsedView
                           -- desktop view: expansible content
                         , div [ class "side hide-on-med-and-down" ] <|
                             mapControlColumn
@@ -134,3 +138,10 @@ contentWithTopBar topBar content =
     [ div [ class "control-content-top" ] [ topBar ]
     , div [ class "control-content-bottom" ] content
     ]
+
+
+mapExpandedView : (a -> b) -> ExpandedView a -> ExpandedView b
+mapExpandedView f { side, main } =
+    { side = lmap f side
+    , main = lmap f main
+    }
