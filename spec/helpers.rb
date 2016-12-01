@@ -24,7 +24,7 @@ module Helpers
     elasticsearch_service.refresh_index
   end
 
-  def dump_dataset(output_path, page_size, locales = Settings.locales.keys)
-    Dump.new(output_path, elasticsearch_service, page_size, locales).run
+  def dump_dataset(output_io, page_size, locales = Settings.locales.keys)
+    Dump.new({}, output_io, elasticsearch_service, page_size, locales).run
   end
 end

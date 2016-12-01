@@ -1,4 +1,6 @@
 class ApiController < ActionController::Base
+  include ActionController::Live
+
   protect_from_forgery with: :exception
   before_filter :set_locale
 
@@ -8,6 +10,15 @@ class ApiController < ActionController::Base
     render json: { items: search_result[:items] }.tap { |h|
       h[:next_url] = search_path(search_params.merge({from: search_result[:next_from]})) if search_result[:next_from]
     }
+  end
+
+  def dump
+    set_file_headers
+    begin
+      Dump.dump(search_params, response.stream)
+    ensure
+      response.stream.close
+    end
   end
 
   def suggest
@@ -71,5 +82,14 @@ class ApiController < ActionController::Base
     rescue
       I18n.locale = I18n.default_locale
     end
+  end
+
+  def set_file_headers
+    file_name = "data-#{Time.zone.now.to_date.to_s(:default)}.csv"
+    headers["X-Accel-Buffering"] = "no" # allow streaming for nginx
+    headers["Cache-Control"] = "no-cache"
+    headers["Content-Type"] = "text/csv; charset=utf-8"
+    headers["Content-Disposition"] = "attachment; filename=\"#{file_name}\""
+    headers["Last-Modified"] = Time.zone.now.ctime.to_s
   end
 end

@@ -14,6 +14,7 @@ Rails.application.routes.draw do
 
   scope :api do
     get 'search', to: 'api#search'
+    get 'dump', to: 'api#dump'
     get 'suggest', to: 'api#suggest'
     get 'facilities/:id', to: 'api#get_facility'
     get 'facility_types', to: 'api#facility_types'
@@ -22,7 +23,6 @@ Rails.application.routes.draw do
   end
 
   post 'facilities/:id/report', to: 'application#report_facility'
-  get 'data', to: 'application#download_dataset'
   get 'map', to: 'application#map'
 
   get '*unmatched_route', :to => 'application#map'

@@ -75,7 +75,7 @@ menuContent settings active =
                     , include <| hr [] []
                     , include <|
                         li []
-                            [ a [ href <| "/data" ]
+                            [ a [ href <| "/api/dump" ]
                                 [ icon "file_download"
                                 , text <| t I18n.FullDownload
                                 ]
