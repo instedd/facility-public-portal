@@ -347,13 +347,16 @@ input[type="checkbox"]:checked + label:before {
 @media all and(max-width: $width-breakpoint) {
   #map-control {
     //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
-    width: 100%;
     left: 0;
     top: 0;
     max-height: none;
 
     .panels {
       border-radius: 0;
+
+      .side {
+        width: 100vw;
+      }
     }
 
     .content {
