@@ -253,10 +253,9 @@ expandedView model results =
                 ]
 
         mainBottom =
-            resultList
-                |> List.map (\f -> li [] [ text f.name ])
-                |> ul []
-                |> (flip (::)) []
+            [ div [ class "collection results" ] <|
+                List.map facilityResultItem resultList
+            ]
     in
         { side =
             Layout.contentWithTopBar
@@ -341,38 +340,43 @@ suggestionsContent s =
 suggestion : Models.Suggestion -> Html Msg
 suggestion s =
     case s of
-        Models.F { id, name, facilityType, adm } ->
-            a
-                [ class "collection-item avatar suggestion"
-                , onClick <| FacilityClicked id
-                ]
-                [ icon "local_hospital"
-                , span [ class "title" ] [ text name ]
-                , p [ class "sub" ]
-                    [ text (adm |> List.drop 1 |> List.reverse |> String.join ", ") ]
-                ]
+        Models.F facility ->
+            facilityResultItem facility
 
         Models.S { id, name, facilityCount } ->
-            a
-                [ class "collection-item avatar suggestion"
-                , onClick <| ServiceClicked id
-                ]
-                [ icon "label"
-                , span [ class "title" ] [ text name ]
-                , p [ class "sub" ]
-                    [ text <| t (FacilitiesCount { count = facilityCount }) ]
-                ]
+            resultItem
+                name
+                (Just <| t (FacilitiesCount { count = facilityCount }))
+                "label"
+                (ServiceClicked id)
 
         Models.L { id, name, parentName } ->
-            a
-                [ class "collection-item avatar suggestion"
-                , onClick <| LocationClicked id
-                ]
-                [ icon "location_on"
-                , span [ class "title" ] [ text name ]
-                , p [ class "sub" ]
-                    [ text <| Maybe.withDefault "" parentName ]
-                ]
+            resultItem
+                name
+                parentName
+                "location_on"
+                (LocationClicked id)
+
+
+facilityResultItem { id, name, facilityType, adm } =
+    resultItem
+        name
+        (Just (adm |> List.drop 1 |> List.reverse |> String.join ", "))
+        "local_hospital"
+        (FacilityClicked id)
+
+
+resultItem : String -> Maybe String -> String -> Msg -> Html Msg
+resultItem t sub iconName clickMsg =
+    a
+        [ class "collection-item avatar suggestion"
+        , onClick <| clickMsg
+        ]
+        [ icon iconName
+        , span [ class "title" ] [ text t ]
+        , p [ class "sub" ]
+            [ text (Maybe.withDefault "" sub) ]
+        ]
 
 
 mobileAdvancedSearch : Model -> List (Html Msg)
