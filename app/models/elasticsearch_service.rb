@@ -294,18 +294,39 @@ class ElasticsearchService
       search_body[:query][:bool][:must] << { match: { adm_ids: params[:location] } }
     end
 
-    if params[:lat] && params[:lng]
+
+    sort = params[:sort] || :distance
+
+    case sort
+    when :type
       search_body[:sort] = {
-        _geo_distance: {
-          position: {
-            lat: params[:lat],
-            lon: params[:lng]
-          },
-          order: "asc",
-          unit:  "km",
-          distance_type: "plane"
-        }
+        priority: { order: "desc" },
+        facility_type_id: { order: "desc" }
       }
+    when :name
+      search_body[:sort] = {
+        name: { order: "asc" },
+      }
+    else
+      if params[:lat] && params[:lng]
+        search_body[:sort] = {
+          _geo_distance: {
+            position: {
+              lat: params[:lat],
+              lon: params[:lng]
+            },
+            order: "asc",
+            unit:  "km",
+            distance_type: "plane"
+          }
+        }
+      else
+        # Default sorting "_doc" has no semantic meaning, but is the  most efficient mechanism
+        # and ensures consistent result order when paginating and scrolling results.
+        #
+        # See https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-sort.html
+        search_body[:sort] = { _doc: { order: "asc" } }
+      end
     end
 
     result = client.search({

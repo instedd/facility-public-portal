@@ -97,6 +97,7 @@ Paging is supported to interate the whole results.
 | lng | float | Lat/Lng coordinates used to prioritize the results.  |
 | size | integer | Amount of facilities to be informed per page (default 50) |
 | from | integer | Result pagination offset (default 0) |
+| sort | string | How to sort results. Available values are "distance" (default), "name" and "type". |
 
 
 ### Sample

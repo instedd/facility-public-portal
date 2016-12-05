@@ -22,13 +22,26 @@ RSpec.describe ElasticsearchService do
                         last_update: nil
                      },
                      {
-                        id: "F2",
-                        name: "Abaferet Hospital",
-                        lat: 10.696144,
-                        lng: 38.370941,
-                        location_id: "L4",
-                        facility_type: "Primary Hospital",
-                        ownership: "Other governmental (military, prison, police)",
+                       id: "F2",
+                       name: "Abaferet Hospital",
+                       lat: 10.696144,
+                       lng: 38.370941,
+                       location_id: "L4",
+                       facility_type: "Primary Hospital",
+                       ownership: "Other governmental (military, prison, police)",
+                       contact_name: "",
+                       contact_email: nil,
+                       contact_phone: nil,
+                       last_update: nil
+                     },
+                     {
+                        id: "F3",
+                        name: "Efoyta Health Center",
+                        lat: 11.361093,
+                        lng: 37.917412,
+                        location_id: "L2",
+                        facility_type: "Health Center",
+                        ownership: "Government/Public",
                         contact_name: "",
                         contact_email: nil,
                         contact_phone: nil,
@@ -84,8 +97,8 @@ RSpec.describe ElasticsearchService do
 
     describe "by administrative location" do
       it "works!" do
-        search_assert({ location: 1 }, expected_names: ["1st Wetanibo Balchi","Abaferet Hospital"])
-        search_assert({ location: 2 }, expected_names: ["1st Wetanibo Balchi","Abaferet Hospital"])
+        search_assert({ location: 1 }, expected_names: ["1st Wetanibo Balchi","Abaferet Hospital","Efoyta Health Center"])
+        search_assert({ location: 2 }, expected_names: ["1st Wetanibo Balchi","Abaferet Hospital","Efoyta Health Center"])
         search_assert({ location: 3 }, expected_names: "1st Wetanibo Balchi")
         search_assert({ location: 4 }, expected_names: "Abaferet Hospital")
       end
@@ -93,22 +106,45 @@ RSpec.describe ElasticsearchService do
 
     describe "by facility type" do
       it "works!" do
-        search_assert({ type: 1 }, expected_names: ["1st Wetanibo Balchi"])
+        search_assert({ type: 1 }, expected_names: ["1st Wetanibo Balchi", "Efoyta Health Center"])
         search_assert({ type: 2 }, expected_names: ["Abaferet Hospital"])
       end
     end
 
     describe "by ownership" do
       it "works!" do
-        search_assert({ ownership: 1 }, expected_names: ["1st Wetanibo Balchi"])
+        search_assert({ ownership: 1 }, expected_names: ["1st Wetanibo Balchi", "Efoyta Health Center"])
         search_assert({ ownership: 2 }, expected_names: ["Abaferet Hospital"])
       end
     end
 
-    describe "sorting by user location" do
-      it "works!" do
-        search_assert({ lat: 8.959169, lng: 38.827452 }, expected_names: ["1st Wetanibo Balchi", "Abaferet Hospital"])
-        search_assert({ lat: 10.622245, lng: 38.646663 }, expected_names: ["Abaferet Hospital", "1st Wetanibo Balchi"])
+    describe "sorting" do
+      it "sorts by proximity to user location by default" do
+        search_assert(
+          { lat: 8.959169, lng: 38.827452 },
+          expected_names: ["1st Wetanibo Balchi", "Abaferet Hospital", "Efoyta Health Center"],
+          order_matters: true
+        )
+
+        search_assert(
+          { lat: 10.622245, lng: 38.646663 },
+          expected_names: ["Abaferet Hospital", "Efoyta Health Center" , "1st Wetanibo Balchi"],
+          order_matters: true
+        )
+      end
+
+      it "supports sorting by facility type" do
+        names = search_names({ lat: 8.959169, lng: 38.827452, sort: :type })
+        expect(names.size).to eq(3)
+        expect(names.first).to eq("Abaferet Hospital")
+      end
+
+      it "supports sorting by name" do
+        search_assert(
+          { lat: 10.622245, lng: 38.646663, sort: :name },
+          expected_names: ["1st Wetanibo Balchi", "Abaferet Hospital", "Efoyta Health Center"],
+          order_matters: true
+        )
       end
     end
   end
@@ -146,9 +182,13 @@ RSpec.describe ElasticsearchService do
     expect(elasticsearch_service.get_ownerships.size).to eq(2)
   end
 
-  def search_assert(params, expected_names:, order_matters: false)
+  def search_names(params)
     results = elasticsearch_service.search_facilities(params)[:items]
-    actual_names = results.map { |r| r['name'] }
+    results.map { |r| r['name'] }
+  end
+
+  def search_assert(params, expected_names:, order_matters: false)
+    actual_names = search_names(params)
     if order_matters
       expect(actual_names).to eq(expected_names)
     else
