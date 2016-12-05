@@ -196,7 +196,7 @@ viewInputWith wmsg model trailing =
 
         inputBar =
             if model.advanced then
-                span [ class "title" ] [ text "Advanced Search" ]
+                span [ class "single-line title" ] [ text "Advanced Search" ]
             else
                 Html.form [ action "#", method "GET", autocomplete False, onSubmit submitMsg ]
                     [ input
@@ -223,7 +223,7 @@ expandedView model results =
         sideTop =
             div [ class "search-box" ]
                 [ div [ class "search" ]
-                    [ span [ class "title" ] [ text "Advanced Search" ]
+                    [ span [ class "single-line title" ] [ text "Advanced Search" ]
                     , div [ class "actions" ] []
                     ]
                 ]
@@ -237,7 +237,20 @@ expandedView model results =
                 |> Maybe.withDefault []
 
         mainTop =
-            text <| (toString (List.length resultList)) ++ " facilities"
+            div [ class "expanded-search-top single-line" ]
+                [ div [ class "expand" ]
+                    [ strong [] [ text <| (toString (List.length resultList)) ++ " facilities" ]
+                    , a [ href "#" ]
+                        [ text "Sort by distance"
+                        , Shared.icon "arrow_drop_down"
+                        ]
+                    ]
+                , div []
+                    [ a [ href "#" ] [ Shared.icon "get_app", text "Download Result" ]
+                    , text "or"
+                    , a [ href "#" ] [ text "Access the MFR API" ]
+                    ]
+                ]
 
         mainBottom =
             resultList
