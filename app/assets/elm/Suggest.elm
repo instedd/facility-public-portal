@@ -248,7 +248,7 @@ expandedView model results =
                 , div []
                     [ a [ href "#" ] [ Shared.icon "get_app", text "Download Result" ]
                     , text "or"
-                    , a [ href "#" ] [ text "Access the MFR API" ]
+                    , a [ href "/docs" ] [ text "Access the MFR API" ]
                     ]
                 ]
 
