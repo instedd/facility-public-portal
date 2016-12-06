@@ -21,6 +21,7 @@
 
 en:
   search: Search
+  advanced_search: Advanced Search
   search_health_facility: Search health facilities
   map: Map
   api_docs: API Docs
@@ -31,3 +32,13 @@ en:
   report_an_issue: Report an issue
   landing_page: About MFR
   editor: Settings
+  facility_name: Facility name
+  facility_type: Facility type
+  ownership: Ownership
+  location: Location
+  service: Service
+  access_the_mfr_api: Access the MFR API
+  download_result: Download Result
+  sort_by: Sort by
+  distance: Distance
+  name: Name

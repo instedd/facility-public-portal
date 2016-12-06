@@ -19,6 +19,7 @@ import Html.App
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Http
+import I18n exposing (..)
 import Json.Decode as Json
 import Models exposing (SearchSpec, Service, FacilityType, Ownership, Location, Sorting(..), emptySearch)
 import Return exposing (Return)
@@ -144,7 +145,7 @@ update model msg =
 
 sorting : Model -> Sorting
 sorting model =
-    Maybe.withDefault Distance model.sort
+    Maybe.withDefault Models.Distance model.sort
 
 
 updateSorting : Sorting -> Model -> ( Model, Cmd Msg )
@@ -175,7 +176,7 @@ modalView model =
         ]
       <|
         Shared.modalWindow
-            [ text "Advanced Search", a [ href "#", class "right", onClick Toggle ] [ Shared.icon "close" ] ]
+            [ text <| t AdvancedSearch, a [ href "#", class "right", onClick Toggle ] [ Shared.icon "close" ] ]
             (fields model)
             [ submit model ]
     ]
@@ -208,23 +209,23 @@ fields model =
             [ Html.text service.name ]
     in
         [ field
-            [ label [ for "q" ] [ text "Facility name" ]
+            [ label [ for "q" ] [ text <| t I18n.FacilityName ]
             , input [ id "q", type' "text", value query, onInput (Private << SetName) ] []
             ]
         , field
-            [ label [ for "t" ] [ text "Facility type" ]
+            [ label [ for "t" ] [ text <| t I18n.FacilityType ]
             , select "t" (Private << SetType) model.facilityTypes model.fType
             ]
         , field
-            [ label [ for "o" ] [ text "Ownership" ]
+            [ label [ for "o" ] [ text <| t I18n.Ownership ]
             , select "o" (Private << SetOwnership) model.ownerships model.ownership
             ]
         , field
-            [ label [ for locationInputId ] [ text "Location" ]
+            [ label [ for locationInputId ] [ text <| t I18n.Location ]
             , Html.App.map (Private << LocationSelectorMsg) (Selector.view viewLocation model.locationSelector)
             ]
         , field
-            [ label [ for serviceInputId ] [ text "Service" ]
+            [ label [ for serviceInputId ] [ text <| t I18n.Service ]
             , Html.App.map (Private << ServiceSelectorMsg) (Selector.view viewService model.serviceSelector)
             ]
         ]
@@ -238,7 +239,7 @@ submit model =
         , onClick (Perform (search model))
         , type' "submit"
         ]
-        [ text "Search" ]
+        [ text <| t Search ]
 
 
 select : String -> (Maybe Int -> Msg) -> List { id : Int, name : String } -> Maybe Int -> Html Msg

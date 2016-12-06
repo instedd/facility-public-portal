@@ -14,7 +14,18 @@ type TranslationId
     | FullDownload
     | LandingPage
     | Editor
-
+    | AdvancedSearch
+    | FacilityName
+    | FacilityType
+    | Ownership
+    | Location
+    | Service
+    | Search
+    | AccessTheMfrApi
+    | DownloadResult
+    | SortBy
+    | Distance
+    | Name
 
 t : TranslationId -> String
 t resource =

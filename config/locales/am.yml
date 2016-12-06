@@ -1,5 +1,6 @@
 am:
   search: ፍለጋ
+  advanced_search: የላቀ ፍለጋ
   search_health_facility: የፍለጋ የጤና ተቋማት
   map: ካርታ
   api_docs: የኤ ፒ አይ ሰነዶች
@@ -10,3 +11,13 @@ am:
   report_an_issue: ችግር ሪፖርት አድርግ
   landing_page: MFR ስለ
   editor: ቅንብሮች
+  facility_name: ተቋም ስም
+  facility_type: ተቋም አይነት
+  ownership: ባለቤትነት
+  location: አካባቢ
+  service: አገልግሎት
+  access_the_mfr_api: ኤ ፒ አይ በኩል መዳረሻ
+  download_result: አውርድ ውጤት
+  sort_by: ደርድር
+  distance: ርቀት
+  name: ስም

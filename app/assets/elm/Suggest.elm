@@ -238,7 +238,7 @@ viewInputWith wmsg model trailing =
 
         inputBar =
             if model.advanced then
-                span [ class "single-line title" ] [ text "Advanced Search" ]
+                span [ class "single-line title" ] [ text <| t AdvancedSearch ]
             else
                 Html.form [ action "#", method "GET", autocomplete False, onSubmit submitMsg ]
                     [ input
@@ -268,7 +268,7 @@ expandedView model =
         sideTop =
             div [ class "search-box" ]
                 [ div [ class "search" ]
-                    [ span [ class "single-line title" ] [ text "Advanced Search" ]
+                    [ span [ class "single-line title" ] [ text <| t AdvancedSearch ]
                     , div [ class "actions" ] []
                     ]
                 ]
@@ -283,19 +283,21 @@ expandedView model =
 
         totalText =
             results
-                |> Maybe.map (toString << .total)
-                |> Maybe.withDefault "?"
+                |> Maybe.map (\{ total } -> t (FacilitiesCount { count = total }))
+                |> Maybe.withDefault ""
 
         mainTop =
             div [ class "expanded-search-top single-line" ]
                 [ div [ class "expand" ]
-                    [ strong [ class "count" ] [ text <| totalText ++ " facilities" ]
+                    [ strong [ class "count" ] [ text <| totalText ]
                     , sortingSelector model
                     ]
                 , div []
-                    [ a [ href "#" ] [ Shared.icon "get_app", text "Download Result" ]
+                    -- TODO render link to .csv
+                    [ a [ href "#" ] [ Shared.icon "get_app", text <| t DownloadResult ]
                     , text "or"
-                    , a [ href "/docs" ] [ text "Access the MFR API" ]
+                    -- TODO render link to .json endpoint (?)
+                    , a [ href "/docs" ] [ text <| t AccessTheMfrApi ]
                     ]
                 ]
 
@@ -338,21 +340,21 @@ sortingSelector model =
     let
         options =
             Array.fromList
-                [ Distance
-                , Name
-                , Type
+                [ Models.Distance
+                , Models.Name
+                , Models.Type
                 ]
 
         optionLabel s =
             case s of
-                Distance ->
-                    "distance"
+                Models.Distance ->
+                    t I18n.Distance
 
-                Name ->
-                    "name"
+                Models.Name ->
+                    t I18n.Name
 
-                Type ->
-                    "facility type"
+                Models.Type ->
+                    t I18n.FacilityType
 
         onSelect index =
             case Array.get index options of
@@ -368,7 +370,7 @@ sortingSelector model =
                 [ text <| optionLabel sorting ]
     in
         div [ class "sorting-select" ]
-            [ text "Sort by"
+            [ text <| t SortBy
             , select
                 [ Shared.onSelect onSelect ]
                 (options |> Array.map renderOption |> Array.toList)
