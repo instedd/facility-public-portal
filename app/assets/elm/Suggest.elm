@@ -52,6 +52,8 @@ type alias Model =
     , advanced : Bool
     , expandedResults : Maybe Models.SearchResult
     , infScrollPendingUrl : Bool
+    , downloadLink : String
+    , apiLink : String
     }
 
 
@@ -100,6 +102,8 @@ init settings mapViewport search =
             , advanced = False
             , expandedResults = Nothing
             , infScrollPendingUrl = False
+            , downloadLink = Utils.buildPath "/api/dump" (Models.searchParams search)
+            , apiLink = Utils.buildPath "/api/search" (Models.searchParams search)
             }
             |> Return.command (Cmd.map (Private << AdvancedSearchMsg) advancedSearchCmd)
             |> Return.command (searchFirstPageStartingFrom (AdvancedSearch.search advancedSearchModel) mapViewport.center)
@@ -294,11 +298,9 @@ expandedView model =
                     , sortingSelector model
                     ]
                 , div []
-                    -- TODO render link to .csv
-                    [ a [ href "#" ] [ Shared.icon "get_app", text <| t DownloadResult ]
+                    [ a [ href model.downloadLink ] [ Shared.icon "get_app", text <| t DownloadResult ]
                     , text "or"
-                      -- TODO render link to .json endpoint (?)
-                    , a [ href "/docs" ] [ text <| t AccessTheMfrApi ]
+                    , a [ href model.apiLink ] [ text <| t AccessTheMfrApi ]
                     ]
                 ]
 
