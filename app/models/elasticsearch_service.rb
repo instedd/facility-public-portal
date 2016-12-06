@@ -28,7 +28,15 @@ class ElasticsearchService
             name: {
               type: 'string',
               index: 'analyzed',
-              analyzer: "standard"
+              analyzer: "standard",
+              fields: {
+                raw: {
+                  # Needed for sorting.
+                  # See https://www.elastic.co/guide/en/elasticsearch/guide/current/multi-fields.html
+                  type: 'string',
+                  index: 'not_analyzed'
+                }
+              }
             },
             contact_phone: {type: 'string'},
             ownership: {type: 'string', index: 'not_analyzed'},
@@ -296,7 +304,7 @@ class ElasticsearchService
     end
 
 
-    sort = params[:sort] || :distance
+    sort = params[:sort].try(:to_sym) || :distance
 
     case sort
     when :type
@@ -306,7 +314,7 @@ class ElasticsearchService
       }
     when :name
       search_body[:sort] = {
-        name: { order: "asc" },
+        'name.raw': { order: "asc" },
       }
     else
       if params[:lat] && params[:lng]

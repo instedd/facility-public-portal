@@ -2,7 +2,7 @@ class ApiController < ActionController::Base
   include ActionController::Live
 
   protect_from_forgery with: :exception
-  before_filter :set_locale
+  before_action :set_locale
 
   def search
     search_result = ElasticsearchService.instance.search_facilities(search_params)
@@ -56,7 +56,7 @@ class ApiController < ActionController::Base
   private
 
   def search_params
-    params.permit(:q, :service, :location, :type, :ownership, :lat, :lng, :size, :from)
+    params.permit(:q, :service, :location, :type, :ownership, :lat, :lng, :size, :from, :sort)
   end
 
   def render_if_stale(data)
@@ -64,7 +64,7 @@ class ApiController < ActionController::Base
     client_etag = request.headers["If-None-Match"]
 
     if client_etag.eql? etag
-      render status: 304, nothing: true
+      head 304
     else
       response.headers['ETag'] = etag
       render status: 200, json: data

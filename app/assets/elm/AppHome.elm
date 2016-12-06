@@ -217,4 +217,4 @@ userLocation model =
 
 searchAllFacilitiesStartingFrom : Models.LatLng -> Cmd Msg
 searchAllFacilitiesStartingFrom latLng =
-    Api.search (Private << (ApiSearch True)) { emptySearch | latLng = Just latLng }
+    Api.search (Private << ApiSearch True) { emptySearch | latLng = Just latLng }

@@ -19,15 +19,17 @@ module Suggest
 
 import AdvancedSearch
 import Api
+import Array
 import Debounce
 import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import I18n exposing (..)
+import InfScroll
 import Layout
 import List
-import Models exposing (MapViewport, SearchSpec, FacilityType, Ownership, emptySearch, querySearch)
+import Models exposing (MapViewport, SearchSpec, FacilityType, Ownership, Sorting(..), emptySearch, querySearch)
 import Return
 import Shared exposing (icon)
 import String
@@ -35,7 +37,7 @@ import String
 import Svg
 import Svg.Attributes
 import Utils exposing (perform)
-import InfScroll
+
 
 type alias Config =
     { mapViewport : MapViewport }
@@ -61,6 +63,8 @@ type PrivateMsg
     | ExpandedApiSearch Bool Api.SearchMsg
     | InfScrollMsg InfScroll.Msg
     | ExpandedSearchLoadMore
+    | SortingChanged Sorting
+
 
 type Msg
     = FacilityClicked Int
@@ -166,13 +170,14 @@ update config msg model =
                     InfScroll.update scrollCfg model msg
 
                 ExpandedSearchLoadMore ->
-                    case (model.expandedResults, model.infScrollPendingUrl) of
-                        (Just expandedResults, False) ->
-                            { model | infScrollPendingUrl = True } ! [
-                                Api.searchMore (Private << (ExpandedApiSearch False)) expandedResults
-                            ]
-                        (_, _) ->
-                            (model, Cmd.none)
+                    case ( model.expandedResults, model.infScrollPendingUrl ) of
+                        ( Just expandedResults, False ) ->
+                            { model | infScrollPendingUrl = True }
+                                ! [ Api.searchMore (Private << (ExpandedApiSearch False)) expandedResults
+                                  ]
+
+                        ( _, _ ) ->
+                            ( model, Cmd.none )
 
                 ExpandedApiSearch initial (Api.SearchSuccess results) ->
                     let
@@ -188,6 +193,9 @@ update config msg model =
                     Return.singleton model
                         |> perform (UnhandledError (toString e))
 
+                SortingChanged sorting ->
+                    AdvancedSearch.updateSorting sorting model.advancedSearch
+                        |> Return.mapBoth (Private << AdvancedSearchMsg) (setAdvancedSearch model)
 
         _ ->
             -- public events
@@ -254,7 +262,8 @@ viewInputWith wmsg model trailing =
 expandedView : Model -> Layout.ExpandedView Msg
 expandedView model =
     let
-        results = model.expandedResults
+        results =
+            model.expandedResults
 
         sideTop =
             div [ class "search-box" ]
@@ -280,11 +289,8 @@ expandedView model =
         mainTop =
             div [ class "expanded-search-top single-line" ]
                 [ div [ class "expand" ]
-                    [ strong [] [ text <| totalText ++ " facilities" ]
-                    , a [ href "#" ]
-                        [ text "Sort by distance"
-                        , Shared.icon "arrow_drop_down"
-                        ]
+                    [ strong [ class "count" ] [ text <| totalText ++ " facilities" ]
+                    , sortingSelector model
                     ]
                 , div []
                     [ a [ href "#" ] [ Shared.icon "get_app", text "Download Result" ]
@@ -294,9 +300,11 @@ expandedView model =
                 ]
 
         mainBottom =
-            [ div [ class "collection results" ] [ results
+            [ div [ class "collection results" ]
+                [ results
                     |> Maybe.map (\r -> InfScroll.view scrollCfg model r.items)
-                    |> Maybe.withDefault (div [] [])]
+                    |> Maybe.withDefault (div [] [])
+                ]
             ]
     in
         { side =
@@ -309,16 +317,63 @@ expandedView model =
                 mainBottom
         }
 
+
 scrollCfg : InfScroll.Config Model Models.FacilitySummary Msg
-scrollCfg = InfScroll.Config
-    { loadMore = \ m -> Private ExpandedSearchLoadMore
-    , msgWrapper = Private << InfScrollMsg
-    , itemView = facilityResultItem
-    , loadingIndicator = div [ class "progress" ] [ div [class "indeterminate"] [] ]
-    , hasMore = \ m -> m.expandedResults
-          |> Maybe.map ( \ results -> results.nextUrl /= Nothing )
-          |> Maybe.withDefault True
-    }
+scrollCfg =
+    InfScroll.Config
+        { loadMore = \m -> Private ExpandedSearchLoadMore
+        , msgWrapper = Private << InfScrollMsg
+        , itemView = facilityResultItem
+        , loadingIndicator = div [ class "progress" ] [ div [ class "indeterminate" ] [] ]
+        , hasMore =
+            \m ->
+                m.expandedResults
+                    |> Maybe.map (\results -> results.nextUrl /= Nothing)
+                    |> Maybe.withDefault True
+        }
+
+
+sortingSelector : Model -> Html Msg
+sortingSelector model =
+    let
+        options =
+            Array.fromList
+                [ Distance
+                , Name
+                , Type
+                ]
+
+        optionLabel s =
+            case s of
+                Distance ->
+                    "distance"
+
+                Name ->
+                    "name"
+
+                Type ->
+                    "facility type"
+
+        onSelect index =
+            case Array.get index options of
+                Just sorting ->
+                    Private <| SortingChanged <| sorting
+
+                Nothing ->
+                    Debug.crash "Invalid option"
+
+        renderOption sorting =
+            option
+                [ selected (sorting == AdvancedSearch.sorting model.advancedSearch) ]
+                [ text <| optionLabel sorting ]
+    in
+        div [ class "sorting-select" ]
+            [ text "Sort by"
+            , select
+                [ Shared.onSelect onSelect ]
+                (options |> Array.map renderOption |> Array.toList)
+            ]
+
 
 advancedSearchIcon : Model -> Html Msg
 advancedSearchIcon model =

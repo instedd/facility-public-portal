@@ -19,6 +19,17 @@ form.advanced-search {
 .expanded-search-top {
   display: flex;
 
+  .count {
+    margin-right: 20px;
+  }
+
+  .sorting-select {
+    select {
+      margin-left: 10px;
+      width: auto;
+    }
+  }
+
   div {
     &.expand {
       flex-grow: 1;

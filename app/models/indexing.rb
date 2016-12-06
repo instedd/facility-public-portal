@@ -85,6 +85,7 @@ class Indexing
     @dataset[:facilities].select { |f| validate_facility(f) }.each_slice(100) do |batch|
       index_entries = batch.map do |f|
         f = f.to_h.symbolize_keys
+
         location = locations_by_id[f[:location_id]]
         unless location
           location = {path_names: [], path_ids: [], facility_count: 0}

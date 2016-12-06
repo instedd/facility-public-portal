@@ -9,6 +9,8 @@ module AdvancedSearch
         , modalView
         , isEmpty
         , search
+        , sorting
+        , updateSorting
         )
 
 import Api
@@ -18,9 +20,9 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Http
 import Json.Decode as Json
-import Selector
-import Models exposing (SearchSpec, Service, FacilityType, Ownership, Location, emptySearch)
+import Models exposing (SearchSpec, Service, FacilityType, Ownership, Location, Sorting(..), emptySearch)
 import Return exposing (Return)
+import Selector
 import Shared exposing (onClick)
 import Utils exposing (perform)
 
@@ -32,6 +34,7 @@ type alias Model =
     , service : Maybe Int
     , fType : Maybe Int
     , ownership : Maybe Int
+    , sort : Maybe Sorting
     , locationSelector : Selector.Model Location
     , serviceSelector : Selector.Model Service
     }
@@ -65,6 +68,7 @@ init facilityTypes ownerships search =
         , service = search.service
         , fType = search.fType
         , ownership = search.ownership
+        , sort = search.sort
         , locationSelector = initLocations [] Nothing
         , serviceSelector = initServices [] Nothing
         }
@@ -136,6 +140,21 @@ update model msg =
         _ ->
             -- Public events
             Return.singleton model
+
+
+sorting : Model -> Sorting
+sorting model =
+    Maybe.withDefault Distance model.sort
+
+
+updateSorting : Sorting -> Model -> ( Model, Cmd Msg )
+updateSorting sort model =
+    let
+        updatedModel =
+            { model | sort = Just sort }
+    in
+        Return.singleton updatedModel
+            |> Utils.perform (Perform <| search updatedModel)
 
 
 subscriptions : Sub Msg
@@ -266,6 +285,7 @@ search model =
         , location = Maybe.map .id model.locationSelector.selection
         , fType = model.fType
         , ownership = model.ownership
+        , sort = model.sort
     }
 
 

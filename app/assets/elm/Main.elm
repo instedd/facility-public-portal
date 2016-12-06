@@ -57,7 +57,7 @@ type alias CommonPageState =
     { settings : Settings
     , menu : Menu.Model
     , route : Route
-    , expanded : ExpandedState
+    , expanded : Bool
     , notice : Maybe Notice
     }
 
@@ -71,7 +71,6 @@ type PagedModel
 type MainMsg
     = MapViewportChanged MapViewport
     | Navigate Route
-    | NavigateBack
     | HomeMsg AppHome.Msg
     | FacilityDetailsMsg AppFacilityDetails.Msg
     | SearchMsg AppSearch.Msg
@@ -81,12 +80,8 @@ type MainMsg
 
 
 type FacilityDetailsContext
-    = FromUnkown
-    | FromSearch AppSearch.Model
-
-
-type alias ExpandedState =
-    Bool
+    = FromUnknown Bool
+    | FromSearch AppSearch.Model Bool
 
 
 type alias Notice =
@@ -146,10 +141,6 @@ mainUpdate msg mainModel =
         Navigate route ->
             ( mainModel, Routing.navigate route )
 
-        NavigateBack ->
-            -- remove
-            ( mainModel, Navigation.back 1 )
-
         ToggleMenu ->
             case mainModel of
                 Page common pagedModel ->
@@ -202,7 +193,7 @@ mainUpdate msg mainModel =
                                     ( homeModel, navigateSearchLocation locationId )
 
                                 AppHome.Search search ->
-                                    ( homeModel, navigateSearch search )
+                                    ( homeModel, navigateSearch common.expanded search )
 
                                 AppHome.Private _ ->
                                     mapCmd HomeMsg <| AppHome.update common.settings msg homeModel
@@ -218,11 +209,11 @@ mainUpdate msg mainModel =
                                 AppFacilityDetails.Close ->
                                     ( mainModel
                                     , case context of
-                                        FromSearch searchModel ->
-                                            navigateSearch searchModel.query
+                                        FromSearch searchModel expanded ->
+                                            navigateSearch expanded searchModel.query
 
-                                        _ ->
-                                            navigateHome
+                                        FromUnknown expanded ->
+                                            navigateHome expanded
                                     )
 
                                 AppFacilityDetails.FacilityClicked facilityId ->
@@ -240,7 +231,7 @@ mainUpdate msg mainModel =
                         ( SearchModel searchModel, SearchMsg msg ) ->
                             (case msg of
                                 AppSearch.Search s ->
-                                    ( searchModel, navigateSearch s )
+                                    ( searchModel, navigateSearch common.expanded s )
 
                                 AppSearch.FacilityClicked facilityId ->
                                     ( searchModel, navigateFacility facilityId )
@@ -252,7 +243,7 @@ mainUpdate msg mainModel =
                                     ( searchModel, navigateSearchLocation locationId )
 
                                 AppSearch.ClearSearch ->
-                                    ( searchModel, navigateHome )
+                                    ( searchModel, navigateHome False )
 
                                 _ ->
                                     mapCmd SearchMsg <| AppSearch.update common.settings msg searchModel
@@ -294,44 +285,47 @@ mainUrlUpdate result mainModel =
                     }
             in
                 case route of
-                    RootRoute ->
+                    RootRoute { expanded } ->
                         AppHome.init common.settings viewport userLocation
                             |> mapBoth HomeMsg HomeModel
-                            |> map (Page common)
+                            |> map (Page { common | expanded = expanded })
 
                     FacilityRoute facilityId ->
                         let
                             context =
                                 case mainModel of
-                                    Page _ (SearchModel searchModel) ->
-                                        FromSearch searchModel
+                                    Page { expanded } (SearchModel searchModel) ->
+                                        FromSearch searchModel expanded
 
                                     Page _ (FacilityDetailsModel _ previousContext) ->
                                         previousContext
 
+                                    Page { expanded } _ ->
+                                        FromUnknown expanded
+
                                     _ ->
-                                        FromUnkown
+                                        FromUnknown False
                         in
                             AppFacilityDetails.init viewport userLocation facilityId
                                 |> mapBoth FacilityDetailsMsg ((flip FacilityDetailsModel) context)
                                 |> map (Page common)
 
-                    SearchRoute searchSpec ->
+                    SearchRoute { spec, expanded } ->
                         (case mainModel of
-                            Page _ (FacilityDetailsModel _ (FromSearch searchModel)) ->
-                                if searchModel.query == searchSpec then
+                            Page _ (FacilityDetailsModel _ (FromSearch searchModel _)) ->
+                                if searchModel.query == spec then
                                     ( searchModel, AppSearch.restoreCmd )
                                 else
-                                    AppSearch.init common.settings searchSpec viewport userLocation
+                                    AppSearch.init common.settings spec viewport userLocation
 
                             _ ->
-                                AppSearch.init common.settings searchSpec viewport userLocation
+                                AppSearch.init common.settings spec viewport userLocation
                         )
                             |> mapBoth SearchMsg SearchModel
-                            |> map (Page common)
+                            |> map (Page { common | expanded = expanded })
 
                     NotFoundRoute ->
-                        ( withNotice unknownRouteErrorNotice mainModel, navigateHome )
+                        ( withNotice unknownRouteErrorNotice mainModel, navigateHome False )
 
 
 mapViewport : MainModel -> MapViewport
@@ -528,9 +522,9 @@ noticePopup notice =
         ]
 
 
-navigateHome : Cmd MainMsg
-navigateHome =
-    Utils.performMessage (Navigate RootRoute)
+navigateHome : Bool -> Cmd MainMsg
+navigateHome expanded =
+    Utils.performMessage (Navigate <| RootRoute { expanded = expanded })
 
 
 navigateFacility : Int -> Cmd MainMsg
@@ -540,17 +534,20 @@ navigateFacility =
 
 navigateSearchService : Int -> Cmd MainMsg
 navigateSearchService id =
-    Utils.performMessage <| Navigate (SearchRoute { emptySearch | service = Just id })
+    Utils.performMessage <|
+        Navigate (SearchRoute { spec = { emptySearch | service = Just id }, expanded = False })
 
 
 navigateSearchLocation : Int -> Cmd MainMsg
 navigateSearchLocation id =
-    Utils.performMessage <| Navigate (SearchRoute { emptySearch | location = Just id })
+    Utils.performMessage <|
+        Navigate (SearchRoute { spec = { emptySearch | location = Just id }, expanded = False })
 
 
-navigateSearch : SearchSpec -> Cmd MainMsg
-navigateSearch =
-    Utils.performMessage << Navigate << SearchRoute
+navigateSearch : Bool -> SearchSpec -> Cmd MainMsg
+navigateSearch expanded spec =
+    Utils.performMessage <|
+        Navigate (SearchRoute { expanded = expanded, spec = spec })
 
 
 navigateBack : Cmd MainMsg

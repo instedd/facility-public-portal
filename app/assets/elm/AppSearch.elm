@@ -83,7 +83,11 @@ init s query mapViewport userLocation =
             }
     in
         model
-            ! [ Api.search (Private << ApiSearch) { query | latLng = Just mapViewport.center }
+            ! [ Api.search (Private << ApiSearch)
+                    { query
+                        | sort = Just Models.Distance
+                        , latLng = Just mapViewport.center
+                    }
               , restoreCmd
               , Cmd.map (Private << SuggestMsg) suggestCmd
               ]

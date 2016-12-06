@@ -18,6 +18,7 @@ import Http
 import Maybe exposing (andThen)
 import Models exposing (..)
 import Task
+import Utils
 
 
 type SuggestionsMsg
@@ -77,7 +78,7 @@ search : (SearchMsg -> msg) -> SearchSpec -> Cmd msg
 search wmsg params =
     let
         url =
-            path "/api/search" params
+            Utils.buildPath "/api/search" (searchParams params)
     in
         Task.perform (wmsg << SearchFailed) (wmsg << SearchSuccess) (Http.get Decoders.search url)
 
@@ -99,7 +100,9 @@ byQuery latLng q =
 
 suggestionsPath : String -> Maybe LatLng -> String -> String
 suggestionsPath base latLng query =
-    path base <| byQuery latLng (Just query)
+    byQuery latLng (Just query)
+        |> searchParams
+        |> Utils.buildPath base
 
 
 discardEmpty : String -> Maybe String
