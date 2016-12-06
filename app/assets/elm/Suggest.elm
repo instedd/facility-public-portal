@@ -29,8 +29,9 @@ import I18n exposing (..)
 import InfScroll
 import Layout
 import List
-import Models exposing (MapViewport, SearchSpec, FacilityType, Ownership, Sorting(..), emptySearch, querySearch)
+import Models exposing (MapViewport, SearchSpec, FacilitySummary, FacilityType, Ownership, Sorting(..), emptySearch, querySearch)
 import Return
+import SelectList exposing (include, iff)
 import Shared exposing (icon)
 import String
 import String
@@ -296,7 +297,7 @@ expandedView model =
                     -- TODO render link to .csv
                     [ a [ href "#" ] [ Shared.icon "get_app", text <| t DownloadResult ]
                     , text "or"
-                    -- TODO render link to .json endpoint (?)
+                      -- TODO render link to .json endpoint (?)
                     , a [ href "/docs" ] [ text <| t AccessTheMfrApi ]
                     ]
                 ]
@@ -325,7 +326,7 @@ scrollCfg =
     InfScroll.Config
         { loadMore = \m -> Private ExpandedSearchLoadMore
         , msgWrapper = Private << InfScrollMsg
-        , itemView = facilityResultItem
+        , itemView = facilityResultItem True
         , loadingIndicator = div [ class "progress" ] [ div [ class "indeterminate" ] [] ]
         , hasMore =
             \m ->
@@ -450,32 +451,42 @@ suggestion : Models.Suggestion -> Html Msg
 suggestion s =
     case s of
         Models.F facility ->
-            facilityResultItem facility
+            facilityResultItem False facility
 
         Models.S { id, name, facilityCount } ->
             resultItem
                 name
-                (Just <| t (FacilitiesCount { count = facilityCount }))
+                [ text <| t <| FacilitiesCount { count = facilityCount } ]
                 "label"
                 (ServiceClicked id)
 
         Models.L { id, name, parentName } ->
             resultItem
                 name
-                parentName
+                [ text (Maybe.withDefault "" parentName) ]
                 "location_on"
                 (LocationClicked id)
 
 
-facilityResultItem { id, name, facilityType, adm } =
-    resultItem
-        name
-        (Just (adm |> List.drop 1 |> List.reverse |> String.join ", "))
-        "local_hospital"
-        (FacilityClicked id)
+facilityResultItem : Bool -> FacilitySummary -> Html Msg
+facilityResultItem includeType f =
+    let
+        sub =
+            SelectList.select <|
+                [ iff includeType <|
+                    p [] [ text f.facilityType ]
+                , include <|
+                    p [] [ text (locationLabel f) ]
+                ]
+    in
+        resultItem
+            f.name
+            sub
+            "local_hospital"
+            (FacilityClicked f.id)
 
 
-resultItem : String -> Maybe String -> String -> Msg -> Html Msg
+resultItem : String -> List (Html Msg) -> String -> Msg -> Html Msg
 resultItem t sub iconName clickMsg =
     a
         [ class "collection-item avatar suggestion"
@@ -483,9 +494,17 @@ resultItem t sub iconName clickMsg =
         ]
         [ icon iconName
         , span [ class "title" ] [ text t ]
-        , p [ class "sub" ]
-            [ text (Maybe.withDefault "" sub) ]
+        , div [ class "sub" ]
+            sub
         ]
+
+
+locationLabel : FacilitySummary -> String
+locationLabel facility =
+    facility.adm
+        |> List.drop 1
+        |> List.reverse
+        |> String.join ", "
 
 
 mobileAdvancedSearch : Model -> List (Html Msg)
