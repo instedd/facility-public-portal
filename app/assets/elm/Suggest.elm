@@ -35,7 +35,7 @@ import String
 import Svg
 import Svg.Attributes
 import Utils exposing (perform)
-
+import InfScroll
 
 type alias Config =
     { mapViewport : MapViewport }
@@ -47,6 +47,8 @@ type alias Model =
     , suggestions : Maybe (List Models.Suggestion)
     , d : Debounce.State
     , advanced : Bool
+    , expandedResults : Maybe Models.SearchResult
+    , infScrollPendingUrl : Bool
     }
 
 
@@ -56,7 +58,9 @@ type PrivateMsg
     | FetchSuggestions
     | Deb (Debounce.Msg Msg)
     | AdvancedSearchMsg AdvancedSearch.Msg
-
+    | ExpandedApiSearch Bool Api.SearchMsg
+    | InfScrollMsg InfScroll.Msg
+    | ExpandedSearchLoadMore
 
 type Msg
     = FacilityClicked Int
@@ -72,13 +76,13 @@ hasContent model =
     model.advanced || (model.query /= "") && (model.suggestions /= Nothing)
 
 
-empty : Models.Settings -> ( Model, Cmd Msg )
-empty settings =
-    init settings emptySearch
+empty : Models.Settings -> MapViewport -> ( Model, Cmd Msg )
+empty settings mapViewport =
+    init settings mapViewport emptySearch
 
 
-init : Models.Settings -> SearchSpec -> ( Model, Cmd Msg )
-init settings search =
+init : Models.Settings -> MapViewport -> SearchSpec -> ( Model, Cmd Msg )
+init settings mapViewport search =
     let
         ( advancedSearchModel, advancedSearchCmd ) =
             AdvancedSearch.init settings.facilityTypes settings.ownerships search
@@ -89,8 +93,11 @@ init settings search =
             , suggestions = Nothing
             , d = Debounce.init
             , advanced = False
+            , expandedResults = Nothing
+            , infScrollPendingUrl = False
             }
             |> Return.command (Cmd.map (Private << AdvancedSearchMsg) advancedSearchCmd)
+            |> Return.command (searchFirstPageStartingFrom (AdvancedSearch.search advancedSearchModel) mapViewport.center)
 
 
 clear : Model -> Model
@@ -155,6 +162,33 @@ update config msg model =
                             AdvancedSearch.update model.advancedSearch msg
                                 |> Return.mapBoth (Private << AdvancedSearchMsg) (setAdvancedSearch model)
 
+                InfScrollMsg msg ->
+                    InfScroll.update scrollCfg model msg
+
+                ExpandedSearchLoadMore ->
+                    case (model.expandedResults, model.infScrollPendingUrl) of
+                        (Just expandedResults, False) ->
+                            { model | infScrollPendingUrl = True } ! [
+                                Api.searchMore (Private << (ExpandedApiSearch False)) expandedResults
+                            ]
+                        (_, _) ->
+                            (model, Cmd.none)
+
+                ExpandedApiSearch initial (Api.SearchSuccess results) ->
+                    let
+                        updatedExpandedResults =
+                            if initial then
+                                Just results
+                            else
+                                Models.extend model.expandedResults (Just results)
+                    in
+                        ( { model | infScrollPendingUrl = False, expandedResults = updatedExpandedResults }, Cmd.none )
+
+                ExpandedApiSearch _ (Api.SearchFailed e) ->
+                    Return.singleton model
+                        |> perform (UnhandledError (toString e))
+
+
         _ ->
             -- public events
             ( model, Cmd.none )
@@ -217,9 +251,11 @@ viewInputWith wmsg model trailing =
             ]
 
 
-expandedView : Model -> Maybe Models.SearchResult -> Layout.ExpandedView Msg
-expandedView model results =
+expandedView : Model -> Layout.ExpandedView Msg
+expandedView model =
     let
+        results = model.expandedResults
+
         sideTop =
             div [ class "search-box" ]
                 [ div [ class "search" ]
@@ -236,10 +272,15 @@ expandedView model results =
                 |> Maybe.map .items
                 |> Maybe.withDefault []
 
+        totalText =
+            results
+                |> Maybe.map (toString << .total)
+                |> Maybe.withDefault "?"
+
         mainTop =
             div [ class "expanded-search-top single-line" ]
                 [ div [ class "expand" ]
-                    [ strong [] [ text <| (toString (List.length resultList)) ++ " facilities" ]
+                    [ strong [] [ text <| totalText ++ " facilities" ]
                     , a [ href "#" ]
                         [ text "Sort by distance"
                         , Shared.icon "arrow_drop_down"
@@ -253,8 +294,9 @@ expandedView model results =
                 ]
 
         mainBottom =
-            [ div [ class "collection results" ] <|
-                List.map facilityResultItem resultList
+            [ div [ class "collection results" ] [ results
+                    |> Maybe.map (\r -> InfScroll.view scrollCfg model r.items)
+                    |> Maybe.withDefault (div [] [])]
             ]
     in
         { side =
@@ -267,6 +309,16 @@ expandedView model results =
                 mainBottom
         }
 
+scrollCfg : InfScroll.Config Model Models.FacilitySummary Msg
+scrollCfg = InfScroll.Config
+    { loadMore = \ m -> Private ExpandedSearchLoadMore
+    , msgWrapper = Private << InfScrollMsg
+    , itemView = facilityResultItem
+    , loadingIndicator = div [ class "progress" ] [ div [class "indeterminate"] [] ]
+    , hasMore = \ m -> m.expandedResults
+          |> Maybe.map ( \ results -> results.nextUrl /= Nothing )
+          |> Maybe.withDefault True
+    }
 
 advancedSearchIcon : Model -> Html Msg
 advancedSearchIcon model =
@@ -398,3 +450,8 @@ setAdvancedSearch model advancedSearch =
 isAdvancedSearchOpen : Model -> Bool
 isAdvancedSearchOpen model =
     model.advanced
+
+
+searchFirstPageStartingFrom : SearchSpec -> Models.LatLng -> Cmd Msg
+searchFirstPageStartingFrom searchSpec latLng =
+    Api.search (Private << (ExpandedApiSearch True)) { searchSpec | latLng = Just latLng, size = Just 50 }

@@ -8,6 +8,7 @@ module AdvancedSearch
         , embeddedView
         , modalView
         , isEmpty
+        , search
         )
 
 import Api

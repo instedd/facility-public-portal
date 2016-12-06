@@ -56,7 +56,7 @@ init : Settings -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init settings mapViewport userLocation =
     let
         ( suggestModel, suggestCmd ) =
-            Suggest.empty settings
+            Suggest.empty settings mapViewport
 
         model =
             { suggest = suggestModel
@@ -175,7 +175,7 @@ view model =
             (suggestionInput model)
             (suggestionsBody model)
     , expandedContent =
-        Suggest.expandedView model.suggest model.results
+        Suggest.expandedView model.suggest
             |> Layout.mapExpandedView (Private << SuggestMsg)
             |> Just
     , toolbar = [ userLocationView model ]

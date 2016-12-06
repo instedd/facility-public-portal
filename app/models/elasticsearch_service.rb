@@ -254,7 +254,8 @@ class ElasticsearchService
   def page_result(result, from, size)
     { items: result["hits"]["hits"].map { |r| api_latlng r["_source"] },
       from: from,
-      size: size
+      size: size,
+      total: result["hits"]["total"]
     }.tap do |h|
       h[:next_from] = h[:from] + h[:size] if result["hits"]["hits"].count == h[:size]
     end

@@ -31,6 +31,7 @@ type alias SearchSpec =
     , latLng : Maybe LatLng
     , fType : Maybe Int
     , ownership : Maybe Int
+    , size : Maybe Int
     }
 
 
@@ -126,6 +127,7 @@ type alias MapViewport =
 type alias SearchResult =
     { items : List FacilitySummary
     , nextUrl : Maybe String
+    , total : Int
     }
 
 
@@ -173,6 +175,15 @@ shouldLoadMore results mapViewport =
         Just furthest ->
             distance furthest.position mapViewport.center < (maxDistance mapViewport)
 
+extend : Maybe SearchResult -> Maybe SearchResult -> Maybe SearchResult
+extend a b =
+    case (a, b) of
+        (Nothing, _) ->
+            b
+        (_, Nothing) ->
+            a
+        (Just a, Just b) ->
+            Just { items = a.items ++ b.items, nextUrl = b.nextUrl, total = b.total }
 
 path : String -> SearchSpec -> String
 path base params =
@@ -187,6 +198,7 @@ path base params =
                     , Maybe.map (\( _, lng ) -> ( "lng", toString lng )) params.latLng
                     , Maybe.map (\t -> ( "type", toString t )) params.fType
                     , Maybe.map (\o -> ( "ownership", toString o )) params.ownership
+                    , Maybe.map (\size -> ( "size", toString size )) params.size
                     ]
     in
         Utils.buildPath base queryParams
@@ -200,12 +212,13 @@ specFromParams params =
     , latLng = paramsLatLng params
     , fType = intParam "type" params
     , ownership = intParam "ownership" params
+    , size = intParam "size" params
     }
 
 
 emptySearch : SearchSpec
 emptySearch =
-    { q = Nothing, service = Nothing, location = Nothing, latLng = Nothing, fType = Nothing, ownership = Nothing }
+    { q = Nothing, service = Nothing, location = Nothing, latLng = Nothing, fType = Nothing, ownership = Nothing, size = Nothing }
 
 
 querySearch : String -> SearchSpec

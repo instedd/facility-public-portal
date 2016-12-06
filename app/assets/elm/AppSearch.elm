@@ -70,7 +70,7 @@ init : Settings -> SearchSpec -> MapViewport -> UserLocation.Model -> ( Model, C
 init s query mapViewport userLocation =
     let
         ( suggestModel, suggestCmd ) =
-            Suggest.init s query
+            Suggest.init s mapViewport query
 
         model =
             { suggest = suggestModel
@@ -238,7 +238,7 @@ view model =
                             [ searchResults model ]
                     ]
         , expandedContent =
-            Suggest.expandedView model.suggest model.results
+            Suggest.expandedView model.suggest
                 |> Layout.mapExpandedView (Private << SuggestMsg)
                 |> Just
         , toolbar =

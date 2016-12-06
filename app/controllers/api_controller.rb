@@ -7,7 +7,7 @@ class ApiController < ActionController::Base
   def search
     search_result = ElasticsearchService.instance.search_facilities(search_params)
 
-    render json: { items: search_result[:items] }.tap { |h|
+    render json: { items: search_result[:items], total: search_result[:total] }.tap { |h|
       h[:next_url] = search_path(search_params.merge({from: search_result[:next_from]})) if search_result[:next_from]
     }
   end
