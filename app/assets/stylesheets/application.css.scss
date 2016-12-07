@@ -11,10 +11,6 @@
 @import 'notice';
 @import 'autocomplete';
 
-
-$topnav_height: 72px;
-$searchbar_height: 56px;
-
 html, body, #container, #elm, #map {
   height: 100%;
   width: 100%;
@@ -95,8 +91,8 @@ select {
     }
 
     .side {
-      width: 390px;
-      min-width: 318px;
+      width: $sidebar_width;
+      min-width: $sidebar_width;
       display: flex;
       flex-direction: column;
     }
@@ -381,6 +377,7 @@ input[type="checkbox"]:checked + label:before {
 
       .side {
         width: 100vw;
+        min-width: auto; // disable min-width for desktop view, since mobile devices can be smaller than that.
       }
     }
 

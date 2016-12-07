@@ -10,6 +10,11 @@ $code-background: #EAEAEA;
 // same media query as fitContent
 $width-breakpoint: 992px;
 
+// layout
+$topnav_height: 72px;
+$searchbar_height: 56px;
+$sidebar_width: 390px;
+
 .spinner-blue-only {
   border-color: $blue;
 }
