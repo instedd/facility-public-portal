@@ -123,7 +123,7 @@ RSpec.describe Indexing do
       expect(all_facilities).to be_empty
     end
 
-    it "skips facilities without ownership" do
+    it "indexes facilities without ownership" do
       index_dataset({facilities: [
          {
            id: "F1",
@@ -144,7 +144,9 @@ RSpec.describe Indexing do
        facility_types: []
       })
 
-      expect(all_facilities).to be_empty
+      result = all_facilities
+      expect(result.size).to eq(1)
+      expect(result[0]["ownership_id"]).to eq(nil)
     end
 
     it "indexes a valid facility" do

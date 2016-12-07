@@ -2,6 +2,8 @@ class Indexing
 
   attr_accessor :logger
 
+  MANDATORY_FIELDS = ["name", "facility_type", "lat", "lng"]
+
   def initialize(dataset, service, locales)
     @dataset = dataset
     @service = service
@@ -15,6 +17,8 @@ class Indexing
     @last_ownership_id = 0
     @last_service_id = 0
     @last_location_id = 0
+
+    @validation_results = Hash.new(0)
   end
 
   def run
@@ -82,7 +86,9 @@ class Indexing
 
     logger.info "Indexing facilities"
 
-    @dataset[:facilities].select { |f| validate_facility(f) }.each_slice(100) do |batch|
+    valid = validate_facilities(@dataset[:facilities])
+
+    valid.each_slice(100) do |batch|
       index_entries = batch.map do |f|
         f = f.to_h.symbolize_keys
 
@@ -103,13 +109,14 @@ class Indexing
           facility_types[type[:name]] = type
         end
 
+
         f = f.merge({
           id: @last_facility_id += 1,
           source_id: f[:id],
           contact_phone: f[:contact_phone] && f[:contact_phone].to_s,
           priority: type[:priority],
           facility_type_id: type[:id],
-          ownership_id: ownerships[f[:ownership]][:id],
+          ownership_id: f[:ownership] ? ownerships[f[:ownership]][:id] : nil,
           name: f[:name].gsub(/\u00A0/,"").strip,
 
           position: {
@@ -181,7 +188,22 @@ class Indexing
 
   private
 
+  def validate_facilities(facilities)
+    valid = facilities.select { |f| validate_facility(f) }
+    @validation_results.each do |field, count|
+      logger.warn "Facilities ignored due to missing #{field}: #{count}"
+    end
+    valid
+  end
+
   def validate_facility(facility)
-    ["name", "facility_type", "ownership", "lat", "lng"].none? { |field| facility[field].blank? }
+    valid = true
+    MANDATORY_FIELDS.each do |field|
+      if facility[field].blank?
+        valid = false
+        @validation_results["no_#{field}".to_sym] += 1
+      end
+    end
+    return valid
   end
 end
