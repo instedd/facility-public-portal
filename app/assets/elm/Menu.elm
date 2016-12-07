@@ -7,15 +7,17 @@ module Menu
         , anchor
         , fixed
         , togglingContent
+        , dimWhenOpen
         , sideBar
         , parseItem
         )
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Shared exposing (icon, onClick)
 import I18n exposing (..)
+import Layout
 import SelectList exposing (include, iff)
+import Shared exposing (icon, onClick)
 
 
 type Model
@@ -54,7 +56,7 @@ menuContent : Settings -> Item -> Html a
 menuContent settings active =
     let
         isActive item =
-            class <| Shared.classNames [ ( "active", active == item ) ]
+            classList [ ( "active", active == item ) ]
 
         menuItem item link iconName label =
             li []
@@ -106,6 +108,17 @@ togglingContent settings active model content =
             ]
 
 
+dimWhenOpen : List (Html a) -> Model -> List (Html a)
+dimWhenOpen content model =
+    case model of
+        Closed ->
+            content
+
+        Open ->
+            (div [ class "overlay" ] [])
+                :: content
+
+
 sideBar : Settings -> Item -> Model -> msg -> Html msg
 sideBar settings active model toggleMsg =
     div [ id "mobile-menu", class "hide-on-large-only" ]
@@ -121,7 +134,7 @@ sideBar settings active model toggleMsg =
 fixed : Settings -> Item -> Html msg
 fixed settings active =
     div [ class "side-nav fixed" ]
-        [ Shared.header []
+        [ Layout.header [] []
         , menuContent settings active
         ]
 

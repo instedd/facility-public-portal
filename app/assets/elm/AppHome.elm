@@ -1,12 +1,25 @@
-module AppHome exposing (Model, Msg(..), PrivateMsg, init, view, update, subscriptions, mapViewport, userLocation)
+module AppHome
+    exposing
+        ( Model
+        , Msg(..)
+        , PrivateMsg
+        , init
+        , view
+        , update
+        , subscriptions
+        , mapViewport
+        , userLocation
+        )
 
 import Api
 import Debounce
+import Html
 import Html.App
+import Layout exposing (MapView)
 import Map
-import Models exposing (Settings, MapViewport, LatLng, SearchResult, FacilityType, Ownership, SearchSpec, shouldLoadMore, emptySearch)
+import Models exposing (Settings, MapViewport, LatLng, SearchResult, FacilityType, Ownership, SearchSpec, FacilitySummary, shouldLoadMore, emptySearch)
 import Return exposing (..)
-import Shared exposing (MapView)
+import Shared
 import Suggest
 import UserLocation
 import Utils exposing (perform)
@@ -16,6 +29,7 @@ type alias Model =
     { suggest : Suggest.Model
     , mapViewport : MapViewport
     , userLocation : UserLocation.Model
+    , results : Maybe SearchResult
     , d : Debounce.State
     }
 
@@ -42,12 +56,13 @@ init : Settings -> MapViewport -> UserLocation.Model -> ( Model, Cmd Msg )
 init settings mapViewport userLocation =
     let
         ( suggestModel, suggestCmd ) =
-            Suggest.empty settings
+            Suggest.empty settings mapViewport
 
         model =
             { suggest = suggestModel
             , mapViewport = mapViewport
             , userLocation = userLocation
+            , results = Nothing
             , d = Debounce.init
             }
     in
@@ -103,8 +118,15 @@ update s msg model =
                                 Api.searchMore (Private << (ApiSearch False)) results
                             else
                                 Cmd.none
+
+                        updatedModel =
+                            if initial then
+                                { model | results = Just results }
+                            else
+                                -- TODO: incorporate other pages' results
+                                model
                     in
-                        model ! [ loadMore, addFacilities ]
+                        updatedModel ! [ loadMore, addFacilities ]
 
                 ApiSearch _ (Api.SearchFailed e) ->
                     Return.singleton model
@@ -147,8 +169,15 @@ setSuggest model s =
 
 view : Model -> MapView Msg
 view model =
-    { headerClass = ""
-    , content = suggestionInput model :: (suggestionsBody model)
+    { headerClasses = []
+    , content =
+        Layout.contentWithTopBar
+            (suggestionInput model)
+            (suggestionsBody model)
+    , expandedContent =
+        Suggest.expandedView model.suggest
+            |> Layout.mapExpandedView (Private << SuggestMsg)
+            |> Just
     , toolbar = [ userLocationView model ]
     , bottom = []
     , modal = Shared.lmap (Private << SuggestMsg) (Suggest.mobileAdvancedSearch model.suggest)
@@ -188,4 +217,4 @@ userLocation model =
 
 searchAllFacilitiesStartingFrom : Models.LatLng -> Cmd Msg
 searchAllFacilitiesStartingFrom latLng =
-    Api.search (Private << (ApiSearch True)) { emptySearch | latLng = Just latLng }
+    Api.search (Private << ApiSearch True) { emptySearch | latLng = Just latLng }

@@ -18,8 +18,8 @@ type alias Settings =
 
 
 type Route
-    = RootRoute
-    | SearchRoute SearchSpec
+    = RootRoute { expanded : Bool }
+    | SearchRoute { spec : SearchSpec, expanded : Bool }
     | FacilityRoute Int
     | NotFoundRoute
 
@@ -31,7 +31,15 @@ type alias SearchSpec =
     , latLng : Maybe LatLng
     , fType : Maybe Int
     , ownership : Maybe Int
+    , size : Maybe Int
+    , sort : Maybe Sorting
     }
+
+
+type Sorting
+    = Distance
+    | Name
+    | Type
 
 
 type alias LatLng =
@@ -126,6 +134,7 @@ type alias MapViewport =
 type alias SearchResult =
     { items : List FacilitySummary
     , nextUrl : Maybe String
+    , total : Int
     }
 
 
@@ -174,38 +183,58 @@ shouldLoadMore results mapViewport =
             distance furthest.position mapViewport.center < (maxDistance mapViewport)
 
 
-path : String -> SearchSpec -> String
-path base params =
+extend : Maybe SearchResult -> Maybe SearchResult -> Maybe SearchResult
+extend a b =
+    case ( a, b ) of
+        ( Nothing, _ ) ->
+            b
+
+        ( _, Nothing ) ->
+            a
+
+        ( Just a, Just b ) ->
+            Just { items = a.items ++ b.items, nextUrl = b.nextUrl, total = b.total }
+
+
+searchParams : SearchSpec -> List ( String, String )
+searchParams search =
     let
-        queryParams =
-            select <|
-                List.map maybe
-                    [ Maybe.map (\q -> ( "q", q )) params.q
-                    , Maybe.map (\s -> ( "service", toString s )) params.service
-                    , Maybe.map (\l -> ( "location", toString l )) params.location
-                    , Maybe.map (\( lat, _ ) -> ( "lat", toString lat )) params.latLng
-                    , Maybe.map (\( _, lng ) -> ( "lng", toString lng )) params.latLng
-                    , Maybe.map (\t -> ( "type", toString t )) params.fType
-                    , Maybe.map (\o -> ( "ownership", toString o )) params.ownership
-                    ]
+        sortingToString sorting =
+            case sorting of
+                Distance ->
+                    "distance"
+
+                Name ->
+                    "name"
+
+                Type ->
+                    "type"
     in
-        Utils.buildPath base queryParams
-
-
-specFromParams : Dict String String -> SearchSpec
-specFromParams params =
-    { q = Dict.get "q" params &> discardEmpty
-    , service = intParam "service" params
-    , location = intParam "location" params
-    , latLng = paramsLatLng params
-    , fType = intParam "type" params
-    , ownership = intParam "ownership" params
-    }
+        select <|
+            List.map maybe
+                [ Maybe.map (\q -> ( "q", q )) search.q
+                , Maybe.map (\s -> ( "service", toString s )) search.service
+                , Maybe.map (\l -> ( "location", toString l )) search.location
+                , Maybe.map (\( lat, _ ) -> ( "lat", toString lat )) search.latLng
+                , Maybe.map (\( _, lng ) -> ( "lng", toString lng )) search.latLng
+                , Maybe.map (\t -> ( "type", toString t )) search.fType
+                , Maybe.map (\o -> ( "ownership", toString o )) search.ownership
+                , Maybe.map (\size -> ( "size", toString size )) search.size
+                , Maybe.map (\s -> ( "sort", sortingToString s )) search.sort
+                ]
 
 
 emptySearch : SearchSpec
 emptySearch =
-    { q = Nothing, service = Nothing, location = Nothing, latLng = Nothing, fType = Nothing, ownership = Nothing }
+    { q = Nothing
+    , service = Nothing
+    , location = Nothing
+    , latLng = Nothing
+    , fType = Nothing
+    , ownership = Nothing
+    , size = Nothing
+    , sort = Nothing
+    }
 
 
 querySearch : String -> SearchSpec
@@ -222,6 +251,7 @@ searchEquals s1 s2 =
         , Utils.equalMaybe s1.latLng s2.latLng
         , Utils.equalMaybe s1.fType s2.fType
         , Utils.equalMaybe s1.ownership s2.ownership
+        , Utils.equalMaybe s1.sort s2.sort
         ]
 
 
@@ -232,30 +262,6 @@ isEmpty =
 
 
 -- Private
-
-
-paramsLatLng : Dict String String -> Maybe LatLng
-paramsLatLng params =
-    let
-        mlat =
-            floatParam "lat" params
-
-        mlng =
-            floatParam "lng" params
-    in
-        mlat &> \lat -> Maybe.map ((,) lat) mlng
-
-
-intParam : String -> Dict String String -> Maybe Int
-intParam key params =
-    Dict.get key params
-        &> (String.toInt >> Result.toMaybe)
-
-
-floatParam : String -> Dict String String -> Maybe Float
-floatParam key params =
-    Dict.get key params
-        &> (String.toFloat >> Result.toMaybe)
 
 
 setQuery : String -> SearchSpec -> SearchSpec

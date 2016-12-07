@@ -9,9 +9,10 @@ import Utils exposing (..)
 
 search : Decoder SearchResult
 search =
-    object2 (\items nextUrl -> { items = items, nextUrl = nextUrl })
+    object3 (\items nextUrl total -> { items = items, nextUrl = nextUrl, total = total })
         ("items" := list facilitySummary)
         (maybe ("next_url" := string))
+        ("total" := int)
 
 
 suggestions : Decoder (List Suggestion)

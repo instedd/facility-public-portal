@@ -5,6 +5,7 @@ import AppHome
 import AppSearch
 import Html exposing (Html, div, span, p, text, a)
 import Html.Attributes exposing (id, class, style, href, attribute, classList)
+import Layout
 import Map
 import Menu
 import Models exposing (..)
@@ -53,7 +54,12 @@ type MainModel
 
 
 type alias CommonPageState =
-    { settings : Settings, menu : Menu.Model, route : Route, notice : Maybe Notice }
+    { settings : Settings
+    , menu : Menu.Model
+    , route : Route
+    , expanded : Bool
+    , notice : Maybe Notice
+    }
 
 
 type PagedModel
@@ -65,17 +71,17 @@ type PagedModel
 type MainMsg
     = MapViewportChanged MapViewport
     | Navigate Route
-    | NavigateBack
     | HomeMsg AppHome.Msg
     | FacilityDetailsMsg AppFacilityDetails.Msg
     | SearchMsg AppSearch.Msg
     | ToggleMenu
+    | ToggleExpand
     | DismissNotice
 
 
 type FacilityDetailsContext
-    = FromUnkown
-    | FromSearch AppSearch.Model
+    = FromUnknown Bool
+    | FromSearch AppSearch.Model Bool
 
 
 type alias Notice =
@@ -135,10 +141,6 @@ mainUpdate msg mainModel =
         Navigate route ->
             ( mainModel, Routing.navigate route )
 
-        NavigateBack ->
-            -- remove
-            ( mainModel, Navigation.back 1 )
-
         ToggleMenu ->
             case mainModel of
                 Page common pagedModel ->
@@ -146,6 +148,14 @@ mainUpdate msg mainModel =
 
                 _ ->
                     ( mainModel, Cmd.none )
+
+        ToggleExpand ->
+            case mainModel of
+                Page common pagedModel ->
+                    ( mainModel, Routing.toggleExpandedParam common.route )
+
+                _ ->
+                    singleton mainModel
 
         DismissNotice ->
             ( withoutNotice mainModel, Cmd.none )
@@ -182,7 +192,7 @@ mainUpdate msg mainModel =
                                     ( homeModel, navigateSearchLocation locationId )
 
                                 AppHome.Search search ->
-                                    ( homeModel, navigateSearch search )
+                                    ( homeModel, navigateSearch common.expanded search )
 
                                 AppHome.Private _ ->
                                     mapCmd HomeMsg <| AppHome.update common.settings msg homeModel
@@ -198,11 +208,11 @@ mainUpdate msg mainModel =
                                 AppFacilityDetails.Close ->
                                     ( mainModel
                                     , case context of
-                                        FromSearch searchModel ->
-                                            navigateSearch searchModel.query
+                                        FromSearch searchModel expanded ->
+                                            navigateSearch expanded searchModel.query
 
-                                        _ ->
-                                            navigateHome
+                                        FromUnknown expanded ->
+                                            navigateHome expanded
                                     )
 
                                 AppFacilityDetails.FacilityClicked facilityId ->
@@ -220,7 +230,7 @@ mainUpdate msg mainModel =
                         ( SearchModel searchModel, SearchMsg msg ) ->
                             (case msg of
                                 AppSearch.Search s ->
-                                    ( searchModel, navigateSearch s )
+                                    ( searchModel, navigateSearch common.expanded s )
 
                                 AppSearch.FacilityClicked facilityId ->
                                     ( searchModel, navigateFacility facilityId )
@@ -232,7 +242,7 @@ mainUpdate msg mainModel =
                                     ( searchModel, navigateSearchLocation locationId )
 
                                 AppSearch.ClearSearch ->
-                                    ( searchModel, navigateHome )
+                                    ( searchModel, navigateHome False )
 
                                 _ ->
                                     mapCmd SearchMsg <| AppSearch.update common.settings msg searchModel
@@ -266,47 +276,55 @@ mainUrlUpdate result mainModel =
                     Routing.routeFromResult result
 
                 common =
-                    { settings = getSettings mainModel, menu = Menu.Closed, route = route, notice = notice mainModel }
+                    { settings = getSettings mainModel
+                    , menu = Menu.Closed
+                    , route = route
+                    , expanded = False
+                    , notice = notice mainModel
+                    }
             in
                 case route of
-                    RootRoute ->
+                    RootRoute { expanded } ->
                         AppHome.init common.settings viewport userLocation
                             |> mapBoth HomeMsg HomeModel
-                            |> map (Page common)
+                            |> map (Page { common | expanded = expanded })
 
                     FacilityRoute facilityId ->
                         let
                             context =
                                 case mainModel of
-                                    Page _ (SearchModel searchModel) ->
-                                        FromSearch searchModel
+                                    Page { expanded } (SearchModel searchModel) ->
+                                        FromSearch searchModel expanded
 
                                     Page _ (FacilityDetailsModel _ previousContext) ->
                                         previousContext
 
+                                    Page { expanded } _ ->
+                                        FromUnknown expanded
+
                                     _ ->
-                                        FromUnkown
+                                        FromUnknown False
                         in
                             AppFacilityDetails.init viewport userLocation facilityId
                                 |> mapBoth FacilityDetailsMsg ((flip FacilityDetailsModel) context)
                                 |> map (Page common)
 
-                    SearchRoute searchSpec ->
+                    SearchRoute { spec, expanded } ->
                         (case mainModel of
-                            Page _ (FacilityDetailsModel _ (FromSearch searchModel)) ->
-                                if searchModel.query == searchSpec then
+                            Page _ (FacilityDetailsModel _ (FromSearch searchModel _)) ->
+                                if searchModel.query == spec then
                                     ( searchModel, AppSearch.restoreCmd )
                                 else
-                                    AppSearch.init common.settings searchSpec viewport userLocation
+                                    AppSearch.init common.settings spec viewport userLocation
 
                             _ ->
-                                AppSearch.init common.settings searchSpec viewport userLocation
+                                AppSearch.init common.settings spec viewport userLocation
                         )
                             |> mapBoth SearchMsg SearchModel
-                            |> map (Page common)
+                            |> map (Page { common | expanded = expanded })
 
                     NotFoundRoute ->
-                        ( withNotice unknownRouteErrorNotice mainModel, navigateHome )
+                        ( withNotice unknownRouteErrorNotice mainModel, navigateHome False )
 
 
 mapViewport : MainModel -> MapViewport
@@ -377,22 +395,28 @@ mainView mainModel =
             in
                 case pagedModel of
                     HomeModel pagedModel ->
-                        mapView HomeMsg common.settings common.menu common.notice <| withControls <| AppHome.view pagedModel
+                        AppHome.view pagedModel
+                            |> withControls
+                            |> mapView HomeMsg common
 
                     FacilityDetailsModel pagedModel _ ->
-                        mapView FacilityDetailsMsg common.settings common.menu common.notice <| withControls <| AppFacilityDetails.view pagedModel
+                        AppFacilityDetails.view pagedModel
+                            |> withControls
+                            |> mapView FacilityDetailsMsg common
 
                     SearchModel pagedModel ->
-                        mapView SearchMsg common.settings common.menu common.notice <| withControls <| AppSearch.view pagedModel
+                        AppSearch.view pagedModel
+                            |> withControls
+                            |> mapView SearchMsg common
 
-        Initializing _ _ settings ->
-            mapView identity settings Menu.Closed Nothing { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
+        Initializing _ _ _ ->
+            loadingView Nothing
 
-        Initialized _ settings notice ->
-            mapView identity settings Menu.Closed notice { headerClass = "", content = [], toolbar = [], bottom = [], modal = [] }
+        Initialized _ _ notice ->
+            loadingView notice
 
 
-prependToolbar : Html a -> Shared.MapView a -> Shared.MapView a
+prependToolbar : Html a -> Layout.MapView a -> Layout.MapView a
 prependToolbar item view =
     { view | toolbar = item :: view.toolbar }
 
@@ -419,8 +443,17 @@ localeControlView settings route =
             List.map localeAnchor settings.locales
 
 
-mapView : (a -> MainMsg) -> Settings -> Menu.Model -> Maybe Notice -> Shared.MapView a -> Html MainMsg
-mapView wmsg settings menuModel notice viewContent =
+loadingView : Maybe Notice -> Html MainMsg
+loadingView notice =
+    Layout.overMap <|
+        select
+            [ include <| Layout.sideControl (Layout.header [] []) []
+            , maybe <| Maybe.map noticePopup notice
+            ]
+
+
+mapView : (a -> MainMsg) -> CommonPageState -> Layout.MapView a -> Html MainMsg
+mapView wmsg { settings, menu, expanded, notice } viewContent =
     let
         menuSettings =
             { contactEmail = settings.contactEmail
@@ -430,31 +463,45 @@ mapView wmsg settings menuModel notice viewContent =
         hosting =
             Shared.lmap wmsg
 
-        header =
-            div [ class viewContent.headerClass ] [ Shared.header [ Menu.anchor ToggleMenu ] ]
-
         togglingMenu =
-            Menu.togglingContent menuSettings Menu.Map menuModel
+            Menu.togglingContent menuSettings Menu.Map menu
 
         mobileMenu =
-            Menu.sideBar menuSettings Menu.Map menuModel ToggleMenu
+            Menu.sideBar menuSettings Menu.Map menu ToggleMenu
+
+        header =
+            Layout.header [ Menu.anchor ToggleMenu ] viewContent.headerClasses
+
+        collapsedView =
+            togglingMenu (hosting viewContent.content)
+
+        expandedView =
+            viewContent.expandedContent
+                |> Maybe.map
+                    (\{ side, main } ->
+                        { side = togglingMenu (hosting side)
+                        , main = Menu.dimWhenOpen (hosting main) menu
+                        }
+                    )
+
+        mapControl =
+            Layout.expansibleControl header expanded ToggleExpand collapsedView expandedView
     in
-        Shared.layout <|
-            div [] <|
-                select
-                    [ include <|
-                        Shared.controlStack (header :: togglingMenu (hosting viewContent.content))
-                    , unless (List.isEmpty viewContent.bottom) <|
-                        div [ id "bottom-action", class "z-depth-1" ] (hosting viewContent.bottom)
-                    , include <|
-                        div [ id "map-toolbar", class "z-depth-1" ] (hosting viewContent.toolbar)
-                    , unless (List.isEmpty viewContent.modal) <|
-                        div [ id "modal", class "modal open" ] (hosting viewContent.modal)
-                    , include <|
-                        mobileMenu
-                    , maybe <|
-                        Maybe.map noticePopup notice
-                    ]
+        Layout.overMap <|
+            select
+                [ include <|
+                    mapControl
+                , unless (List.isEmpty viewContent.bottom) <|
+                    div [ id "bottom-action", class "z-depth-1" ] (hosting viewContent.bottom)
+                , include <|
+                    div [ id "map-toolbar", class "z-depth-1" ] (hosting viewContent.toolbar)
+                , unless (List.isEmpty viewContent.modal) <|
+                    div [ id "modal", class "modal open" ] (hosting viewContent.modal)
+                , include <|
+                    mobileMenu
+                , maybe <|
+                    Maybe.map noticePopup notice
+                ]
 
 
 noticePopup : Notice -> Html MainMsg
@@ -474,9 +521,9 @@ noticePopup notice =
         ]
 
 
-navigateHome : Cmd MainMsg
-navigateHome =
-    Utils.performMessage (Navigate RootRoute)
+navigateHome : Bool -> Cmd MainMsg
+navigateHome expanded =
+    Utils.performMessage (Navigate <| RootRoute { expanded = expanded })
 
 
 navigateFacility : Int -> Cmd MainMsg
@@ -486,17 +533,20 @@ navigateFacility =
 
 navigateSearchService : Int -> Cmd MainMsg
 navigateSearchService id =
-    Utils.performMessage <| Navigate (SearchRoute { emptySearch | service = Just id })
+    Utils.performMessage <|
+        Navigate (SearchRoute { spec = { emptySearch | service = Just id }, expanded = False })
 
 
 navigateSearchLocation : Int -> Cmd MainMsg
 navigateSearchLocation id =
-    Utils.performMessage <| Navigate (SearchRoute { emptySearch | location = Just id })
+    Utils.performMessage <|
+        Navigate (SearchRoute { spec = { emptySearch | location = Just id }, expanded = False })
 
 
-navigateSearch : SearchSpec -> Cmd MainMsg
-navigateSearch =
-    Utils.performMessage << Navigate << SearchRoute
+navigateSearch : Bool -> SearchSpec -> Cmd MainMsg
+navigateSearch expanded spec =
+    Utils.performMessage <|
+        Navigate (SearchRoute { expanded = expanded, spec = spec })
 
 
 navigateBack : Cmd MainMsg

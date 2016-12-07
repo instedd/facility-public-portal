@@ -28,7 +28,15 @@ class ElasticsearchService
             name: {
               type: 'string',
               index: 'analyzed',
-              analyzer: "standard"
+              analyzer: "standard",
+              fields: {
+                raw: {
+                  # Needed for sorting.
+                  # See https://www.elastic.co/guide/en/elasticsearch/guide/current/multi-fields.html
+                  type: 'string',
+                  index: 'not_analyzed'
+                }
+              }
             },
             contact_phone: {type: 'string'},
             ownership: {type: 'string', index: 'not_analyzed'},
@@ -254,7 +262,8 @@ class ElasticsearchService
   def page_result(result, from, size)
     { items: result["hits"]["hits"].map { |r| api_latlng r["_source"] },
       from: from,
-      size: size
+      size: size,
+      total: result["hits"]["total"]
     }.tap do |h|
       h[:next_from] = h[:from] + h[:size] if result["hits"]["hits"].count == h[:size]
     end
@@ -294,18 +303,39 @@ class ElasticsearchService
       search_body[:query][:bool][:must] << { match: { adm_ids: params[:location] } }
     end
 
-    if params[:lat] && params[:lng]
+
+    sort = params[:sort].try(:to_sym) || :distance
+
+    case sort
+    when :type
       search_body[:sort] = {
-        _geo_distance: {
-          position: {
-            lat: params[:lat],
-            lon: params[:lng]
-          },
-          order: "asc",
-          unit:  "km",
-          distance_type: "plane"
-        }
+        priority: { order: "desc" },
+        facility_type_id: { order: "desc" }
       }
+    when :name
+      search_body[:sort] = {
+        'name.raw': { order: "asc" },
+      }
+    else
+      if params[:lat] && params[:lng]
+        search_body[:sort] = {
+          _geo_distance: {
+            position: {
+              lat: params[:lat],
+              lon: params[:lng]
+            },
+            order: "asc",
+            unit:  "km",
+            distance_type: "plane"
+          }
+        }
+      else
+        # Default sorting "_doc" has no semantic meaning, but is the  most efficient mechanism
+        # and ensures consistent result order when paginating and scrolling results.
+        #
+        # See https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-sort.html
+        search_body[:sort] = { _doc: { order: "asc" } }
+      end
     end
 
     result = client.search({
