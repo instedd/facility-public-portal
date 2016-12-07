@@ -27,21 +27,6 @@ select {
   display: block;
 }
 
-.main .control-content-bottom .collection.results {
-  position: fixed;
-  top: 141px;
-  bottom: 35px;
-  overflow: hidden;
-  width: 100%;
-  .progress {
-    margin-bottom: 3px;
-  }
-}
-
-.inf-scroll-container {
-  overflow-y: scroll;
-  height: 100%;
-}
 
 #map-control .panels,
 #map-toolbar {
@@ -109,9 +94,32 @@ select {
         flex-grow: 1;
         position: relative;
         border-left: 1px solid #bcbcbc;
+        display: flex;
+        flex-direction: column;
 
         .control-content-bottom {
-          padding-top: 15px;
+          position: relative;
+          flex-grow: 1;
+
+          .collection.results {
+            // infinite scroll height calculations seem to require absolute positioning.
+            position: absolute;
+            top: 0;
+            bottom: 0;
+
+            overflow: hidden;
+            width: 100%;
+
+            .inf-scroll-container {
+              position: relative;
+              overflow-y: scroll;
+              height: 100%;
+
+              .progress {
+                margin-bottom: 7px;
+              }
+            }
+          }
         }
 
         .overlay {
