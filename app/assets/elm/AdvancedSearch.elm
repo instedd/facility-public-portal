@@ -222,11 +222,11 @@ fields model =
             ]
         , field
             [ label [ for locationInputId ] [ text <| t I18n.Location ]
-            , Html.App.map (Private << LocationSelectorMsg) (Selector.view viewLocation model.locationSelector)
+            , Html.App.map (Private << LocationSelectorMsg) (Selector.view "" viewLocation model.locationSelector)
             ]
         , field
             [ label [ for serviceInputId ] [ text <| t I18n.Service ]
-            , Html.App.map (Private << ServiceSelectorMsg) (Selector.view viewService model.serviceSelector)
+            , Html.App.map (Private << ServiceSelectorMsg) (Selector.view "pull-up" viewService model.serviceSelector)
             ]
         ]
 

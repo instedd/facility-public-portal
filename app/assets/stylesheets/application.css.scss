@@ -28,6 +28,22 @@ select {
 }
 
 
+.autocomplete-menu.pull-up {
+  margin-top: -265px;
+  &.child-count-1 {
+    margin-top: -97px;
+  }
+  &.child-count-2 {
+    margin-top: -130px;
+  }
+  &.child-count-3 {
+    margin-top: -163px;
+  }
+  &.child-count-4 {
+    margin-top: -196px;
+  }
+}
+
 #map-control .panels,
 #map-toolbar {
   transition: all ease-in-out .25s;

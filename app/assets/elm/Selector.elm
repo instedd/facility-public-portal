@@ -187,8 +187,8 @@ close model =
     }
 
 
-view : OptionView a -> Model a -> Html Msg
-view optionView model =
+view : String -> OptionView a -> Model a -> Html Msg
+view cssClass optionView model =
     let
         options =
             { preventDefault = True, stopPropagation = False }
@@ -207,7 +207,7 @@ view optionView model =
 
         menu =
             if model.showMenu then
-                [ viewMenu optionView model ]
+                [ viewMenu cssClass optionView model ]
             else
                 []
 
@@ -305,10 +305,13 @@ escape model =
                 clearModel
 
 
-viewMenu : OptionView a -> Model a -> Html Msg
-viewMenu optionView model =
-    div [ class "autocomplete-menu" ]
-        [ Html.map SetAutoState (Autocomplete.view (viewConfig optionView) model.howManyToShow model.autoState (currentMatches model)) ]
+viewMenu : String -> OptionView a -> Model a -> Html Msg
+viewMenu cssClass optionView model =
+    let
+        matches = (currentMatches model)
+    in
+        div [ class ("autocomplete-menu " ++ cssClass ++ " child-count-" ++ (toString <| List.length matches)) ]
+            [ Html.map SetAutoState (Autocomplete.view (viewConfig optionView) model.howManyToShow model.autoState matches) ]
 
 
 updateConfig : Autocomplete.UpdateConfig Msg (Option a)
