@@ -36,7 +36,6 @@ select {
   transition: all ease-in-out .25s;
   border-radius: 5px;
   box-sizing: border-box;
-  background: rgb(255,255,255);
   display: flex;
 }
 
@@ -48,12 +47,30 @@ select {
   flex-direction: row;
   max-height: 95%;
   width: 414px;
-  transition: width 1s ease-in-out, height 1s ease-in-out;
+  transition: width 0s linear 1s;
+
+  &.expanded {
+    transition: width 0s linear 0s;
+
+    .panels {
+      transition: semiShadow 1s linear 0s;
+    }
+  }
+
+  @keyframes semiShadow {
+    0%, 100% {
+      box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16);
+    }
+    50% {
+      box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.16);
+    }
+  }
 
   .panels {
     z-index: 3;
     overflow-x: hidden; // to clip rounded corners of the contenet with border-radius
     flex-grow: 1;
+    transition: semiShadow 2s linear 0s;
 
     .control-content {
       display: flex;
@@ -82,12 +99,18 @@ select {
       min-width: 318px;
       display: flex;
       flex-direction: column;
+      background-color: white;
+      z-index:3;
     }
 
     .main {
       flex-grow: 1;
       display: flex;
       flex-direction: column;
+      transform: translateX(0);
+      background-color: white;
+      transition: transform 1s ease-in-out;
+      z-index:1;
 
       .TopNav {
         border-left: 1px solid rgba(0,0,0,0.1);
@@ -125,11 +148,15 @@ select {
     &.expanded {
       width: 96%;
       height: 95%;
+      background-color: white;
     }
 
     &:not(.expanded) .main {
+      // display:none;
       width: 0;
-      height: 0;
+      height: 129px;
+      transform: translateX(-100%);
+      background-color: white;
     }
   }
 
@@ -177,6 +204,7 @@ select {
   flex-direction: row;
   align-items: center;
   z-index: 2;
+  background-color: white;
 
   .scale {
     padding-right: 4px;
