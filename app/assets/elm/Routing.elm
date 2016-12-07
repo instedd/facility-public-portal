@@ -29,18 +29,10 @@ routeToPath : Route -> String
 routeToPath route =
     case route of
         RootRoute { expanded } ->
-            buildPath "/map" <|
-                if expanded then
-                    [ ( "expanded", encodeBoolParam expanded ) ]
-                else
-                    []
+            buildPath "/map" (appendExpanded expanded [])
 
         SearchRoute { spec, expanded } ->
-            buildPath "/map/search" <|
-                if expanded then
-                    ( "expanded", encodeBoolParam expanded ) :: (searchParams spec)
-                else
-                    searchParams spec
+            buildPath "/map/search" (appendExpanded expanded (searchParams spec))
 
         FacilityRoute id ->
             "/map/facilities/" ++ (toString id)
@@ -183,3 +175,11 @@ toggleExpandedParam route =
                     route
     in
         navigate toggledUrl
+
+
+appendExpanded : Bool -> List ( String, String ) -> List ( String, String )
+appendExpanded expanded params =
+    if expanded then
+        params ++ [ ( "expanded", "1" ) ]
+    else
+        params
