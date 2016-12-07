@@ -63,9 +63,9 @@ select {
   display: flex;
   flex-direction: row;
   max-height: 95%;
+  z-index: 3;
 
   .panels {
-    z-index: 3;
     overflow-x: hidden; // to clip rounded corners of the contenet with border-radius
     flex-grow: 1;
 
