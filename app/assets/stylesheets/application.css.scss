@@ -86,6 +86,9 @@ select {
         }
       }
       .control-content-bottom {
+        // container for bottom panels should always scroll to prevent the header from scrolling.
+        overflow-y: scroll;
+
         bottom: 0;
         border-top: 1px solid #bcbcbc;
       }
