@@ -26,6 +26,14 @@ type TranslationId
     | SortBy
     | Distance
     | Name
+    | WrongLocation
+    | Closed
+    | ContactMissing
+    | InnacurateServices
+    | Other
+    | DetailedDescription
+    | SelectIssueToReport
+    | SendReport
 
 t : TranslationId -> String
 t resource =

@@ -244,16 +244,16 @@ reportWindow report =
             , a [ href "#", class "right", Shared.onClick (Private ToggleFacilityReport) ] [ Shared.icon "close" ]
             ]
             [ Html.form [ action "#", method "GET" ]
-                [ issueToggle WrongLocation "Wrong location" report.wrong_location
-                , issueToggle Closed "Facility closed" report.closed
-                , issueToggle ContactMissing "Incorrect contact information" report.contact_info_missing
-                , issueToggle InnacurateServices "Inaccurate service list" report.inaccurate_services
-                , issueToggle Other "Other" report.other
+                [ issueToggle WrongLocation report.wrong_location
+                , issueToggle Closed report.closed
+                , issueToggle ContactMissing report.contact_info_missing
+                , issueToggle InnacurateServices report.inaccurate_services
+                , issueToggle Other report.other
                 , div
                     [ class "input-field col s12", style [ ( "margin-top", "40px" ) ] ]
                     [ Html.textarea
                         [ class "materialize-textarea"
-                        , placeholder "Detailed description (optional)"
+                        , placeholder <| t DetailedDescription
                         , style [ ( "height", "6rem" ) ]
                         , Events.onInput (Private << Report << MessageInput)
                         ]
@@ -263,28 +263,37 @@ reportWindow report =
             ]
             [ div
                 [ classList [ ( "warning", True ), ( "hide", completed ) ] ]
-                [ text "Please select at least 1 issue to report" ]
+                [ text <| t SelectIssueToReport ]
             , a
                 [ href "#"
                 , classList [ ( "btn-flat", True ), ( "disabled", not completed ) ]
                 , Shared.onClick (Private (Report Send))
                 ]
-                [ text "Send report" ]
+                [ text <| t SendReport ]
             ]
 
 
-issueToggle : FacilityIssue -> String -> Bool -> Html Msg
-issueToggle issue label v =
+issueToggle : FacilityIssue -> Bool -> Html Msg
+issueToggle issue v =
     let
         msg =
             Private (Report (Toggle issue))
 
         htmlId =
             "issue-toggle-" ++ toString issue
+
+        i18nLabel =
+            t <| case issue of
+                WrongLocation -> I18n.WrongLocation
+                Closed -> I18n.Closed
+                ContactMissing -> I18n.ContactMissing
+                InnacurateServices -> I18n.InnacurateServices
+                Other -> I18n.Other
+
     in
         div [ class "input-field col s12" ]
             [ input [ type' "checkbox", id htmlId, checked v, Shared.onClick msg ] []
-            , Html.label [ for htmlId ] [ text label ]
+            , Html.label [ for htmlId ] [ text i18nLabel ]
             ]
 
 

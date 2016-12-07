@@ -42,3 +42,11 @@ en:
   sort_by: Sort by
   distance: Distance
   name: Name
+  wrong_location: Wrong location
+  closed: Facility closed
+  contact_missing: Incorrect contact information
+  innacurate_services: Inaccurate service list
+  other: Other
+  detailed_description: Detailed description (optional)
+  select_issue_to_report: Please select at least 1 issue to report
+  send_report: Send report

@@ -21,3 +21,11 @@ es:
   sort_by: Ordenar por
   distance: Distancia
   name: Nombre
+  wrong_location: Ubicación incorrecta
+  closed: Instalación cerrada
+  contact_missing: Información de contacto incorrecta
+  innacurate_services: Lista de servicio inexacta
+  other: Otro
+  detailed_description: Descripción detallada (opcional)
+  select_issue_to_report: Seleccione alguna opción para reportar
+  send_report: Enviar reporte

@@ -21,3 +21,11 @@ am:
   sort_by: ደርድር
   distance: ርቀት
   name: ስም
+  wrong_location: የተሳሳተ አካባቢ
+  closed: ተቋም ተዘግቷል
+  contact_missing: ትክክል ያልሆነ የእውቂያ መረጃ
+  innacurate_services: ትክክል አገልግሎት ዝርዝር
+  other: ሌላ
+  detailed_description: ዝርዝር መግለጫ (አማራጭ)
+  select_issue_to_report: ሪፖርት ለማድረግ ቢያንስ 1 እትም ይምረጡ
+  send_report: ሪፖርት ላክ
