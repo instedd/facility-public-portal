@@ -152,8 +152,7 @@ mainUpdate msg mainModel =
         ToggleExpand ->
             case mainModel of
                 Page common pagedModel ->
-                    singleton <|
-                        Page { common | expanded = not common.expanded } pagedModel
+                    ( mainModel, Routing.toggleExpandedParam common.route )
 
                 _ ->
                     singleton mainModel

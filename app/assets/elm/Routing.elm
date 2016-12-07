@@ -1,4 +1,11 @@
-module Routing exposing (parser, navigate, routeFromResult, routeToPath)
+module Routing
+    exposing
+        ( parser
+        , navigate
+        , routeFromResult
+        , routeToPath
+        , toggleExpandedParam
+        )
 
 import Dict exposing (Dict)
 import Models exposing (..)
@@ -159,3 +166,20 @@ encodeBoolParam bool =
 
         False ->
             "0"
+
+
+toggleExpandedParam : Route -> Cmd msg
+toggleExpandedParam route =
+    let
+        toggledUrl =
+            case route of
+                RootRoute { expanded } ->
+                    RootRoute { expanded = not expanded }
+
+                SearchRoute { spec, expanded } ->
+                    SearchRoute { spec = spec, expanded = not expanded }
+
+                _ ->
+                    route
+    in
+        navigate toggledUrl
