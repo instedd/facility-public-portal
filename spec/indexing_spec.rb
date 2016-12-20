@@ -39,6 +39,38 @@ RSpec.describe Indexing do
       expect{index_dataset(dataset)}.not_to raise_error
     end
 
+    it "fails if a service name translation is missing" do
+      locales = [:en, :am]
+      dataset = {facilities: [
+                         {
+                           id: "F1",
+                           name: "FOO",
+                           lat: 10.696144,
+                           lng: 38.370941,
+                           location_id: "L1",
+                           ownership: "Public",
+                           facility_type: "Health Center",
+                           contact_name: "",
+                           contact_email: nil,
+                           contact_phone: nil,
+                           last_update: nil
+                         }
+                       ],
+                       services: [
+                         {
+                           id: "S1",
+                           'name:en': 'Vaccines'
+                           # name:am is missing
+                         }
+                       ],
+                       facilities_services: [{facility_id: "F1", service_id: "S1"}],
+                       locations: [{id: "L1", name: "Ethiopia", parent_id: "-----------------"},],
+                       facility_types: []
+                      }
+
+      expect { index_dataset(dataset, locales) }.to raise_error("Missing translation")
+    end
+
     it "skips facilities without a name" do
       index_dataset({facilities: [
                        {

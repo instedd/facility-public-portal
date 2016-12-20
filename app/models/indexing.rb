@@ -30,6 +30,8 @@ class Indexing
       h[:source_id] = h[:id]
       h[:id] = @last_service_id += 1
       h[:facility_count] = 0
+
+      validate_service_translations(h)
       h
     end
 
@@ -46,7 +48,6 @@ class Indexing
     services_by_facility = @dataset[:facilities_services]
                            .group_by   { |assoc| assoc["facility_id"] }
                            .map_values { |assocs| assocs.map { |a| services_by_id[a["service_id"]] } }
-
 
     logger.info "Calculating full location paths"
     locations_by_id.values.each do |l|
@@ -205,5 +206,14 @@ class Indexing
       end
     end
     return valid
+  end
+
+  def validate_service_translations(service)
+    @locales.each do |l|
+      unless service["name:#{l}".to_sym]
+        logger.error "Service #{service[:source_id]} doesn't have a name:#{l} field. Maybe the locale wasn't enabled when normalizing the dataset?"
+        raise "Missing translation"
+      end
+    end
   end
 end
