@@ -2,6 +2,44 @@
 
 ## Development
 
+* Install Docker
+
+* First time
+
+```
+$ docker-compose run --rm app ./bin/setup
+$ docker-compose up
+```
+
+* Initial import data
+
+If you already have a `./data/input` directory as described in the [importing guide](docs/importing.md), index it with:
+
+```
+$ docker-compose run --rm app ./bin/import-dataset data/input
+```
+
+* Upgrade
+
+```
+$ docker-compose run --rm app ./bin/update
+$ docker-compose up
+```
+
+Note that you might need to reimport the data depending on the update.
+
+* Destroy
+
+```
+$ docker-compose run --rm app ./bin/rails db:drop
+```
+
+Or
+
+```
+$ docker-compose down -v
+```
+
 ### Elm
 
 To compile Elm code, first install Node.js (tested on LTS v4.5.0).
@@ -18,12 +56,8 @@ Once installed, Elm modules will be automatically built and compiler errors will
 
 ### Elasticsearch and PostgreSQL
 
-This project needs Elasticsearch v2.4 and PostgreSQL v9.5 (**TODO** do we really need Postgres?).
-Both can be run in development using Docker:
-
-```
-$ docker-compose up -d
-```
+This project needs Elasticsearch v2.4 and PostgreSQL v9.5.
+Both are started as docker containers by the docker-compose.
 
 Data from these containers is preserved between restarts. To stop any running instance **and delete data volumes**, use:
 

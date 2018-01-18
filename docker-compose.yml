@@ -2,8 +2,6 @@ version: '2'
 services:
   elasticsearch:
     image: elasticsearch:2.4
-    ports:
-      - "9200:9200"
     volumes:
       - elastic:/usr/share/elasticsearch/data
 
@@ -12,19 +10,36 @@ services:
     command: 'bin/maildev --web 3080 --smtp 1025 --incoming-user smtp --incoming-pass smtp'
     ports:
       - '3080:3080'
-      - '1025:1025'
 
-  postgres:
+  db:
     image: postgres:9.5
     environment:
-      POSTGRES_PASSWORD: fpp
-      POSTGRES_USER: fpp
-      POSTGRES_DB: fpp
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: root
     volumes:
       - db:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    env_file: dev.env
+    pid: host
+    working_dir: /src
+    depends_on:
+      - db
+      - smtp
+      - elasticsearch
+    volumes:
+      - .:/src
+      - bundle:/usr/local/bundle
+      - elm-stuff:/src/elm-stuff
+    ports:
+      - "3000:3000"
+    command: /bin/sh -c './bin/update && bundle exec ./bin/rails s -b 0.0.0.0'
 
 volumes:
   db:
   elastic:
+  bundle:
+  elm-stuff:
+
