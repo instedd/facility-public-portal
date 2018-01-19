@@ -1,0 +1,47 @@
+version: '2'
+services:
+  elasticsearch:
+    image: elasticsearch:2.4
+    volumes:
+      - elastic:/usr/share/elasticsearch/data
+
+  smtp:
+    image: 'djfarrelly/maildev:latest'
+    command: 'bin/maildev --web 3080 --smtp 1025 --incoming-user smtp --incoming-pass smtp'
+    ports:
+      - '3080:3080'
+
+  db:
+    image: postgres:9.5
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD:
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  app:
+    image: instedd/vitalwave:latest
+    depends_on:
+      - db
+      - smtp
+      - elasticsearch
+    ports:
+      - '3000:80'
+    environment:
+      DATABASE_URL: postgres://root:@db/fpp
+      SECRET_KEY_BASE: secret
+      SETTINGS__ADMIN_USER: admin
+      SETTINGS__ADMIN_PASS: admin
+      ELASTICSEARCH_URL: elasticsearch
+      SETTINGS__REPORT_EMAIL_TO: support@example.org
+      SETTINGS__SMTP_SETTINGS__ADDRESS: smtp
+      SETTINGS__SMTP_SETTINGS__PASSWORD: smtp
+      SETTINGS__SMTP_SETTINGS__PORT: 1025
+      SETTINGS__SMTP_SETTINGS__USER_NAME: smtp
+    volumes:
+      - ./data:/app/data
+
+volumes:
+  db:
+  elastic:
+

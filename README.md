@@ -1,5 +1,15 @@
 # Facility Public Portal
 
+## Production
+
+Use `docker-compose.production.yml` as a reference. Create database, index data, and launch the web server.
+
+```
+$ docker-compose -f docker-compose.production.yml run --rm app rails db:create db:schema:load
+$ docker-compose -f docker-compose.production.yml run --rm app ./bin/import-dataset ./data/input
+$ docker-compose -f docker-compose.production.yml up
+```
+
 ## Development
 
 * Install Docker
