@@ -15,6 +15,7 @@ services:
     image: postgres:9.5
     environment:
       POSTGRES_USER: root
+      POSTGRES_PASSWORD:
     volumes:
       - db:/var/lib/postgresql/data
 
