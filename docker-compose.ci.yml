@@ -1,0 +1,7 @@
+version: '2.0'
+
+services:
+  app:
+    volumes:
+      - ~/cache/bundle:/usr/local/bundle
+      - ~/cache/elm-stuff:/src/elm-stuff

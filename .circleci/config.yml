@@ -1,0 +1,30 @@
+version: 2
+
+jobs:
+  build:
+    machine: true
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          key: deps-bundle-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
+      - restore_cache:
+          key: deps-elm-{{ .Branch }}-{{ checksum "elm-package.json" }}
+
+      - run: mv docker-compose.ci.yml docker-compose.override.yml
+      - run: docker-compose run --rm app ./bin/setup
+
+      - save_cache:
+          key: deps-bundle-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
+          paths:
+            - ~/cache/bundle
+      - save_cache:
+          key: deps-elm-{{ .Branch }}-{{ checksum "elm-package.json" }}
+          paths:
+            - ~/cache/elm-stuff
+
+      - run: docker-compose up -d elasticsearch db smtp
+      - run: docker-compose run app rspec
+      - run: docker-compose run app ./bin/precompile-assets.sh
+      - run: ./.circleci/deploy.sh

@@ -20,27 +20,28 @@ services:
       - db:/var/lib/postgresql/data
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile-dev
-    env_file: dev.env
-    pid: host
-    working_dir: /src
+    image: instedd/vitalwave:latest
     depends_on:
       - db
       - smtp
       - elasticsearch
-    volumes:
-      - .:/src
-      - bundle:/usr/local/bundle
-      - elm-stuff:/src/elm-stuff
     ports:
-      - "3000:3000"
-    command: /bin/sh -c './bin/update && bundle exec ./bin/rails s -b 0.0.0.0'
+      - '3000:80'
+    environment:
+      DATABASE_URL: postgres://root:@db/fpp
+      SECRET_KEY_BASE: secret
+      SETTINGS__ADMIN_USER: admin
+      SETTINGS__ADMIN_PASS: admin
+      ELASTICSEARCH_URL: elasticsearch
+      SETTINGS__REPORT_EMAIL_TO: support@example.org
+      SETTINGS__SMTP_SETTINGS__ADDRESS: smtp
+      SETTINGS__SMTP_SETTINGS__PASSWORD: smtp
+      SETTINGS__SMTP_SETTINGS__PORT: 1025
+      SETTINGS__SMTP_SETTINGS__USER_NAME: smtp
+    volumes:
+      - ./data:/app/data
 
 volumes:
   db:
   elastic:
-  bundle:
-  elm-stuff:
 
