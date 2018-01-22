@@ -29,7 +29,14 @@ TEXT
 
 contact_info = <<-TEXT
 ## Contact Information
-Lorem ipsum
+
+moh@ethionet.et  
+
+[http://www.moh.gov.et](http://www.moh.gov.et)
+
+@EthiopiaFMoH 
+
+Call +251 11 551 7011
 TEXT
 
 intro_to_search = <<-TEXT
