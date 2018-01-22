@@ -28,3 +28,14 @@ jobs:
       - run: docker-compose run app rspec
       - run: docker-compose run app ./bin/precompile-assets.sh
       - run: ./.circleci/deploy.sh
+
+workflows:
+  version: 2
+  build_all_platforms:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /.*/
