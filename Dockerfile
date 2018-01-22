@@ -1,34 +1,35 @@
-FROM instedd/nginx-rails:2.3
+FROM ruby:2.3.1
 
-ARG SKIP_ASSETS_COMPILATION
+RUN \
+  apt-get update && \
+  # node
+  curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
+  apt-get install -y nodejs && \
+  # elm
+  npm install -g elm@0.17.1 --unsafe-perm=true --allow-root && \
+  # clean
+  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN apt-get update && apt-get -y install npm && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /opt
-RUN wget https://nodejs.org/dist/v4.6.0/node-v4.6.0-linux-x64.tar.xz \
-    && tar -xvf node-v4.6.0-linux-x64.tar.xz \
-    && ln -s /opt/node-v4.6.0-linux-x64/bin/node /usr/local/bin/node \
-    && ln -s /opt/node-v4.6.0-linux-x64/bin/npm /usr/local/bin/npm \
-    && npm install -g elm@0.17.1 \
-    && ln -s /opt/node-v4.6.0-linux-x64/lib/node_modules/elm/binwrappers/* /usr/local/bin/
-
+# Install dependencies
+RUN mkdir /app
 WORKDIR /app
-
-# Install gem bundle
-ADD Gemfile /app/
-ADD Gemfile.lock /app/
+ADD Gemfile /app/Gemfile
+ADD Gemfile.lock /app/Gemfile.lock
 RUN bundle install --jobs 3 --deployment --without development test
-
-# Default environment settings
-ENV PUMA_OPTIONS "--preload -w 4"
+ADD elm-package.json /app/elm-package.json
+RUN elm package install --yes
 
 # Install the application
 ADD . /app
 
-# Add config files
-ADD docker/precompile-assets.sh /app/
-ADD docker/runit-web-run /etc/service/web/run
-ADD docker/database.yml /app/config/database.yml
-
 # Precompile assets
-RUN /bin/bash /app/precompile-assets.sh
+RUN /bin/bash ./bin/precompile-assets.sh
+
+ENV RAILS_ENV production
+ENV RAILS_SERVE_STATIC_FILES true
+ENV RAILS_LOG_TO_STDOUT true
+ENV PORT 80
+
+EXPOSE $PORT
+
+CMD bundle exec rails s -p $PORT -b '0.0.0.0'

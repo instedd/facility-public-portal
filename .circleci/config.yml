@@ -26,4 +26,5 @@ jobs:
 
       - run: docker-compose up -d elasticsearch db smtp
       - run: docker-compose run app rspec
-      - run: docker-compose run app ./docker/precompile-assets.sh
+      - run: docker-compose run app ./bin/precompile-assets.sh
+      - run: ./.circleci/deploy.sh
