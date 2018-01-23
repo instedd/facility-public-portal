@@ -25,6 +25,8 @@
         <%= text_area_tag 'left_column', @texts[:left_column].to_s %>
         <%= label_tag 'right_column', 'Paragraph for the right column' %>
         <%= text_area_tag 'right_column', @texts[:right_column].to_s %>
+        <%= label_tag 'contact_info', 'Contact information' %>
+        <%= text_area_tag 'contact_info', @texts[:contact_info].to_s %>        
         <div class='actions right-align'>
           <%= link_to 'Discard draft', discard_draft_path(@edit_locale), class: "btn btn-flat", method: 'post' %>
           <%= submit_tag 'Save draft and Preview', class: "btn btn-large" %>

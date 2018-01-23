@@ -27,6 +27,18 @@ right_column = <<-TEXT
 We provide an API to help with any searches
 TEXT
 
+contact_info = <<-TEXT
+## Contact Information
+
+[moh@ethionet.et](mailto:moh@ethionet.et)
+
+[http://www.moh.gov.et](http://www.moh.gov.et)
+
+@EthiopiaFMoH 
+
+Call +251 11 551 7011
+TEXT
+
 intro_to_search = <<-TEXT
 ## Find the facility that fits your needs
 Every facility in each county has a list of services to help find whatever is necessary. Contact details are provided to get in touch with professionals in a moment of need.
@@ -38,5 +50,6 @@ LandingText.create draft: false, locale: :en, texts: {
   "subsection" => subsection,
   "left_column" => left_column,
   "right_column" => right_column,
+  "contact_info" => contact_info,
   "intro_to_search"=> intro_to_search
 }

@@ -60,3 +60,9 @@
     </div>
   </div>
 </div>
+
+<div class="row contact-info">
+    <% if @texts[:contact_info] %>
+      <%= markdown(@texts[:contact_info]) %>
+    <% end %>
+</div>

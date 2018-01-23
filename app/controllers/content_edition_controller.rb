@@ -20,6 +20,7 @@ class ContentEditionController < ApplicationController
       subsection: params[:subsection],
       left_column: params[:left_column],
       right_column: params[:right_column],
+      contact_info: params[:contact_info],
       intro_to_search: params[:intro_to_search]
     }
 

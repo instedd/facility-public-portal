@@ -55,6 +55,7 @@ class LandingText < ActiveRecord::Base
       "subsection" => "",
       "left_column" => "",
       "right_column" => "",
+      "contact_info" => "",
       "intro_to_search" => ""
     }
   end
