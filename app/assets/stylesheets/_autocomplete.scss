@@ -15,16 +15,19 @@
 }
 
 .autocomplete-item {
-  display: block;
+  display: flex;
+  justify-content: space-between;
   padding: 5px 10px;
   border-bottom: 1px solid #DDD;
   cursor: pointer;
+  white-space: nowrap;
 
   .autocomplete-item-context {
-    float: right;
     font-size: 13px;
     color: $color_mountain_mist_approx;
-    margin-top: 1px;
+    margin: 1px 0 0 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &.key-selected {
