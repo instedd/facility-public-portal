@@ -54,6 +54,7 @@ type alias Facility =
     , priority : Int
     , services : List String
     , adm : List String
+    , ownership : String
     , contactName : Maybe String
     , contactPhone : Maybe String
     , contactEmail : Maybe String

@@ -538,6 +538,12 @@ facilityDetail cssClasses now userLocation facility =
                 [ div [ class "detailSection pic" ] [ div [ class "no-photo" ] [ Shared.icon "photo", text "No photo" ] ]
                 , div [ class "detailSection actions" ] [ facilityActions ]
                 , div [ class "detailSection contact" ] [ ul [] informationLinks ]
+                , div [ class "detailSection info" ] 
+                    [ ul [] 
+                        [ li [] [ text facility.ownership ]
+                        , li [] [ text (String.join ", " (List.reverse facility.adm)) ]
+                        ]
+                    ]
                 , div [ class "detailSection services" ]
                     [ span [] [ text <| t Services ]
                     , if List.isEmpty facility.services then

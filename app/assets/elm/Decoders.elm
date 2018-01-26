@@ -33,6 +33,7 @@ facility =
         |> required "priority" int
         |> required "service_names" (list string)
         |> required "adm" (list string)
+        |> required "ownership" string
         |> required "contact_name" (nullable string)
         |> required "contact_phone" (nullable string)
         |> required "contact_email" (nullable string)
