@@ -504,7 +504,6 @@ resultItem t sub iconName clickMsg =
 locationLabel : FacilitySummary -> String
 locationLabel facility =
     facility.adm
-        |> List.drop 1
         |> List.reverse
         |> String.join ", "
 
