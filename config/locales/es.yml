@@ -5,7 +5,7 @@ es:
   map: Mapa
   api_docs: Documentación API
   full_download: Descargar dataset completo
-  services: Servicos
+  services: Servicios
   contact: Contacto
   facilities_count: "%{count} centros de salud"
   report_an_issue: Reportar un problema
