@@ -48,6 +48,7 @@ type alias LatLng =
 
 type alias Facility =
     { id : Int
+    , sourceId : String
     , name : String
     , position : LatLng
     , facilityType : String

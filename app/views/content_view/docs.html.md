@@ -187,6 +187,7 @@ Given an `id` of a facility the details endpoint allows getting all the known in
 $ curl 'vitalwave.instedd.org/api/facilities/85'
 {
   "id": 85,
+  "source_id": "101466-1",
   "name": "Burkitu Marmara Health Center",
   "facility_type": "Health Center",
   "contact_name": "Getachew",

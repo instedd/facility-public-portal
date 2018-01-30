@@ -556,6 +556,7 @@ facilityDetail cssClasses now userLocation facility =
                       else
                         ul [] (List.map (\s -> li [] [ text s ]) facility.services)
                     ]
+                , div [ class "detailSection extra" ] [ text ("REF ID: " ++ facility.sourceId) ]
                 ]
             ]
 

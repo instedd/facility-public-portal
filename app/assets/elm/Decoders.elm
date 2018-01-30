@@ -27,6 +27,7 @@ facility : Decoder Facility
 facility =
     decode Facility
         |> required "id" int
+        |> required "source_id" string
         |> required "name" string
         |> required "position" latLng
         |> required "facility_type" string

@@ -5,7 +5,7 @@ RSpec.describe ResmapNormalization do
     dataset = {
       sites: [
         {
-          "resmap-id" => 1021321,
+          "ethiopian_national_identifier" => "1021321-0",
           "name" => "1 Fero Health Center",
           "lat" => 6.76437,
           "long" => 38.47822,
@@ -19,7 +19,7 @@ RSpec.describe ResmapNormalization do
           "last updated" => "Tue, 11 Oct 2016 07:19:08 +0000"
         },
         {
-          "resmap-id" => 1021322,
+          "ethiopian_national_identifier" => "1021322-0",
           "name" => "2 Fero Health Center",
           "lat" => 6.86437,
           "long" => 38.47822,
@@ -33,7 +33,7 @@ RSpec.describe ResmapNormalization do
           "last updated" => ""
         },
         {
-          "resmap-id" => 1021323,
+          "ethiopian_national_identifier" => "1021323-0",
           "name" => "3 Fero Health Center",
           "lat" => 6.96437,
           "long" => 38.47822,
@@ -47,7 +47,7 @@ RSpec.describe ResmapNormalization do
           "last updated" => ""
         },
         {
-          "resmap-id" => 435,
+          "ethiopian_national_identifier" => "435-0",
           "name" => "To be ignored",
           "lat" => nil,
           "long" => nil,
@@ -152,13 +152,13 @@ RSpec.describe ResmapNormalization do
       ]
     }
 
-    photo_of_facility = lambda { |f| "photo/#{f["resmap-id"]}.jpg" }
+    photo_of_facility = lambda { |f| "photo/#{f["ethiopian_national_identifier"]}.jpg" }
     result = ResmapNormalization.new(dataset, photo_of_facility: photo_of_facility).run
 
     expect(result).to eq({
       facilities: [
         {
-          id: "1021321",
+          id: "1021321-0",
           name: "1 Fero Health Center",
           lat: 6.76437,
           lng: 38.47822,
@@ -168,11 +168,11 @@ RSpec.describe ResmapNormalization do
           contact_name: "John Doe",
           contact_phone: "456787654",
           contact_email: "jdoe@example.org",
-          photo: "photo/1021321.jpg",
+          photo: "photo/1021321-0.jpg",
           last_update: "Tue, 11 Oct 2016 07:19:08 +0000"
         },
         {
-          id: "1021322",
+          id: "1021322-0",
           name: "2 Fero Health Center",
           lat: 6.86437,
           lng: 38.47822,
@@ -182,11 +182,11 @@ RSpec.describe ResmapNormalization do
           contact_name: nil,
           contact_phone: "",
           contact_email: "",
-          photo: "photo/1021322.jpg",
+          photo: "photo/1021322-0.jpg",
           last_update: ""
         },
         {
-          id: "1021323",
+          id: "1021323-0",
           name: "3 Fero Health Center",
           lat: 6.96437,
           lng: 38.47822,
@@ -196,7 +196,7 @@ RSpec.describe ResmapNormalization do
           contact_name: nil,
           contact_phone: "",
           contact_email: "",
-          photo: "photo/1021323.jpg",
+          photo: "photo/1021323-0.jpg",
           last_update: "",
         }
       ],
@@ -229,10 +229,10 @@ RSpec.describe ResmapNormalization do
         { id: "lab_dx", name: "Laboratory Diagnostics" },
       ],
       facilities_services: [
-        { facility_id: "1021321", service_id: "growth_monitoring" },
-        { facility_id: "1021321", service_id: "hiv_care_support" },
-        { facility_id: "1021322", service_id: "lab_dx" },
-        { facility_id: "1021323", service_id: "lab_dx" }
+        { facility_id: "1021321-0", service_id: "growth_monitoring" },
+        { facility_id: "1021321-0", service_id: "hiv_care_support" },
+        { facility_id: "1021322-0", service_id: "lab_dx" },
+        { facility_id: "1021323-0", service_id: "lab_dx" }
       ],
       facility_types: [
         # facility types priority are given according to # of facilities of that type

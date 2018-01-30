@@ -26,7 +26,7 @@ class ResmapNormalization
         if f["lat"].blank? || f["long"].blank?
           @sites_ignored += 1
         else
-          id = f["resmap-id"].to_s
+          id = f["ethiopian_national_identifier"].to_s
 
           fac_type = @facility_types_by_code[f["facility_type"]]
           fac_type[:count] += 1
