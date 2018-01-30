@@ -551,6 +551,10 @@ facilityDetail cssClasses now userLocation facility =
                       else
                         ul [] (List.map (\s -> li [] [ text s ]) facility.services)
                     ]
+                , if String.isEmpty facility.extra then
+                    text ""
+                  else
+                    div [ class "detailSection extra" ] [ text facility.extra ]
                 ]
             ]
 
