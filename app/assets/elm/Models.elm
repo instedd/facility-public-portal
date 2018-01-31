@@ -59,6 +59,7 @@ type alias Facility =
     , contactPhone : Maybe String
     , contactEmail : Maybe String
     , reportTo : Maybe String
+    , photo : Maybe String
     , lastUpdated : Maybe Date
     }
 
