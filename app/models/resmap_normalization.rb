@@ -12,9 +12,12 @@ class ResmapNormalization
 
     # index facility types by id
     # count number of facility types to determine priority
-    @facility_types = field_options("facility_type").to_a
+    @facility_types = field_hierarchy("facility_type")
     @facility_types.each { |type| type[:count] = 0 }
     @facility_types_by_code = @facility_types.index_by { |type| type[:id] }
+
+    @facility_ownership = field_hierarchy("ownership")
+    @facility_ownership_by_id = @facility_ownership.index_by { |node| node[:id] }
 
     {}.tap do |result|
       result[:facilities_services] = []
@@ -33,9 +36,9 @@ class ResmapNormalization
             name: f["name"],
             lat: f["lat"],
             lng: f["long"],
-            location_id: f["administrative_boundaries"],
+            location_id: f["Admin_health_hierarchy"],
             facility_type: fac_type[:name],
-            ownership: [f["managing_authority-1"], f["managing_authority-2"]].select(&:present?).join(" - "),
+            ownership: hierarchy_path(@facility_ownership_by_id, f["ownership"]).join(" - "),
             contact_name: nil_if_empty(f["pocname"]),
             contact_email: f["poc_email"],
             contact_phone: f["poc_phonenumber"],
@@ -51,7 +54,7 @@ class ResmapNormalization
         facilities
       end
 
-      result[:locations] = field_hierarchy("administrative_boundaries")
+      result[:locations] = field_hierarchy("Admin_health_hierarchy")
 
       result[:services] = field_options("general_services")
 
@@ -63,7 +66,7 @@ class ResmapNormalization
   end
 
   def stats
-    puts "#{@sites_ignored} sites ignored"
+    puts "#{@sites_ignored} sites ignored due to missing location"
     puts ""
     puts "sites imported"
     @facility_types.each do |type|
@@ -92,8 +95,20 @@ class ResmapNormalization
     end
   end
 
+  def hierarchy_path(nodes_by_id, value)
+    next_id = value
+    res = []
+    while next_id
+      node = nodes_by_id[next_id]
+      res.unshift(node[:name])
+      next_id = node[:parent_id].presence
+    end
+    res
+  end
+
   def field_options(code)
     options = field_config(code)["options"]
+    fail "no options for field #{code}" unless options
     options.map { |opt|
       {id: opt["code"], name: opt["label"] }
     }
@@ -105,6 +120,6 @@ class ResmapNormalization
         return field["config"] if field["code"] == code
       end
     end
-    raise "no field for code #{code}"
+    fail "no field for code #{code}"
   end
 end

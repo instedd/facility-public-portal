@@ -155,10 +155,10 @@ $ bin/normalize-resmap-data data/raw data/input
 
 Note: currently [ResmapNormalization](https://github.com/instedd/facility-public-portal/blob/master/app/models/resmap_normalization.rb) supports the schema of [Ethiopia MFR - Official Collection](http://resourcemap.instedd.org/en/collections/1890). The following fields are expected to exist:
 
-* `facility_type` (select one)
+* `facility_type` (hierarchy)
 * `general_services` (select many)
-* `administrative_boundaries` (hierarchy)
-* `managing_authority` (hierarchy)
+* `Admin_health_hierarchy` (hierarchy)
+* `ownership` (hierarchy)
 * `pocname`, `poc_email`, `poc_phonenumber` (text)
 * `spaplus_fac_code` (text) to determine picture directory
 
