@@ -35,10 +35,7 @@ class ApiController < ActionController::Base
 
   def get_facility
     id = params[:id].to_i
-    res = ElasticsearchService.instance.get_facility(id)
-    # res["photo"] = nil
-    res["photo"] = "https://lh3.googleusercontent.com/p/AF1QipPMiMa8DrYqxlQUP9pG1xvsKe3BJbjIZngNPNRw=s1600-w400"
-    render json: res
+    render json: ElasticsearchService.instance.get_facility(id)
   end
 
   def facility_types

@@ -2,8 +2,9 @@ require "csv"
 
 class ResmapNormalization
 
-  def initialize(dataset)
+  def initialize(dataset, photo_of_facility: nil)
     @dataset = dataset
+    @photo_of_facility = photo_of_facility
   end
 
   def run
@@ -38,6 +39,7 @@ class ResmapNormalization
             contact_name: nil_if_empty(f["pocname"]),
             contact_email: f["poc_email"],
             contact_phone: f["poc_phonenumber"],
+            photo: @photo_of_facility.try { |pof| pof.call(f) },
             last_update: f["last updated"]
           }
 
