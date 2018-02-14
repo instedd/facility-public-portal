@@ -283,13 +283,22 @@ issueToggle issue v =
             "issue-toggle-" ++ toString issue
 
         i18nLabel =
-            t <| case issue of
-                WrongLocation -> I18n.WrongLocation
-                Closed -> I18n.Closed
-                ContactMissing -> I18n.ContactMissing
-                InnacurateServices -> I18n.InnacurateServices
-                Other -> I18n.Other
+            t <|
+                case issue of
+                    WrongLocation ->
+                        I18n.WrongLocation
 
+                    Closed ->
+                        I18n.Closed
+
+                    ContactMissing ->
+                        I18n.ContactMissing
+
+                    InnacurateServices ->
+                        I18n.InnacurateServices
+
+                    Other ->
+                        I18n.Other
     in
         div [ class "input-field col s12" ]
             [ input [ type' "checkbox", id htmlId, checked v, Shared.onClick msg ] []
@@ -534,17 +543,17 @@ facilityDetail cssClasses now userLocation facility =
                     [ class "material-icons right", Events.onClick Close ]
                     [ text "clear" ]
                 ]
-            , div [ class "content expand" ] 
+            , div [ class "content expand" ]
                 [ div [ class "detailSection pic" ]
                     [ if String.isEmpty (Maybe.withDefault "" facility.photo) then
                         div [ class "no-photo" ] [ Shared.icon "photo", text "No photo" ]
                       else
-                        div [ class "photo" ] [ img [ src (Maybe.withDefault "" facility.photo) ] [] ] 
+                        div [ class "photo" ] [ img [ src (Maybe.withDefault "" facility.photo) ] [] ]
                     ]
                 , div [ class "detailSection actions" ] [ facilityActions ]
                 , div [ class "detailSection contact" ] [ ul [] informationLinks ]
-                , div [ class "detailSection info" ] 
-                    [ ul [] 
+                , div [ class "detailSection info" ]
+                    [ ul []
                         [ li [] [ text facility.ownership ]
                         , li [] [ text (String.join ", " (List.reverse facility.adm)) ]
                         ]
