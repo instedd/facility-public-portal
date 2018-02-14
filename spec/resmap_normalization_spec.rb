@@ -13,8 +13,8 @@ RSpec.describe ResmapNormalization do
           "facility_type" => "health_center",
           "ownership" => "gov_public",
           "pocname" => "John Doe",
-          "poc_phonenumber" => "456787654",
-          "poc_email" => "jdoe@example.org",
+          "facility__official_phone_number" => "456787654",
+          "facility__official_email" => "jdoe@example.org",
           "general_services" => "growth_monitoring, hiv_care_support",
           "last updated" => "Tue, 11 Oct 2016 07:19:08 +0000"
         },
@@ -27,8 +27,8 @@ RSpec.describe ResmapNormalization do
           "facility_type" => "health_post",
           "ownership" => "priv",
           "pocname" => "",
-          "poc_phonenumber" => "",
-          "poc_email" => "",
+          "facility__official_phone_number" => "",
+          "facility__official_email" => "",
           "general_services" => "lab_dx",
           "last updated" => ""
         },
@@ -41,8 +41,8 @@ RSpec.describe ResmapNormalization do
           "facility_type" => "health_post",
           "ownership" => "priv",
           "pocname" => "",
-          "poc_phonenumber" => "",
-          "poc_email" => "",
+          "facility__official_phone_number" => "",
+          "facility__official_email" => "",
           "general_services" => "lab_dx",
           "last updated" => ""
         },

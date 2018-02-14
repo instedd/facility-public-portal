@@ -159,7 +159,7 @@ Note: currently [ResmapNormalization](https://github.com/instedd/facility-public
 * `general_services` (select many)
 * `Admin_health_hierarchy` (hierarchy)
 * `ownership` (hierarchy)
-* `pocname`, `poc_email`, `poc_phonenumber` (text)
+* `pocname`, `facility__official_email`, `facility__official_phone_number` (text)
 * `spaplus_fac_code` (text) to determine picture directory
 
 After the normalization is done, you might want to tweak the generated `facility_types.csv` file to choose, for each type of facility, the size of the marker the in map. The higher the prioity the bigger the marker size.

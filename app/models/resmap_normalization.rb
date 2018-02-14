@@ -40,8 +40,8 @@ class ResmapNormalization
             facility_type: fac_type[:name],
             ownership: hierarchy_path(@facility_ownership_by_id, f["ownership"]).join(" - "),
             contact_name: nil_if_empty(f["pocname"]),
-            contact_email: f["poc_email"],
-            contact_phone: f["poc_phonenumber"],
+            contact_email: f["facility__official_email"],
+            contact_phone: f["facility__official_phone_number"],
             photo: @photo_of_facility.try { |pof| pof.call(f) },
             last_update: f["last updated"]
           }
