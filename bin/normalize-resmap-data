@@ -33,13 +33,26 @@ dataset = {
   fields: JSON.parse(File.read(File.join(INPUT_PATH, "fields.json")))
 }
 
-normalizer = ResmapNormalization.new(dataset)
+LOCAL_PICTURES_PATH = File.join(Rails.root, "public", "pictures")
+PUBLIC_PICTURES_PATH = Pathname.new(File.join(Rails.root, "public"))
+CASE_INSENSITIVE = File::FNM_CASEFOLD
+
+normalizer = ResmapNormalization.new(dataset, photo_of_facility: lambda { |f|
+  code = f["spaplus_fac_code"]
+  if code.present?
+    front_picture = Dir.glob(File.join(LOCAL_PICTURES_PATH, "F#{code}", "*front*"), CASE_INSENSITIVE).first
+    if front_picture
+      "/#{Pathname.new(front_picture).relative_path_from(PUBLIC_PICTURES_PATH).to_s}"
+    end
+  end
+})
+
 result = normalizer.run
 normalizer.stats
 
 i18n = DatasetInternationalization.new(File.join(INPUT_PATH, "i18n.csv"))
 
-i18n.write_output "facilities.csv", result[:facilities], ["id", "name", "lat", "lng", "location_id", "facility_type", "ownership", "contact_name", "contact_email", "contact_phone", "last"]
+i18n.write_output "facilities.csv", result[:facilities], ["id", "name", "lat", "lng", "location_id", "facility_type", "ownership", "contact_name", "contact_email", "contact_phone", "photo", "last"]
 i18n.write_output "services.csv", result[:services], ["id", "name:en"]
 i18n.write_output "facilities_services.csv", result[:facilities_services], ["facility_id", "service_id"]
 i18n.write_output "facility_types.csv", result[:facility_types], ["name", "priority"]

@@ -42,6 +42,7 @@ class ElasticsearchService
             ownership: {type: 'string', index: 'not_analyzed'},
             facility_type: {type: 'string', index: 'not_analyzed'},
             position: {type: 'geo_point'},
+            photo: {type: 'string', index: 'not_analyzed'},
             last_updated: {
               type: 'date'
             }

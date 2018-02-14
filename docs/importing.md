@@ -20,6 +20,7 @@ This tool can import data using the following schema, where each table is stored
 | contact_name  | String                    |
 | contact_email | String                    |
 | contact_phone | String                    |
+| photo         | String (url)              |
 | last update   | String (ISO-8601 encoded) |
 
 
@@ -126,7 +127,7 @@ In the above sample when a the service english name "Tb test" will be translated
 
 ### Normalizing Resourcemap information
 
-To import data from raw CSV exports of SPA results, store raw files as follows:
+To import data from ResourceMap, store the files as follows:
 
 ```
 data
@@ -135,6 +136,13 @@ data
     ├── fields.json
     ├── sites.csv
     └── i18n.csv
+public
+    └── pictures
+        ├── F00001   # F[spaplus_fac_code] folder
+        |   └── front.jpg
+        |   ...
+        └── F03455
+            └── A Front Photo.jpg
 ```
 
 The `sites.csv` file can be downloaded from the ResourceMap export option. The `fields.json` file, which contains the metadata and field description of the collection, can be downloaded from `http://resourcemap.instedd.org/en/collections/COLLECTION_ID/fields.json`.
@@ -147,11 +155,12 @@ $ bin/normalize-resmap-data data/raw data/input
 
 Note: currently [ResmapNormalization](https://github.com/instedd/facility-public-portal/blob/master/app/models/resmap_normalization.rb) supports the schema of [Ethiopia MFR - Official Collection](http://resourcemap.instedd.org/en/collections/1890). The following fields are expected to exist:
 
-* `facility_type` (select one)
+* `facility_type` (hierarchy)
 * `general_services` (select many)
-* `administrative_boundaries` (hierarchy)
-* `managing_authority` (hierarchy)
+* `Admin_health_hierarchy` (hierarchy)
+* `ownership` (hierarchy)
 * `pocname`, `poc_email`, `poc_phonenumber` (text)
+* `spaplus_fac_code` (text) to determine picture directory
 
 After the normalization is done, you might want to tweak the generated `facility_types.csv` file to choose, for each type of facility, the size of the marker the in map. The higher the prioity the bigger the marker size.
 

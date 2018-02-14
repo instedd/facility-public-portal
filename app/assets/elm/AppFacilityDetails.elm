@@ -534,8 +534,13 @@ facilityDetail cssClasses now userLocation facility =
                     [ class "material-icons right", Events.onClick Close ]
                     [ text "clear" ]
                 ]
-            , div [ class "content expand" ]
-                [ div [ class "detailSection pic" ] [ div [ class "no-photo" ] [ Shared.icon "photo", text "No photo" ] ]
+            , div [ class "content expand" ] 
+                [ div [ class "detailSection pic" ]
+                    [ if String.isEmpty (Maybe.withDefault "" facility.photo) then
+                        div [ class "no-photo" ] [ Shared.icon "photo", text "No photo" ]
+                      else
+                        div [ class "photo" ] [ img [ src (Maybe.withDefault "" facility.photo) ] [] ] 
+                    ]
                 , div [ class "detailSection actions" ] [ facilityActions ]
                 , div [ class "detailSection contact" ] [ ul [] informationLinks ]
                 , div [ class "detailSection info" ] 
