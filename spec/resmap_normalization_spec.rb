@@ -9,11 +9,9 @@ RSpec.describe ResmapNormalization do
           "name" => "1 Fero Health Center",
           "lat" => 6.76437,
           "long" => 38.47822,
-          "administrative_boundaries" => "938E631B-5EE7-42D1-976A-04D26334CE4F",
+          "Admin_health_hierarchy" => "938E631B-5EE7-42D1-976A-04D26334CE4F",
           "facility_type" => "health_center",
-          "managing_authority" => "gov_public",
-          "managing_authority-1" => "Government",
-          "managing_authority-2" => "Public",
+          "ownership" => "gov_public",
           "pocname" => "John Doe",
           "poc_phonenumber" => "456787654",
           "poc_email" => "jdoe@example.org",
@@ -25,11 +23,9 @@ RSpec.describe ResmapNormalization do
           "name" => "2 Fero Health Center",
           "lat" => 6.86437,
           "long" => 38.47822,
-          "administrative_boundaries" => "938E631B-5EE7-42D1-976A-04D26334CE4F",
+          "Admin_health_hierarchy" => "938E631B-5EE7-42D1-976A-04D26334CE4F",
           "facility_type" => "health_post",
-          "managing_authority" => "priv",
-          "managing_authority-1" => "Private",
-          "managing_authority-2" => "",
+          "ownership" => "priv",
           "pocname" => "",
           "poc_phonenumber" => "",
           "poc_email" => "",
@@ -41,11 +37,9 @@ RSpec.describe ResmapNormalization do
           "name" => "3 Fero Health Center",
           "lat" => 6.96437,
           "long" => 38.47822,
-          "administrative_boundaries" => "938E631B-5EE7-42D1-976A-04D26334CE4F",
+          "Admin_health_hierarchy" => "938E631B-5EE7-42D1-976A-04D26334CE4F",
           "facility_type" => "health_post",
-          "managing_authority" => "priv",
-          "managing_authority-1" => "Private",
-          "managing_authority-2" => "",
+          "ownership" => "priv",
           "pocname" => "",
           "poc_phonenumber" => "",
           "poc_email" => "",
@@ -57,7 +51,7 @@ RSpec.describe ResmapNormalization do
           "name" => "To be ignored",
           "lat" => nil,
           "long" => nil,
-          "administrative_boundaries" => "1F38BF47-0955-48F0-AA57-4A5E97006850",
+          "Admin_health_hierarchy" => "1F38BF47-0955-48F0-AA57-4A5E97006850",
           "facility_type" => "health_post",
           "last updated" => ""
         }
@@ -67,16 +61,36 @@ RSpec.describe ResmapNormalization do
           "fields" => [
             { "code" => "facility_type",
               "config" => {
-                "options" => [
+                "hierarchy" => [
                   {
-                    "code" => "health_center",
-                    "id" => 13,
-                    "label" => "Health Center"
+                    "id" => "health_center",
+                    "name" => "Health Center"
                   },
                   {
-                    "code" => "health_post",
-                    "id" => 14,
-                    "label" => "Health Post"
+                    "id" => "health_post",
+                    "name" => "Health Post"
+                  }
+                ]
+              }
+            },
+            {
+              "code" => "ownership",
+              "kind" => "hierarchy",
+              "config" => {
+                "hierarchy" => [
+                  {
+                    "id" => "gov",
+                    "name" => "Government",
+                    "sub" => [
+                      {
+                        "id" => "gov_public",
+                        "name" => "Public"
+                      }
+                    ]
+                  },
+                  {
+                    "id" => "priv",
+                    "name" => "Private"
                   }
                 ]
               }
@@ -111,7 +125,7 @@ RSpec.describe ResmapNormalization do
         },
         {
           "fields" => [
-            { "code" => "administrative_boundaries",
+            { "code" => "Admin_health_hierarchy",
               "config" => {
                 "hierarchy" => [
                   { "id" => "CB4135DA-3059-4D93-BBD8-C0564CEE1A6A",
@@ -138,7 +152,8 @@ RSpec.describe ResmapNormalization do
       ]
     }
 
-    result = ResmapNormalization.new(dataset).run
+    photo_of_facility = lambda { |f| "photo/#{f["resmap-id"]}.jpg" }
+    result = ResmapNormalization.new(dataset, photo_of_facility: photo_of_facility).run
 
     expect(result).to eq({
       facilities: [
@@ -153,6 +168,7 @@ RSpec.describe ResmapNormalization do
           contact_name: "John Doe",
           contact_phone: "456787654",
           contact_email: "jdoe@example.org",
+          photo: "photo/1021321.jpg",
           last_update: "Tue, 11 Oct 2016 07:19:08 +0000"
         },
         {
@@ -166,6 +182,7 @@ RSpec.describe ResmapNormalization do
           contact_name: nil,
           contact_phone: "",
           contact_email: "",
+          photo: "photo/1021322.jpg",
           last_update: ""
         },
         {
@@ -179,7 +196,8 @@ RSpec.describe ResmapNormalization do
           contact_name: nil,
           contact_phone: "",
           contact_email: "",
-          last_update: ""
+          photo: "photo/1021323.jpg",
+          last_update: "",
         }
       ],
       locations: [
