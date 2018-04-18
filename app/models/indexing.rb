@@ -46,7 +46,7 @@ class Indexing
 
     logger.info "Calculating services by facility"
     services_by_facility = @dataset[:facilities_services]
-                           .group_by   { |assoc| assoc["facility_id"] }
+                           .group_by   { |assoc| assoc["facility_id"].to_s }
                            .map_values { |assocs| assocs.map { |a| services_by_id[a["service_id"]] } }
 
     logger.info "Calculating full location paths"
@@ -99,7 +99,7 @@ class Indexing
         end
         location[:facility_count] += 1
 
-        services = services_by_facility[f[:id]] || []
+        services = services_by_facility[f[:id].to_s] || []
         services.sort_by! { |s| s[:name] }
         services.each { |s| s[:facility_count] +=1 }
 
@@ -113,7 +113,7 @@ class Indexing
 
         f = f.merge({
           id: @last_facility_id += 1,
-          source_id: f[:id],
+          source_id: f[:id].to_s,
           contact_phone: f[:contact_phone] && f[:contact_phone].to_s,
           priority: type[:priority],
           facility_type_id: type[:id],
