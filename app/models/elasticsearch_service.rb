@@ -38,6 +38,7 @@ class ElasticsearchService
                 }
               }
             },
+            contact_email: {type: 'string'},
             contact_phone: {type: 'string'},
             ownership: {type: 'string', index: 'not_analyzed'},
             facility_type: {type: 'string', index: 'not_analyzed'},
