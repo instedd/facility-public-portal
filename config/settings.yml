@@ -7,13 +7,13 @@ smtp_settings: {}
   # user_name: smtp
   # password: smtp
 initial_position:
-  lat: 8.979787
-  lng: 38.758917
+  lat: 16
+  lng: 7
 map_bounds:
-  top: 16.191368
-  left: 28.774925
-  bottom: 0.283346
-  right: 52.637229
+  top: 22
+  left: -2
+  bottom: 10
+  right: 15
 user_position: fake
 mapbox_id: "mapbox/streets-v9"
 mapbox_token: "pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ"

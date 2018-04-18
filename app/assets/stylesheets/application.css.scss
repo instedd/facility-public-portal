@@ -240,15 +240,15 @@ select {
 }
 
 .TopNav {
-  background: $blue;
+  background: $topnav_background;
   min-height: $topnav_height;
-  padding: 10px;
+  padding: 0px 10px;
 
   i { font-size: 25px; }
   #logo {
     padding: 0 7px;
     & img {
-      height: 50px;
+      height: 72px;
     }
   }
 }
