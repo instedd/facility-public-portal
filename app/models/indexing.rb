@@ -119,6 +119,7 @@ class Indexing
           facility_type_id: type[:id],
           ownership_id: f[:ownership] ? ownerships[f[:ownership]][:id] : nil,
           name: f[:name].gsub(/\u00A0/,"").strip,
+          address: f[:address],
 
           position: {
             lat: f[:lat],

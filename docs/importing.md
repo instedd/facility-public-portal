@@ -17,6 +17,7 @@ This tool can import data using the following schema, where each table is stored
 | location_id   | String                    |
 | facility_type | String                    |
 | ownership     | String                    |
+| address       | String                    |
 | contact_name  | String                    |
 | contact_email | String                    |
 | contact_phone | String                    |

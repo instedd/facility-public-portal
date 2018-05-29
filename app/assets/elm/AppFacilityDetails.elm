@@ -591,7 +591,7 @@ directionsEntry userLocation facility =
                 , encodedDestination
                 ]
     in
-        infoEntry "directions" (Just link) "Get directions"
+        infoEntry "location_on" (Just link) (Maybe.withDefault "Get directions" facility.address)
 
 
 contactEntry : String -> String -> Maybe String -> Html a
