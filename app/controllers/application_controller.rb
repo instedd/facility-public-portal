@@ -13,6 +13,7 @@ class ApplicationController < ActionController::Base
         [Settings.map_bounds.top, Settings.map_bounds.left],
         [Settings.map_bounds.bottom, Settings.map_bounds.right]
       ],
+      "mapZoom" => Settings.map_zoom.to_h,
       "fakeUserPosition" => (params[:user_position] || Settings.user_position) == "fake",
       "mapboxId" => Settings.mapbox_id,
       "mapboxToken" => Settings.mapbox_token,

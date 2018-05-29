@@ -14,6 +14,10 @@ map_bounds:
   left: 28.774925
   bottom: 0.283346
   right: 52.637229
+map_zoom:
+  min: 7
+  max: 18
+  default: 13
 user_position: fake
 mapbox_id: "mapbox/streets-v9"
 mapbox_token: "pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ"
