@@ -120,6 +120,7 @@ class Indexing
           ownership_id: f[:ownership] ? ownerships[f[:ownership]][:id] : nil,
           name: f[:name].gsub(/\u00A0/,"").strip,
           address: f[:address],
+          opening_hours: localized_string(f, :opening_hours),
 
           position: {
             lat: f[:lat],
@@ -189,6 +190,19 @@ class Indexing
   end
 
   private
+
+  # Remove from row all field:LOCALE value and returns a hash with those values
+  # { locale => value }
+  def localized_string(row, field)
+    res = Hash[@locales.map { |locale|
+      field_in_csv = "#{field}:#{locale}".to_sym
+      value = [locale, row[field_in_csv]]
+      row.delete field_in_csv
+      value
+    }]
+
+    res
+  end
 
   def validate_facilities(facilities)
     valid = facilities.select { |f| validate_facility(f) }

@@ -13,6 +13,7 @@ class Dump
     max_administrative_level = @service.max_administrative_level
 
     append_csv_line ["id", "source_id", "name", "lat", "lng", "facility_type", "ownership", "address", "contact_name", "contact_email", "contact_phone"] \
+              + @locales.map { |locale| "opening_hours:#{locale}" } \
               + (1..max_administrative_level).map { |l| "location_#{l}" } \
               + @locales.map { |locale| "services:#{locale}" }
 
@@ -37,6 +38,7 @@ class Dump
           f["contact_email"],
           f["contact_phone"],
         ] \
+        + @locales.map { |l| f["opening_hours"]["#{l}"] } \
         + pad_right(f["adm"], max_administrative_level) \
         + @locales.map { |l|
             f["service_names:#{l}"].map { |n| n.gsub(",", "") }

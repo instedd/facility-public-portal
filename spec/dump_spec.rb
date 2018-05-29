@@ -21,6 +21,8 @@ RSpec.describe Dump do
          "contact_name" => "John Doe",
          "contact_email" => "john@example.com",
          "contact_phone" => "123",
+         "opening_hours:en" => "allways",
+         "opening_hours:es" => "siempre",
          "last_update" => nil
        },
        {
@@ -76,6 +78,8 @@ RSpec.describe Dump do
       "contact_name" => "John Doe",
       "contact_email" => "john@example.com",
       "contact_phone" => "123",
+      "opening_hours:en" => "allways",
+      "opening_hours:es" => "siempre",
       "location_1" => "Amhara",
       "location_2" => "North Wello",
       "location_3" => "Bugna"
@@ -95,6 +99,8 @@ RSpec.describe Dump do
       "contact_name" => nil,
       "contact_email" => nil,
       "contact_phone" => nil,
+      "opening_hours:en" => nil,
+      "opening_hours:es" => nil,
       "location_1" => "Amhara",
       "location_2" => "North Wello",
       "location_3" => "Kobo",

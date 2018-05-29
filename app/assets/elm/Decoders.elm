@@ -39,6 +39,7 @@ facility =
         |> required "contact_name" (nullable string)
         |> required "contact_phone" (nullable string)
         |> required "contact_email" (nullable string)
+        |> required "opening_hours" (nullable string)
         |> required "report_to" (nullable string)
         |> required "photo" (nullable string)
         |> required "last_updated" (nullable date)

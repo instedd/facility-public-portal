@@ -8,22 +8,25 @@ This tool can import data using the following schema, where each table is stored
 
 ### Facilities
 
-| Field         | Type                      |
-|---------------|---------------------------|
-| id            | String                    |
-| name          | String                    |
-| lat           | Float                     |
-| lng           | Float                     |
-| location_id   | String                    |
-| facility_type | String                    |
-| ownership     | String                    |
-| address       | String                    |
-| contact_name  | String                    |
-| contact_email | String                    |
-| contact_phone | String                    |
-| photo         | String (url)              |
-| last update   | String (ISO-8601 encoded) |
+| Field            | Type                      |
+|------------------|---------------------------|
+| id               | String                    |
+| name             | String                    |
+| lat              | Float                     |
+| lng              | Float                     |
+| location_id      | String                    |
+| facility_type    | String                    |
+| ownership        | String                    |
+| address          | String                    |
+| contact_name     | String                    |
+| contact_email    | String                    |
+| contact_phone    | String                    |
+| opening_hours:en | String                    |
+| opening_hours:am | String                    |
+| photo            | String (url)              |
+| last update      | String (ISO-8601 encoded) |
 
+**Note:** there should be a `opening_hours:LOCALE` column for each of the enabled locales of the application.
 
 ### Services
 

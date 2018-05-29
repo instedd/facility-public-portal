@@ -531,6 +531,7 @@ facilityDetail cssClasses now userLocation facility =
             , contactEntry "local_phone" "tel:" facility.contactPhone
               -- , contactEntry "public" ... facility.url
             , directionsEntry userLocation facility
+            , infoEntry "schedule" Nothing (Maybe.withDefault "Unavailable" facility.openingHours)
             ]
     in
         div [ classList <| ( "facilityDetail", True ) :: cssClasses ]

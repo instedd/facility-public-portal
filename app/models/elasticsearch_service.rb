@@ -2,9 +2,10 @@ class ElasticsearchService
 
   attr_reader :client
 
-  def initialize(url, index_name, should_log: Rails.env.development?)
+  def initialize(url, index_name, locales: Settings.locales.keys, should_log: Rails.env.development?)
     @client     = Elasticsearch::Client.new url: url, log: should_log
     @index_name = index_name
+    @locales    = locales
   end
 
   def setup_index
@@ -41,6 +42,7 @@ class ElasticsearchService
             address: {type: 'string'},
             contact_email: {type: 'string'},
             contact_phone: {type: 'string'},
+            opening_hours: localized_string_type,
             ownership: {type: 'string', index: 'not_analyzed'},
             facility_type: {type: 'string', index: 'not_analyzed'},
             position: {type: 'geo_point'},
@@ -52,6 +54,10 @@ class ElasticsearchService
         }
       }
     })
+  end
+
+  def localized_string_type
+    { properties: Hash[@locales.map { |locale| [locale, {type: 'string'}] }] }
   end
 
   def drop_index
@@ -153,6 +159,7 @@ class ElasticsearchService
     item = result["hits"]["hits"].first["_source"]
 
     keep_i18n_field item, "service_names"
+    keep_localized_string item, :opening_hours
 
     api_latlng item
   end
@@ -174,6 +181,10 @@ class ElasticsearchService
       keep_i18n_field h, "name"
       h
     }
+  end
+
+  def keep_localized_string(hash, field)
+    hash[field] = hash[field.to_s][I18n.locale.to_s]
   end
 
   def keep_i18n_field(hash, field)
