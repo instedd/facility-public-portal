@@ -21,10 +21,11 @@ import Html.Events exposing (onInput)
 import Http
 import I18n exposing (..)
 import Json.Decode as Json
-import Models exposing (SearchSpec, Service, FacilityType, Ownership, Location, Sorting(..), emptySearch)
+import Models exposing (SearchSpec, Category, CategoryGroup, FacilityType, Ownership, Location, Sorting(..), emptySearch)
 import Return exposing (Return)
 import Selector
 import Shared exposing (onClick)
+import String
 import Utils exposing (perform)
 
 
@@ -32,12 +33,13 @@ type alias Model =
     { facilityTypes : List FacilityType
     , ownerships : List Ownership
     , q : Maybe String
-    , service : Maybe Int
+    , category : Maybe Int
     , fType : Maybe Int
     , ownership : Maybe Int
     , sort : Maybe Sorting
     , locationSelector : Selector.Model Location
-    , serviceSelector : Selector.Model Service
+    , categorySelector : Selector.Model Category
+    , categoryGroups : List CategoryGroup
     }
 
 
@@ -53,28 +55,29 @@ type PrivateMsg
     | SetType (Maybe Int)
     | SetOwnership (Maybe Int)
     | LocationSelectorMsg Selector.Msg
-    | ServiceSelectorMsg Selector.Msg
+    | CategorySelectorMsg Selector.Msg
     | HideSelectors
     | LocationsFetched (Maybe Int) (List Location)
-    | ServicesFetched (Maybe Int) (List Service)
+    | CategoriesFetched (Maybe Int) (List Category)
     | FetchFailed Http.Error
 
 
-init : List FacilityType -> List Ownership -> SearchSpec -> Return Msg Model
-init facilityTypes ownerships search =
+init : List FacilityType -> List Ownership -> List CategoryGroup -> SearchSpec -> Return Msg Model
+init facilityTypes ownerships categoryGroups search =
     Return.singleton
         { facilityTypes = facilityTypes
         , ownerships = ownerships
         , q = search.q
-        , service = search.service
+        , category = search.category
         , fType = search.fType
         , ownership = search.ownership
         , sort = search.sort
         , locationSelector = initLocations [] Nothing
-        , serviceSelector = initServices [] Nothing
+        , categorySelector = initCategories [] Nothing
+        , categoryGroups = categoryGroups
         }
         |> Return.command (fetchLocations search.location)
-        |> Return.command (fetchServices search.service)
+        |> Return.command (fetchCategories search.category)
 
 
 initLocations : List Location -> Maybe Int -> Selector.Model Location
@@ -82,9 +85,9 @@ initLocations locations selection =
     Selector.init locationInputId locations .id .name selection
 
 
-initServices : List Service -> Maybe Int -> Selector.Model Service
-initServices services selection =
-    Selector.init serviceInputId services .id .name selection
+initCategories : List Category -> Maybe Int -> Selector.Model Category
+initCategories categories selection =
+    Selector.init categoryInputId categories .id .name selection
 
 
 fetchLocations : Maybe Int -> Cmd Msg
@@ -92,9 +95,9 @@ fetchLocations selection =
     Api.getLocations (Private << FetchFailed) (Private << (LocationsFetched selection))
 
 
-fetchServices : Maybe Int -> Cmd Msg
-fetchServices selection =
-    Api.getServices (Private << FetchFailed) (Private << (ServicesFetched selection))
+fetchCategories : Maybe Int -> Cmd Msg
+fetchCategories selection =
+    Api.getCategories (Private << FetchFailed) (Private << (CategoriesFetched selection))
 
 
 update : Model -> Msg -> Return Msg Model
@@ -115,24 +118,24 @@ update model msg =
                     Selector.update msg model.locationSelector
                         |> Return.mapBoth (Private << LocationSelectorMsg) (\m -> { model | locationSelector = m })
 
-                ServiceSelectorMsg msg ->
-                    Selector.update msg model.serviceSelector
-                        |> Return.mapBoth (Private << ServiceSelectorMsg) (\m -> { model | serviceSelector = m })
+                CategorySelectorMsg msg ->
+                    Selector.update msg model.categorySelector
+                        |> Return.mapBoth (Private << CategorySelectorMsg) (\m -> { model | categorySelector = m })
 
                 HideSelectors ->
                     Return.singleton
                         { model
                             | locationSelector = Selector.close model.locationSelector
-                            , serviceSelector = Selector.close model.serviceSelector
+                            , categorySelector = Selector.close model.categorySelector
                         }
 
                 LocationsFetched selectedId locations ->
                     Return.singleton
                         { model | locationSelector = initLocations locations selectedId }
 
-                ServicesFetched selectedId services ->
+                CategoriesFetched selectedId categories ->
                     Return.singleton
-                        { model | serviceSelector = initServices services selectedId }
+                        { model | categorySelector = initCategories categories selectedId }
 
                 FetchFailed e ->
                     Return.singleton model
@@ -162,7 +165,7 @@ subscriptions : Sub Msg
 subscriptions =
     Sub.batch
         [ Sub.map (Private << LocationSelectorMsg) Selector.subscriptions
-        , Sub.map (Private << ServiceSelectorMsg) Selector.subscriptions
+        , Sub.map (Private << CategorySelectorMsg) Selector.subscriptions
         ]
 
 
@@ -205,8 +208,8 @@ fields model =
             , Html.span [ class "autocomplete-item-context" ] [ Html.text (Maybe.withDefault "" location.parentName) ]
             ]
 
-        viewService service =
-            [ Html.text service.name ]
+        viewCategory category =
+            [ Html.text category.name ]
     in
         [ field
             [ label [ for "q" ] [ text <| t I18n.FacilityName ]
@@ -225,8 +228,8 @@ fields model =
             , Html.App.map (Private << LocationSelectorMsg) (Selector.view "" viewLocation model.locationSelector)
             ]
         , field
-            [ label [ for serviceInputId ] [ text <| t I18n.Service ]
-            , Html.App.map (Private << ServiceSelectorMsg) (Selector.view "pull-up" viewService model.serviceSelector)
+            [ label [ for categoryInputId ] [ text <| (String.join ", " (List.map (\g -> g.name) model.categoryGroups)) ]
+            , Html.App.map (Private << CategorySelectorMsg) (Selector.view "pull-up" viewCategory model.categorySelector)
             ]
         ]
 
@@ -282,7 +285,7 @@ search : Model -> SearchSpec
 search model =
     { emptySearch
         | q = model.q
-        , service = Maybe.map .id model.serviceSelector.selection
+        , category = Maybe.map .id model.categorySelector.selection
         , location = Maybe.map .id model.locationSelector.selection
         , fType = model.fType
         , ownership = model.ownership
@@ -299,5 +302,5 @@ locationInputId =
     "location-input"
 
 
-serviceInputId =
-    "service-input"
+categoryInputId =
+    "category-input"

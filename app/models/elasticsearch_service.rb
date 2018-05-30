@@ -2,9 +2,10 @@ class ElasticsearchService
 
   attr_reader :client
 
-  def initialize(url, index_name, should_log: Rails.env.development?)
+  def initialize(url, index_name, locales: Settings.locales.keys, should_log: Rails.env.development?)
     @client     = Elasticsearch::Client.new url: url, log: should_log
     @index_name = index_name
+    @locales    = locales
   end
 
   def setup_index
@@ -38,8 +39,10 @@ class ElasticsearchService
                 }
               }
             },
+            address: {type: 'string'},
             contact_email: {type: 'string'},
             contact_phone: {type: 'string'},
+            opening_hours: localized_string_type,
             ownership: {type: 'string', index: 'not_analyzed'},
             facility_type: {type: 'string', index: 'not_analyzed'},
             position: {type: 'geo_point'},
@@ -51,6 +54,10 @@ class ElasticsearchService
         }
       }
     })
+  end
+
+  def localized_string_type
+    { properties: Hash[@locales.map { |locale| [locale, {type: 'string'}] }] }
   end
 
   def drop_index
@@ -73,12 +80,20 @@ class ElasticsearchService
     index_batch 'ownership', ownerships
   end
 
-  def index_service(service)
-    index_document 'service', service
+  def index_category_group(category_group)
+    index_document 'category_group', category_group
   end
 
-  def index_service_batch(services)
-    index_batch 'service', services
+  def index_category_group_batch(category_groups)
+    index_batch 'category_group', category_groups
+  end
+
+  def index_category(category)
+    index_document 'category', category
+  end
+
+  def index_category_batch(categories)
+    index_batch 'category', categories
   end
 
   def index_location(location)
@@ -128,8 +143,18 @@ class ElasticsearchService
     result["hits"]["hits"].map { |h| h["_source"] }
   end
 
-  def get_services
-    result = client.search({index: @index_name, type: 'service', body: { size: 1000 }})
+  def get_category_groups
+    result = client.search({index: @index_name, type: 'category_group', body: { size: 1000, sort: { order: { order: "asc" } }}})
+
+    result["hits"]["hits"].map { |r|
+      h = r["_source"]
+      keep_i18n_field h, "name"
+      h
+    }
+  end
+
+  def get_categories
+    result = client.search({index: @index_name, type: 'category', body: { size: 1000 }})
 
     result["hits"]["hits"].map { |r|
       h = r["_source"]
@@ -151,15 +176,16 @@ class ElasticsearchService
 
     item = result["hits"]["hits"].first["_source"]
 
-    keep_i18n_field item, "service_names"
+    keep_localized_field item, :opening_hours
+    keep_localized_field item, :categories_by_group
 
     api_latlng item
   end
 
-  def suggest_services(query)
+  def suggest_categories(query)
     result = client.search({
       index: @index_name,
-      type: 'service',
+      type: 'category',
       body: {
         query: {
           match_phrase_prefix: {
@@ -173,6 +199,10 @@ class ElasticsearchService
       keep_i18n_field h, "name"
       h
     }
+  end
+
+  def keep_localized_field(hash, field)
+    hash[field] = hash[field.to_s][I18n.locale.to_s]
   end
 
   def keep_i18n_field(hash, field)
@@ -289,8 +319,8 @@ class ElasticsearchService
       search_body[:query][:bool][:must] << { match_phrase_prefix: { name: params[:q] } }
     end
 
-    if params[:service]
-      search_body[:query][:bool][:must] << { match: { service_ids: params[:service] } }
+    if params[:category]
+      search_body[:query][:bool][:must] << { match: { categories_ids: params[:category] } }
     end
 
     if params[:type]

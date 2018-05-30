@@ -49,18 +49,22 @@ RSpec.describe ElasticsearchService do
                      }
                    ],
 
-                   services: [
-                     { id: "S1", "name:en": "service1" },
-                     { id: "S2", "name:en": "service2" },
-                     { id: "S3", "name:en": "service3" }
+                   category_groups: [
+                     { id: 'services', 'name:en': 'Services' }
                    ],
 
-                   facilities_services: [
-                     {facility_id: "F1", service_id: "S1"},
-                     {facility_id: "F1", service_id: "S2"},
+                   categories: [
+                     { id: "S1", category_group_id: 'services', "name:en": "service1" },
+                     { id: "S2", category_group_id: 'services', "name:en": "service2" },
+                     { id: "S3", category_group_id: 'services', "name:en": "service3" }
+                   ],
 
-                     {facility_id: "F2", service_id: "S2"},
-                     {facility_id: "F2", service_id: "S3"}
+                   facility_categories: [
+                     {facility_id: "F1", category_id: "S1"},
+                     {facility_id: "F1", category_id: "S2"},
+
+                     {facility_id: "F2", category_id: "S2"},
+                     {facility_id: "F2", category_id: "S3"}
                    ],
 
                    facility_types: [
@@ -87,11 +91,11 @@ RSpec.describe ElasticsearchService do
       end
     end
 
-    describe "by service" do
+    describe "by category" do
       it "works!" do
-        search_assert({ service: 1 }, expected_names: ["1st Wetanibo Balchi"])
-        search_assert({ service: 2 }, expected_names: ["1st Wetanibo Balchi", "Abaferet Hospital"])
-        search_assert({ service: 3 }, expected_names: ["Abaferet Hospital"])
+        search_assert({ category: 1 }, expected_names: ["1st Wetanibo Balchi"])
+        search_assert({ category: 2 }, expected_names: ["1st Wetanibo Balchi", "Abaferet Hospital"])
+        search_assert({ category: 3 }, expected_names: ["Abaferet Hospital"])
       end
     end
 
@@ -154,10 +158,10 @@ RSpec.describe ElasticsearchService do
       # TODO: same as searchiing for the moment...
     end
 
-    describe "services" do
+    describe "categories" do
       it "works" do
         [1,2,3].each do |i|
-          results = elasticsearch_service.suggest_services("service#{i}")
+          results = elasticsearch_service.suggest_categories("service#{i}")
           expect(results.map { |s| s['id'] }).to eq([i])
         end
       end

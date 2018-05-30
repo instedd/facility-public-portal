@@ -8,9 +8,10 @@ RSpec.describe ApiController do
   it "provides facility types" do
     ElasticsearchService.instance = elasticsearch_service
 
-    index_dataset({facilities: [],
-                   services: [],
-                   facilities_services: [],
+    index_dataset({category_groups: [],
+                   categories: [],
+                   facilities: [],
+                   facility_categories: [],
                    locations: [],
                    facility_types: [
                      { name: "Health Center", priority: 1 },

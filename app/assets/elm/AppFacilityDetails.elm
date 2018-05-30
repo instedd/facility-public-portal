@@ -531,6 +531,7 @@ facilityDetail cssClasses now userLocation facility =
             , contactEntry "local_phone" "tel:" facility.contactPhone
               -- , contactEntry "public" ... facility.url
             , directionsEntry userLocation facility
+            , infoEntry "schedule" Nothing (Maybe.withDefault "Unavailable" facility.openingHours)
             ]
     in
         div [ classList <| ( "facilityDetail", True ) :: cssClasses ]
@@ -558,13 +559,20 @@ facilityDetail cssClasses now userLocation facility =
                         , li [] [ text (String.join ", " (List.reverse facility.adm)) ]
                         ]
                     ]
-                , div [ class "detailSection services" ]
-                    [ span [] [ text <| t Services ]
-                    , if List.isEmpty facility.services then
-                        div [ class "noData" ] [ text "There is currently no information about services provided by this facility." ]
-                      else
-                        ul [] (List.map (\s -> li [] [ text s ]) facility.services)
-                    ]
+                , div [ class "detailSection categories" ]
+                    (List.concat
+                        (List.map
+                            (\cg ->
+                                [ span [] [ text <| cg.name ]
+                                , if List.isEmpty cg.categories then
+                                    div [ class "noData" ] [ text "There is currently no information for this facility." ]
+                                  else
+                                    ul [] (List.map (\s -> li [] [ text s ]) cg.categories)
+                                ]
+                            )
+                            facility.categoriesByGroup
+                        )
+                    )
                 , div [ class "detailSection extra" ] [ text ("REF ID: " ++ facility.sourceId) ]
                 ]
             ]
@@ -591,7 +599,7 @@ directionsEntry userLocation facility =
                 , encodedDestination
                 ]
     in
-        infoEntry "directions" (Just link) "Get directions"
+        infoEntry "location_on" (Just link) (Maybe.withDefault "Get directions" facility.address)
 
 
 contactEntry : String -> String -> Maybe String -> Html a

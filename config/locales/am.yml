@@ -15,7 +15,6 @@ am:
   facility_type: ተቋም አይነት
   ownership: ባለቤትነት
   location: አካባቢ
-  service: አገልግሎት
   access_the_mfr_api: ኤ ፒ አይ በኩል መዳረሻ
   download_result: አውርድ ውጤት
   sort_by: ደርድር

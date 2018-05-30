@@ -15,7 +15,6 @@ es:
   facility_type: Tipo de centro de salud
   ownership: Dominio
   location: Ubicación
-  service: Servicio
   access_the_mfr_api: Acceder via API
   download_result: Descargar listado
   sort_by: Ordenar por

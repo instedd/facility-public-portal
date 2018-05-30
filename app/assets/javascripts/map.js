@@ -4,8 +4,8 @@ $(document).ready(function() {
   var elm = Elm.Main.embed(elmContainer, FPP.settings);
 
   FPP.mapSettings = {
-    maxZoom: 18,
-    minZoom: 6,
+    maxZoom: FPP.settings.mapZoom.max,
+    minZoom: FPP.settings.mapZoom.min,
     id: FPP.settings.mapboxId,
     accessToken: FPP.settings.mapboxToken
   };
@@ -32,7 +32,7 @@ $(document).ready(function() {
         elm.ports.mapViewportChanged.send(FPP.getMapViewport());
       });
 
-      FPP.map.setView(latLng, 7);
+      FPP.map.setView(latLng, FPP.settings.mapZoom.default);
     },
 
     addUserMarker: function (o) {

@@ -45,7 +45,7 @@ type PrivateMsg
 
 type Msg
     = FacilityClicked Int
-    | ServiceClicked Int
+    | CategoryClicked Int
     | LocationClicked Int
     | Private PrivateMsg
     | UnhandledError String
@@ -85,9 +85,9 @@ update s msg model =
                             Return.singleton model
                                 |> perform (FacilityClicked facilityId)
 
-                        Suggest.ServiceClicked serviceId ->
+                        Suggest.CategoryClicked categoryId ->
                             Return.singleton model
-                                |> perform (ServiceClicked serviceId)
+                                |> perform (CategoryClicked categoryId)
 
                         Suggest.LocationClicked locationId ->
                             Return.singleton model

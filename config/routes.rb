@@ -19,7 +19,7 @@ Rails.application.routes.draw do
     get 'facilities/:id', to: 'api#get_facility'
     get 'facility_types', to: 'api#facility_types'
     get 'locations', to: 'api#locations'
-    get 'services', to: 'api#services'
+    get 'categories', to: 'api#categories'
   end
 
   post 'facilities/:id/report', to: 'application#report_facility'

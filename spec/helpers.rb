@@ -2,7 +2,7 @@ module Helpers
   TESTING_INDEX = "fpp-test"
 
   def elasticsearch_service
-    @service ||= ElasticsearchService.new(ENV['ELASTICSEARCH_URL'] || 'localhost', TESTING_INDEX, should_log: ENV["ELASTICSEARCH_LOG"])
+    @service ||= ElasticsearchService.new(ENV['ELASTICSEARCH_URL'] || 'localhost', TESTING_INDEX, locales: Settings.locales.keys, should_log: ENV["ELASTICSEARCH_LOG"])
   end
 
   def elasticsearch_client

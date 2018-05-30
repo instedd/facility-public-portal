@@ -1,4 +1,4 @@
-version: 0.2.0
+version: 0.3.0
 report_email_to: "example@example.com"
 report_email_from: "do-not-reply@facilitypublicportal.com"
 smtp_settings: {}
@@ -14,6 +14,10 @@ map_bounds:
   left: -2
   bottom: 10
   right: 15
+map_zoom:
+  min: 6
+  max: 18
+  default: 7
 user_position: fake
 mapbox_id: "mapbox/streets-v9"
 mapbox_token: "pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ"

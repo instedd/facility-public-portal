@@ -27,7 +27,7 @@ class ApiController < ActionController::Base
 
     results = {
       facilities: service.suggest_facilities(params),
-      services: service.suggest_services(query),
+      categories: service.suggest_categories(query),
       locations: service.suggest_locations(query)
     }
     render json: results
@@ -47,16 +47,16 @@ class ApiController < ActionController::Base
     render_if_stale(locations)
   end
 
-  def services
-    services = ElasticsearchService.instance.get_services
-    render_if_stale(services)
+  def categories
+    categories = ElasticsearchService.instance.get_categories
+    render_if_stale(categories)
   end
 
 
   private
 
   def search_params
-    params.permit(:q, :service, :location, :type, :ownership, :lat, :lng, :size, :from, :sort)
+    params.permit(:q, :category, :location, :type, :ownership, :lat, :lng, :size, :from, :sort)
   end
 
   def render_if_stale(data)

@@ -14,6 +14,7 @@ type alias Settings =
     , locales : List ( String, String )
     , facilityTypes : List FacilityType
     , ownerships : List Ownership
+    , categoryGroups : List CategoryGroup
     }
 
 
@@ -26,7 +27,7 @@ type Route
 
 type alias SearchSpec =
     { q : Maybe String
-    , service : Maybe Int
+    , category : Maybe Int
     , location : Maybe Int
     , latLng : Maybe LatLng
     , fType : Maybe Int
@@ -53,16 +54,26 @@ type alias Facility =
     , position : LatLng
     , facilityType : String
     , priority : Int
-    , services : List String
+    , categoriesByGroup : CategoriesByGroup
     , adm : List String
     , ownership : String
+    , address : Maybe String
     , contactName : Maybe String
     , contactPhone : Maybe String
     , contactEmail : Maybe String
+    , openingHours : Maybe String
     , reportTo : Maybe String
     , photo : Maybe String
     , lastUpdated : Maybe Date
     }
+
+
+type alias CategoriesByGroup =
+    List CategoriesByGroupItem
+
+
+type alias CategoriesByGroupItem =
+    { name : String, categories : List String }
 
 
 type alias FacilityType =
@@ -86,8 +97,11 @@ type alias FacilitySummary =
     , adm : List String
     }
 
+type alias CategoryGroup =
+    { name : String
+    }
 
-type alias Service =
+type alias Category =
     { id : Int
     , name : String
     , facilityCount : Int
@@ -103,7 +117,7 @@ type alias Location =
 
 type Suggestion
     = F FacilitySummary
-    | S Service
+    | C Category
     | L Location
 
 
@@ -216,7 +230,7 @@ searchParams search =
         select <|
             List.map maybe
                 [ Maybe.map (\q -> ( "q", q )) search.q
-                , Maybe.map (\s -> ( "service", toString s )) search.service
+                , Maybe.map (\s -> ( "category", toString s )) search.category
                 , Maybe.map (\l -> ( "location", toString l )) search.location
                 , Maybe.map (\( lat, _ ) -> ( "lat", toString lat )) search.latLng
                 , Maybe.map (\( _, lng ) -> ( "lng", toString lng )) search.latLng
@@ -230,7 +244,7 @@ searchParams search =
 emptySearch : SearchSpec
 emptySearch =
     { q = Nothing
-    , service = Nothing
+    , category = Nothing
     , location = Nothing
     , latLng = Nothing
     , fType = Nothing
@@ -249,7 +263,7 @@ searchEquals : SearchSpec -> SearchSpec -> Bool
 searchEquals s1 s2 =
     List.all identity
         [ Utils.equalMaybe (Maybe.andThen s1.q discardEmpty) (Maybe.andThen s2.q discardEmpty)
-        , Utils.equalMaybe s1.service s2.service
+        , Utils.equalMaybe s1.category s2.category
         , Utils.equalMaybe s1.location s2.location
         , Utils.equalMaybe s1.latLng s2.latLng
         , Utils.equalMaybe s1.fType s2.fType

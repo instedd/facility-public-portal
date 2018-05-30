@@ -16,10 +16,13 @@ RSpec.describe Dump do
          "lng" => 38.370941,
          "location_id" => "L3",
          "ownership" => "Public",
+         "address" => "Lorem 123",
          "facility_type" => "Health Center",
          "contact_name" => "John Doe",
          "contact_email" => "john@example.com",
          "contact_phone" => "123",
+         "opening_hours:en" => "allways",
+         "opening_hours:es" => "siempre",
          "last_update" => nil
        },
        {
@@ -29,6 +32,7 @@ RSpec.describe Dump do
          "lng" => 38.370941,
          "location_id" => "L4",
          "ownership" => "Private",
+         "address" => "Ipsum 456",
          "facility_type" => "Hospital",
          "contact_name" => nil,
          "contact_email" => nil,
@@ -36,14 +40,17 @@ RSpec.describe Dump do
          "last_update" => nil
        }
      ],
-     services: [
-       {"id" => "S1", "name:en" => "Iron Tablets", "name:es" => "Tabletas de hierro" },
-       {"id" => "S2", "name:en" => "Child vaccination", "name:es" => "Vacunación de menores" }
+     category_groups: [
+       { "id" => 'services', "name:en" => 'Services', "name:es" => 'Servicios' }
      ],
-     facilities_services: [
-       { "facility_id" => "F1", "service_id" => "S1" },
-       { "facility_id" => "F1", "service_id" => "S2" },
-       { "facility_id" => "F2", "service_id" => "S1" },
+     categories: [
+       { "id" => "S1", "category_group_id" => 'services', "name:en" => "Iron Tablets", "name:es" => "Tabletas de hierro" },
+       { "id" => "S2", "category_group_id" => 'services', "name:en" => "Child vaccination", "name:es" => "Vacunación de menores" }
+     ],
+     facility_categories: [
+       { "facility_id" => "F1", "category_id" => "S1" },
+       { "facility_id" => "F1", "category_id" => "S2" },
+       { "facility_id" => "F2", "category_id" => "S1" },
      ],
      locations: [
        {"id" => "L1", "name" => "Amhara", "parent_id" => "-----------------"},
@@ -70,9 +77,12 @@ RSpec.describe Dump do
       "lng" => "38.370941",
       "facility_type" => "Health Center",
       "ownership"=> "Public",
+      "address"=>"Lorem 123",
       "contact_name" => "John Doe",
       "contact_email" => "john@example.com",
       "contact_phone" => "123",
+      "opening_hours:en" => "allways",
+      "opening_hours:es" => "siempre",
       "location_1" => "Amhara",
       "location_2" => "North Wello",
       "location_3" => "Bugna"
@@ -88,9 +98,12 @@ RSpec.describe Dump do
       "lng" => "38.370941",
       "facility_type" => "Hospital",
       "ownership" => "Private",
+      "address" => "Ipsum 456",
       "contact_name" => nil,
       "contact_email" => nil,
       "contact_phone" => nil,
+      "opening_hours:en" => nil,
+      "opening_hours:es" => nil,
       "location_1" => "Amhara",
       "location_2" => "North Wello",
       "location_3" => "Kobo",
@@ -123,13 +136,16 @@ RSpec.describe Dump do
          "last_update" => nil
        }
      ],
-     services: [
-       {"id" => "S1", "name:en" => "Foo,Bar"},
-       {"id" => "S2", "name:en" => "Baz"}
+     category_groups: [
+       { "id" => 'services', "name:en" => 'Services' }
      ],
-     facilities_services: [
-       { "facility_id" => "F1", "service_id" => "S1" },
-       { "facility_id" => "F1", "service_id" => "S2" }
+     categories: [
+       {"id" => "S1", "category_group_id" => 'services', "name:en" => "Foo,Bar"},
+       {"id" => "S2", "category_group_id" => 'services', "name:en" => "Baz"}
+     ],
+     facility_categories: [
+       { "facility_id" => "F1", "category_id" => "S1" },
+       { "facility_id" => "F1", "category_id" => "S2" }
      ],
      locations: [{"id" => "L1", "name" => "Amhara", "parent_id" => "-----------------"}],
      facility_types: []
