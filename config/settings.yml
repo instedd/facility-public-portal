@@ -1,4 +1,4 @@
-version: 0.2.0
+version: 0.3.0
 report_email_to: "example@example.com"
 report_email_from: "do-not-reply@facilitypublicportal.com"
 smtp_settings: {}
