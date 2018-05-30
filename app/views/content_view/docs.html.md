@@ -16,10 +16,10 @@ $ curl 'vitalwave.instedd.org/api/facilities/85?locale=am'
 
 ## Discovery
 
-The suggest endpoint allows discovery in a human friendly manner. A response will include facilities, locations and services that match the search criteria.
+The suggest endpoint allows discovery in a human friendly manner. A response will include facilities, locations and categories (ie: services, etc.) that match the search criteria.
 
 * For the informed facilites, [details api](#facility-details) can be used.
-* For informed services and location, [search api](#search) can be used to get a list of facilities.
+* For informed categories and location, [search api](#search) can be used to get a list of facilities.
 
 No paging is supported in this endpoint.
 
@@ -52,7 +52,7 @@ $ curl 'vitalwave.instedd.org/api/suggest?q=ur&lat=8.979780521754858&lng=38.7589
       "name": "Urmadag Godane Health Center",
     }
   ],
-  "services": [
+  "categories": [
     {
       "id": 168,
       "name": "Urine chemistry/pregnancy testing",
@@ -74,7 +74,7 @@ $ curl 'vitalwave.instedd.org/api/suggest?q=ur&lat=8.979780521754858&lng=38.7589
 The search endpoint allows filtering the facilities based on certain criteria:
 
 * full text search
-* services based search
+* categories based search
 * location based search
 * type based search
 
@@ -90,7 +90,7 @@ Paging is supported to interate the whole results.
 | Name | Type | Description |
 |---|---|---|
 | q | string | Text to be searched. |
-| service | integer | Service id that must be handled by the informed facility. |
+| category | integer | Category id that facility must belong. |
 | location | integer | Location id where the informed facility should belong to. |
 | type | integer | Facility type id of the informed facility. |
 | lat | float | Lat/Lng coordinates used to prioritize the results.  |
@@ -197,17 +197,30 @@ $ curl 'vitalwave.instedd.org/api/facilities/85'
     "lat": 6.08633,
     "lng": 38.43375
   },
-  "service_ids": [
+  "categories_ids": [
     109,
     219,
     110,
     /* ... stripped content ... */
   ],
-  "service_names": [
-    "Hiv test",
-    "Antenatal care (anc)",
-    "Snellens chart",
-    /* ... stripped content ... */
+  "categories_by_group": [
+    {
+      "name": "Services",
+      "categories": [
+        "Hiv test",
+        "Antenatal care (anc)",
+        "Snellens chart",
+        /* ... stripped content ... */
+      ]
+    },
+    {
+      "name": "Equipment",
+      "categories": [
+        "X-ray",
+        "MRI",
+        /* ... stripped content ... */
+      ]
+    }
   ],
 }
 ```

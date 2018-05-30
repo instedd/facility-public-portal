@@ -71,7 +71,7 @@ type PrivateMsg
 
 type Msg
     = FacilityClicked Int
-    | ServiceClicked Int
+    | CategoryClicked Int
     | LocationClicked Int
     | Search SearchSpec
     | Private PrivateMsg
@@ -92,7 +92,7 @@ init : Models.Settings -> MapViewport -> SearchSpec -> ( Model, Cmd Msg )
 init settings mapViewport search =
     let
         ( advancedSearchModel, advancedSearchCmd ) =
-            AdvancedSearch.init settings.facilityTypes settings.ownerships search
+            AdvancedSearch.init settings.facilityTypes settings.ownerships settings.categoryGroups search
     in
         Return.singleton
             { query = Maybe.withDefault "" search.q
@@ -455,12 +455,12 @@ suggestion s =
         Models.F facility ->
             facilityResultItem False facility
 
-        Models.S { id, name, facilityCount } ->
+        Models.C { id, name, facilityCount } ->
             resultItem
                 name
                 [ text <| t <| FacilitiesCount { count = facilityCount } ]
                 "label"
-                (ServiceClicked id)
+                (CategoryClicked id)
 
         Models.L { id, name, parentName } ->
             resultItem

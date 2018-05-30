@@ -90,7 +90,7 @@ locationParser location =
 specFromParams : Dict String String -> SearchSpec
 specFromParams params =
     { q = Dict.get "q" params &> discardEmpty
-    , service = intParam "service" params
+    , category = intParam "category" params
     , location = intParam "location" params
     , latLng = paramsLatLng params
     , fType = intParam "type" params

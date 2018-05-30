@@ -12,10 +12,14 @@ class Dump
   def run
     max_administrative_level = @service.max_administrative_level
 
+    category_groups = @service.get_category_groups
+
     append_csv_line ["id", "source_id", "name", "lat", "lng", "facility_type", "ownership", "address", "contact_name", "contact_email", "contact_phone"] \
               + @locales.map { |locale| "opening_hours:#{locale}" } \
               + (1..max_administrative_level).map { |l| "location_#{l}" } \
-              + @locales.map { |locale| "services:#{locale}" }
+              + category_groups.map { |g|
+                  @locales.map { |locale| "#{g["source_id"]}:#{locale}" }
+                }.flatten(1)
 
     @params.delete(:from)
     @params.delete(:size)
@@ -40,10 +44,9 @@ class Dump
         ] \
         + @locales.map { |l| f["opening_hours"]["#{l}"] } \
         + pad_right(f["adm"], max_administrative_level) \
-        + @locales.map { |l|
-            f["service_names:#{l}"].map { |n| n.gsub(",", "") }
-                                  .join(",")
-          }
+        + category_groups.map { |g|
+            @locales.map { |l| encode_array(f["categories_by_group"]["#{l}"].select { |c| c["category_group_id"] == g["id"] }.first["categories"]) }
+          }.flatten(1)
       end
 
       break unless page[:next_from]
@@ -56,6 +59,10 @@ class Dump
   end
 
   private
+
+  def encode_array(array)
+    array.map { |n| n.gsub(",", "") }.join(",")
+  end
 
   def pad_right(array, length)
     ret = array

@@ -36,7 +36,6 @@ en:
   facility_type: Facility type
   ownership: Ownership
   location: Location
-  service: Service
   access_the_mfr_api: Access the MFR API
   download_result: Download Result
   sort_by: Sort by

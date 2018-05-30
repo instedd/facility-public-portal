@@ -26,6 +26,7 @@ type alias Flags =
     , locales : List ( String, String )
     , facilityTypes : List FacilityType
     , ownerships : List Ownership
+    , categoryGroups : List CategoryGroup
     }
 
 
@@ -103,6 +104,7 @@ init flags route =
             , locales = flags.locales
             , facilityTypes = flags.facilityTypes
             , ownerships = flags.ownerships
+            , categoryGroups = flags.categoryGroups
             }
 
         model =
@@ -185,8 +187,8 @@ mainUpdate msg mainModel =
                                 AppHome.FacilityClicked facilityId ->
                                     ( homeModel, navigateFacility facilityId )
 
-                                AppHome.ServiceClicked serviceId ->
-                                    ( homeModel, navigateSearchService serviceId )
+                                AppHome.CategoryClicked categoryId ->
+                                    ( homeModel, navigateSearchCategory categoryId )
 
                                 AppHome.LocationClicked locationId ->
                                     ( homeModel, navigateSearchLocation locationId )
@@ -235,8 +237,8 @@ mainUpdate msg mainModel =
                                 AppSearch.FacilityClicked facilityId ->
                                     ( searchModel, navigateFacility facilityId )
 
-                                AppSearch.ServiceClicked serviceId ->
-                                    ( searchModel, navigateSearchService serviceId )
+                                AppSearch.CategoryClicked categoryId ->
+                                    ( searchModel, navigateSearchCategory categoryId )
 
                                 AppSearch.LocationClicked locationId ->
                                     ( searchModel, navigateSearchLocation locationId )
@@ -531,10 +533,10 @@ navigateFacility =
     Utils.performMessage << Navigate << FacilityRoute
 
 
-navigateSearchService : Int -> Cmd MainMsg
-navigateSearchService id =
+navigateSearchCategory : Int -> Cmd MainMsg
+navigateSearchCategory id =
     Utils.performMessage <|
-        Navigate (SearchRoute { spec = { emptySearch | service = Just id }, expanded = False })
+        Navigate (SearchRoute { spec = { emptySearch | category = Just id }, expanded = False })
 
 
 navigateSearchLocation : Int -> Cmd MainMsg

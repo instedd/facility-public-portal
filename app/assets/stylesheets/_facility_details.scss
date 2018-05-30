@@ -112,13 +112,17 @@
     color: $color_mountain_mist_approx;
   }
 
-  .services {
+  .categories {
     padding: 10px 18px 0 18px;
     span {
+      display: inline-block;
       text-transform: uppercase;
       font-weight: bold;
       font-size: 15.5px;
       color: $color_mountain_mist_approx;
+    }
+    ul + span {
+      margin-top: 15px;
     }
     li {
       margin-top: 8px;

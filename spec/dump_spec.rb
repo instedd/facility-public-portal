@@ -40,14 +40,17 @@ RSpec.describe Dump do
          "last_update" => nil
        }
      ],
-     services: [
-       {"id" => "S1", "name:en" => "Iron Tablets", "name:es" => "Tabletas de hierro" },
-       {"id" => "S2", "name:en" => "Child vaccination", "name:es" => "Vacunación de menores" }
+     category_groups: [
+       { "id" => 'services', "name:en" => 'Services', "name:es" => 'Servicios' }
      ],
-     facilities_services: [
-       { "facility_id" => "F1", "service_id" => "S1" },
-       { "facility_id" => "F1", "service_id" => "S2" },
-       { "facility_id" => "F2", "service_id" => "S1" },
+     categories: [
+       { "id" => "S1", "category_group_id" => 'services', "name:en" => "Iron Tablets", "name:es" => "Tabletas de hierro" },
+       { "id" => "S2", "category_group_id" => 'services', "name:en" => "Child vaccination", "name:es" => "Vacunación de menores" }
+     ],
+     facility_categories: [
+       { "facility_id" => "F1", "category_id" => "S1" },
+       { "facility_id" => "F1", "category_id" => "S2" },
+       { "facility_id" => "F2", "category_id" => "S1" },
      ],
      locations: [
        {"id" => "L1", "name" => "Amhara", "parent_id" => "-----------------"},
@@ -133,13 +136,16 @@ RSpec.describe Dump do
          "last_update" => nil
        }
      ],
-     services: [
-       {"id" => "S1", "name:en" => "Foo,Bar"},
-       {"id" => "S2", "name:en" => "Baz"}
+     category_groups: [
+       { "id" => 'services', "name:en" => 'Services' }
      ],
-     facilities_services: [
-       { "facility_id" => "F1", "service_id" => "S1" },
-       { "facility_id" => "F1", "service_id" => "S2" }
+     categories: [
+       {"id" => "S1", "category_group_id" => 'services', "name:en" => "Foo,Bar"},
+       {"id" => "S2", "category_group_id" => 'services', "name:en" => "Baz"}
+     ],
+     facility_categories: [
+       { "facility_id" => "F1", "category_id" => "S1" },
+       { "facility_id" => "F1", "category_id" => "S2" }
      ],
      locations: [{"id" => "L1", "name" => "Amhara", "parent_id" => "-----------------"}],
      facility_types: []

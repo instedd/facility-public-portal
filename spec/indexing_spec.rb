@@ -22,8 +22,9 @@ RSpec.describe Indexing do
            last_update: nil
          }
        ],
-       services: [],
-       facilities_services: [],
+       category_groups: [],
+       categories: [],
+       facility_categories: [],
        locations: [{id: "L1", name: "Ethiopia", parent_id: "-----------------"},],
        facility_types: []
       }
@@ -31,8 +32,9 @@ RSpec.describe Indexing do
 
     it "doesn't fail on empty dataseet" do
       dataset = {facilities: [],
-                 services: [],
-                 facilities_services: [],
+                 category_groups: [],
+                 categories: [],
+                 facility_categories: [],
                  locations: [],
                  facility_types: []
                 }
@@ -56,14 +58,22 @@ RSpec.describe Indexing do
                            last_update: nil
                          }
                        ],
-                       services: [
+                       category_groups: [
+                        {
+                          id: 'services',
+                          'name:en': 'Services',
+                          'name:am': 'አገልግሎቶች'
+                        }
+                       ],
+                       categories: [
                          {
                            id: "S1",
+                           category_group_id: 'services',
                            'name:en': 'Vaccines'
                            # name:am is missing
                          }
                        ],
-                       facilities_services: [{facility_id: "F1", service_id: "S1"}],
+                       facility_categories: [{facility_id: "F1", category_id: "S1"}],
                        locations: [{id: "L1", name: "Ethiopia", parent_id: "-----------------"},],
                        facility_types: []
                       }
@@ -86,8 +96,9 @@ RSpec.describe Indexing do
                          last_update: nil
                        }
                      ],
-                     services: [],
-                     facilities_services: [],
+                     category_groups: [],
+                     categories: [],
+                     facility_categories: [],
                      locations: [{id: "L1", name: "Ethiopia", parent_id: "-----------------"},],
                      facility_types: []
                     })
@@ -110,8 +121,9 @@ RSpec.describe Indexing do
                          last_update: nil
                        }
                      ],
-                     services: [],
-                     facilities_services: [],
+                     category_groups: [],
+                     categories: [],
+                     facility_categories: [],
                      locations: [{id: "L1", name: "Ethiopia", parent_id: "-----------------"},],
                      facility_types: []
                     })
@@ -146,8 +158,9 @@ RSpec.describe Indexing do
                          last_update: nil
                        }
                      ],
-                     services: [],
-                     facilities_services: [],
+                     category_groups: [],
+                     categories: [],
+                     facility_categories: [],
                      locations: [{id: "L1", name: "Ethiopia", parent_id: "-----------------"},],
                      facility_types: []
                     })
@@ -170,8 +183,9 @@ RSpec.describe Indexing do
            last_update: nil
          }
        ],
-       services: [],
-       facilities_services: [],
+       category_groups: [],
+       categories: [],
+       facility_categories: [],
        locations: [{id: "L1", name: "Ethiopia", parent_id: "-----------------"},],
        facility_types: []
       })
@@ -216,8 +230,9 @@ RSpec.describe Indexing do
     describe "facility types" do
       it "indexes facility types in the facility_types table" do
         dataset = {facilities: [],
-                   services: [],
-                   facilities_services: [],
+                   category_groups: [],
+                   categories: [],
+                   facility_categories: [],
                    locations: [{id: "L1", name: "Ethiopia", parent_id: "-----------------"},],
                    facility_types: [
                      { name: "Health Center", priority: 1 },
@@ -234,8 +249,9 @@ RSpec.describe Indexing do
         dataset = {facilities: [
                      {id: "F1", name: "FOO", lat: 10.696144, lng: 38.370941, location_id: "L1", facility_type: "Hospital", ownership: "Public"}
                    ],
-                   services: [],
-                   facilities_services: [],
+                   category_groups: [],
+                   categories: [],
+                   facility_categories: [],
                    locations: [{id: "L1", name: "Ethiopia", parent_id: "-----------------"},],
                    facility_types: []
                   }
@@ -257,8 +273,9 @@ RSpec.describe Indexing do
             {id: "F1", name: "FOO", lat: 10.696144, lng: 38.370941, location_id: "L1", ownership: "Public", facility_type: "Health Center"},
             {id: "F2", name: "BAR", lat: 10.696144, lng: 38.370941, location_id: "L1", ownership: "Private", facility_type: "Health Center"}
           ],
-          services: [],
-          facilities_services: [],
+          category_groups: [],
+          categories: [],
+          facility_categories: [],
           locations: [{id: "L1", name: "Ethiopia", parent_id: "-----------------"},],
           facility_types: []
         }

@@ -4,8 +4,8 @@ module Api
         , getSuggestions
         , FetchFacilityMsg(..)
         , fetchFacility
-        , ServicesMsg(..)
-        , getServices
+        , CategoriesMsg(..)
+        , getCategories
         , LocationsMsg(..)
         , getLocations
         , SearchMsg(..)
@@ -59,14 +59,14 @@ getLocations error ok =
     Task.perform error ok (Http.get Decoders.locations "/api/locations")
 
 
-type ServicesMsg
-    = ServicesSuccess (List Service)
-    | ServicesFailed Http.Error
+type CategoriesMsg
+    = CategoriesSuccess (List Category)
+    | CategoriesFailed Http.Error
 
 
-getServices : (Http.Error -> msg) -> (List Service -> msg) -> Cmd msg
-getServices error ok =
-    Task.perform error ok (Http.get Decoders.services "/api/services")
+getCategories : (Http.Error -> msg) -> (List Category -> msg) -> Cmd msg
+getCategories error ok =
+    Task.perform error ok (Http.get Decoders.categories "/api/categories")
 
 
 type SearchMsg

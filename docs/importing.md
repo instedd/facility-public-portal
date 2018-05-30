@@ -6,7 +6,7 @@ This document describes [the schema supported](#input-data-schema) by the applic
 
 This tool can import data using the following schema, where each table is stored in a CSV file with headers.
 
-### Facilities
+### facilities.csv
 
 | Field            | Type                      |
 |------------------|---------------------------|
@@ -28,7 +28,9 @@ This tool can import data using the following schema, where each table is stored
 
 **Note:** there should be a `opening_hours:LOCALE` column for each of the enabled locales of the application.
 
-### Services
+### category_groups.csv (Services, Equipment, etc)
+
+Category groups serves for indicating how the assigned categories for each facility according to `facility_categories.csv` should be grouped and shown to the user. The group and categories name are localized.
 
 | Field   | Type   |
 |---------|--------|
@@ -38,15 +40,26 @@ This tool can import data using the following schema, where each table is stored
 
 **Note:** there should be a `name:LOCALE` column for each of the enabled locales of the application.
 
-### facilities_services
+### categories.csv
+
+| Field             | Type   |
+|-------------------|--------|
+| id                | String |
+| category_group_id | String |
+| name:en           | String |
+| name:am           | String |
+
+**Note:** there should be a `name:LOCALE` column for each of the enabled locales of the application.
+
+### facility_categories.csv
 
 | Field       | Type   |
 |-------------|--------|
 | facility_id | String |
-| service_id  | String |
+| category_id | String |
 
 
-### facility_types
+### facility_types.csv
 
 | Field    | Type   |
 |----------|--------|
@@ -57,7 +70,7 @@ This tool can import data using the following schema, where each table is stored
 **Note**: The priority of a facility type can be used to decide which facilities will be displayed in lower zoom levels.
 If a facility's type doesn't have a corresponding entry in the `facilities` table it will be assigned the lowest priority.
 
-### locations
+### locations.csv
 
 | Field     | Type   |
 |-----------|--------|
@@ -72,8 +85,9 @@ The import script assumes CSV files with the following names:
 ```
 data
 ├── input
+    ├── categories.csv
+    ├── category_groups.csv
     ├── facilities.csv
-    ├── facilities_services.csv
     ├── facility_types.csv
     ├── locations.csv
     └── services.csv

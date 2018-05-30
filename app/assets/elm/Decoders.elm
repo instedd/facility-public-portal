@@ -19,7 +19,7 @@ suggestions : Decoder (List Suggestion)
 suggestions =
     decode (\f s l -> f ++ s ++ l)
         |> required "facilities" (list (map F facilitySummary))
-        |> required "services" (list (map S service))
+        |> required "categories" (list (map C category))
         |> required "locations" (list (map L location))
 
 
@@ -32,7 +32,7 @@ facility =
         |> required "position" latLng
         |> required "facility_type" string
         |> required "priority" int
-        |> required "service_names" (list string)
+        |> required "categories_by_group" categoriesByGroup
         |> required "adm" (list string)
         |> required "ownership" string
         |> required "address" (nullable string)
@@ -44,6 +44,15 @@ facility =
         |> required "photo" (nullable string)
         |> required "last_updated" (nullable date)
 
+categoriesByGroup : Decoder CategoriesByGroup
+categoriesByGroup =
+    list categoriesByGroupItem
+
+categoriesByGroupItem : Decoder CategoriesByGroupItem
+categoriesByGroupItem =
+    decode CategoriesByGroupItem
+        |> required "name" string
+        |> required "categories" (list string)
 
 facilitySummary : Decoder FacilitySummary
 facilitySummary =
@@ -56,17 +65,17 @@ facilitySummary =
         |> required "adm" (list string)
 
 
-service : Decoder Service
-service =
-    decode Service
+category : Decoder Category
+category =
+    decode Category
         |> required "id" int
         |> required "name" string
         |> required "facility_count" int
 
 
-services : Decoder (List Service)
-services =
-    list service
+categories : Decoder (List Category)
+categories =
+    list category
 
 
 location : Decoder Location
