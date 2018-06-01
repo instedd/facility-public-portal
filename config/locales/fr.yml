@@ -1,0 +1,30 @@
+fr:
+  search: Chercher
+  advanced_search: Recherche Avancée
+  search_health_facility: Rechercher des établissements de santé
+  map: Carte
+  api_docs: API Docs
+  full_download: Télécharger ensemble des données
+  contact: Contact
+  services: Services
+  facilities_count: "%{count} établissements"
+  report_an_issue: Signaler un problème
+  landing_page: À propos de MFR
+  editor: Paramètres
+  facility_name: Nom de l'établissement
+  facility_type: Type d'installation
+  ownership: La possession
+  location: Emplacement
+  access_the_mfr_api: Accéder à l'API MFR
+  download_result: Résultat du téléchargement
+  sort_by: Trier par
+  distance: Distance
+  name: Prénom
+  wrong_location: Mauvais emplacement
+  closed: Facilité fermée
+  contact_missing: Informations de contact incorrectes
+  innacurate_services: Liste de service inexacte
+  other: Autre
+  detailed_description: Description détaillée (facultatif)
+  select_issue_to_report: Veuillez sélectionner au moins 1 problème à signaler
+  send_report: Envoyer un rapport
