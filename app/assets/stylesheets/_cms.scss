@@ -2,7 +2,7 @@ body.content_view, body.content_edition {
   background: $grey-background;
 
   main, footer {
-    margin-left: 300px;
+    margin-left: $sidebar_width_home;
   }
 
   .content {

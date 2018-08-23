@@ -16,6 +16,10 @@ html, body, #container, #elm, #map {
   width: 100%;
 }
 
+.side-nav {
+  width: $sidebar_width_home;
+}
+
 nav .nav-wrapper {
   i {
     height: 62px;
@@ -92,8 +96,8 @@ select {
     }
 
     .side {
-      width: $sidebar_width;
-      min-width: $sidebar_width;
+      width: $sidebar_width_map;
+      min-width: $sidebar_width_map;
       display: flex;
       flex-direction: column;
     }

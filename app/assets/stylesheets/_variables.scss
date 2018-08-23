@@ -11,10 +11,13 @@ $topnav_background: $primary;
 // same media query as fitContent
 $width-breakpoint: 992px;
 
-// layout
+// layout map
 $topnav_height: 72px;
 $searchbar_height: 56px;
-$sidebar_width: 390px;
+$sidebar_width_map: 390px;
+
+// layout home and cms
+$sidebar_width_home: 300px;
 
 .spinner-blue-only {
   border-color: $primary;
