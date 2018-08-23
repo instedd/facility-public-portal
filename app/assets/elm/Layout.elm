@@ -125,7 +125,7 @@ header content classes =
             classList (List.map (\c -> ( c, True )) classes)
 
         logo =
-            a [ id "logo", href "/" ] [ img [ src "/logo.svg" ] [] ]
+            a [ id "logo", href "/" ] [ img [ src "/logo.png" ] [] ]
     in
         div [ classAttribute ]
             [ nav [ class "TopNav z-depth-0" ]
