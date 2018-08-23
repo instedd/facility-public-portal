@@ -1,6 +1,6 @@
 //colors
 $color_mountain_mist_approx: #999999;
-$primary: #0f47af;
+$primary: #006800;
 $primary-light: lighten($primary, 3%);
 $primary-light2: lighten($primary, 45%);
 $grey3: #dadada;
@@ -17,7 +17,7 @@ $searchbar_height: 56px;
 $sidebar_width_map: 390px;
 
 // layout home and cms
-$sidebar_width_home: 300px;
+$sidebar_width_home: 350px;
 
 .spinner-blue-only {
   border-color: $primary;
