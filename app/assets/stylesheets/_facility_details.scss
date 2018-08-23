@@ -1,5 +1,5 @@
 .facilityDetail {
-  border-top: 1px solid $light-blue;
+  border-top: 1px solid $primary-light;
 
   div {
     padding: 10px 10px 8px 18px;
@@ -10,9 +10,9 @@
   }
 
   a {
-    color: $blue;
+    color: $primary;
     &:hover {
-      color: $light-blue;
+      color: $primary-light;
     }
   }
 
@@ -20,7 +20,7 @@
     display: flex;
     align-items: center;
 
-    background: $blue;
+    background: $primary;
     color: white;
     font-size: 20px;
     padding-bottom: 8px;
@@ -30,14 +30,14 @@
 
       .sub {
         display: block;
-        color: $grey2;
+        color: $primary-light2;
         font-size: 10pt;
       }
     }
 
     i {
       cursor: default;
-      color: $grey2;
+      color: $primary-light2;
     }
   }
 
@@ -98,7 +98,7 @@
         text-transform: uppercase;
       }
       &.contact {
-        color: $blue;
+        color: $primary;
       }
     }
   }

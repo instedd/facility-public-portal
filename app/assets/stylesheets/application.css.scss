@@ -200,7 +200,7 @@ select {
         margin-right: 13px;
       }
     }
-    a { color: $blue; }
+    a { color: $primary; }
   }
 }
 
@@ -240,7 +240,7 @@ select {
 }
 
 .TopNav {
-  background: $blue;
+  background: $topnav_background;
   min-height: $topnav_height;
   padding: 10px;
 
@@ -315,12 +315,12 @@ select {
         height: 24px;
       }
       a:hover i, a.active i {
-        color: $blue;
+        color: $primary;
       }
       a svg {
         fill: $color_mountain_mist_approx;
         &.active {
-          fill: $blue;
+          fill: $primary;
         }
       }
     }
@@ -328,8 +328,8 @@ select {
 }
 
 input[type="checkbox"]:checked + label:before {
-  border-right: 2px solid $blue;
-  border-bottom: 2px solid $blue;
+  border-right: 2px solid $primary;
+  border-bottom: 2px solid $primary;
 }
 
 [type="checkbox"] + label:before, [type="checkbox"]:not(.filled-in) + label:after {

@@ -24,7 +24,7 @@
 
   .clusterMarker {
     border-radius: 50%;
-    background-color: $blue;
+    background-color: $primary;
     border: 2px solid white;
 
     width: 18px !important;
@@ -46,7 +46,7 @@
       background-color: #a0a0a0;
     }
     .clusterMarker.highlighted {
-      background-color: $blue;
+      background-color: $primary;
     }
   }
 

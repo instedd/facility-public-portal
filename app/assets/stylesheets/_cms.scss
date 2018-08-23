@@ -12,9 +12,9 @@ body.content_view, body.content_edition {
 
     font-size: 16px;
     line-height: 1.8;
-    a { color: $blue; }
+    a { color: $primary; }
     a.btn:not(.btn-flat) {
-      background-color: $blue;
+      background-color: $primary;
       color: white;
     }
     h1 {
@@ -151,10 +151,10 @@ body.content_view, body.preview {
 body.content_edition {
   .tabs .tab {
     a {
-      background-color: $light-blue;
+      background-color: $primary-light;
       color: white;
       &.active {
-        color: $light-blue;
+        color: $primary-light;
         background-color: inherit;
       }
     }

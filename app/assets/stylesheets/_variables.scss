@@ -1,11 +1,12 @@
 //colors
 $color_mountain_mist_approx: #999999;
-$blue: #0f47af;
-$light-blue: #4367a4;
-$grey2: #a6b3d9;
+$primary: #0f47af;
+$primary-light: lighten($primary, 3%);
+$primary-light2: lighten($primary, 45%);
 $grey3: #dadada;
 $grey-background: #F7F7F7;
 $code-background: #EAEAEA;
+$topnav_background: $primary;
 
 // same media query as fitContent
 $width-breakpoint: 992px;
@@ -16,23 +17,23 @@ $searchbar_height: 56px;
 $sidebar_width: 390px;
 
 .spinner-blue-only {
-  border-color: $blue;
+  border-color: $primary;
 }
 .progress {
-  background-color: lighten($blue, 40%);
+  background-color: lighten($primary, 40%);
   .indeterminate {
-      background-color: $blue;
+      background-color: $primary;
   }
 }
 input:not([type]):focus:not([readonly]), input[type=text]:focus:not([readonly]), input[type=password]:focus:not([readonly]), input[type=email]:focus:not([readonly]), input[type=url]:focus:not([readonly]), input[type=time]:focus:not([readonly]), input[type=date]:focus:not([readonly]), input[type=datetime]:focus:not([readonly]), input[type=datetime-local]:focus:not([readonly]), input[type=tel]:focus:not([readonly]), input[type=number]:focus:not([readonly]), input[type=search]:focus:not([readonly]), textarea.materialize-textarea:focus:not([readonly]) {
-  border-bottom: 1px solid $blue;
-  box-shadow: 0 1px 0 0 $blue;
+  border-bottom: 1px solid $primary;
+  box-shadow: 0 1px 0 0 $primary;
 }
 a.btn, input.btn, input.btn:hover {
-  background-color: $blue;
+  background-color: $primary;
   color: white;
 }
 a.btn-flat {
-  color: $blue;
+  color: $primary;
   background-color: transparent;
 }
