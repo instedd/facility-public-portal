@@ -27,6 +27,7 @@ type alias Flags =
     , facilityTypes : List FacilityType
     , ownerships : List Ownership
     , categoryGroups : List CategoryGroup
+    , facilityPhotos : Bool
     }
 
 
@@ -105,6 +106,7 @@ init flags route =
             , facilityTypes = flags.facilityTypes
             , ownerships = flags.ownerships
             , categoryGroups = flags.categoryGroups
+            , facilityPhotos = flags.facilityPhotos
             }
 
         model =
@@ -402,7 +404,7 @@ mainView mainModel =
                             |> mapView HomeMsg common
 
                     FacilityDetailsModel pagedModel _ ->
-                        AppFacilityDetails.view pagedModel
+                        AppFacilityDetails.view common.settings pagedModel
                             |> withControls
                             |> mapView FacilityDetailsMsg common
 

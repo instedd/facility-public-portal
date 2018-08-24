@@ -168,8 +168,8 @@ update s msg model =
             ( model, Cmd.none )
 
 
-view : Model -> MapView Msg
-view model =
+view : Settings -> Model -> MapView Msg
+view settings model =
     let
         onlyMobile =
             ( "hide-on-large-only", True )
@@ -187,7 +187,7 @@ view model =
                     spinner
 
                 Loaded _ facility date userLocation _ _ ->
-                    facilityDetail [ hideOnMobileMapFocused ] date userLocation facility
+                    facilityDetail settings [ hideOnMobileMapFocused ] date userLocation facility
             ]
         , expandedContent = Nothing
         , toolbar =
@@ -512,8 +512,8 @@ currentDate =
         Task.perform notFailing (Utils.dateFromEpochMillis >> CurrentDate >> Private) Time.now
 
 
-facilityDetail : List ( String, Bool ) -> Maybe Date -> UserLocation.Model -> Facility -> Html Msg
-facilityDetail cssClasses now userLocation facility =
+facilityDetail : Settings -> List ( String, Bool ) -> Maybe Date -> UserLocation.Model -> Facility -> Html Msg
+facilityDetail settings cssClasses now userLocation facility =
     let
         lastUpdatedSub =
             case facility.lastUpdated of
@@ -545,7 +545,7 @@ facilityDetail cssClasses now userLocation facility =
                     [ text "clear" ]
                 ]
             , div [ class "content expand" ]
-                [ div [ class "detailSection pic" ]
+                [ div [ class ("detailSection pic" ++ (if settings.facilityPhotos then ""  else " pic-hide")) ]
                     [ if String.isEmpty (Maybe.withDefault "" facility.photo) then
                         div [ class "no-photo" ] [ Shared.icon "photo", text "No photo" ]
                       else

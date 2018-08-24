@@ -22,6 +22,7 @@ class ApplicationController < ActionController::Base
       "facilityTypes" => ElasticsearchService.instance.get_facility_types,
       "ownerships" => ElasticsearchService.instance.get_ownerships,
       "categoryGroups" => ElasticsearchService.instance.get_category_groups,
+      "facilityPhotos" => Settings.facility_photos
     })
   end
 

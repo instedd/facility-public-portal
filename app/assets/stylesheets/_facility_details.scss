@@ -71,6 +71,9 @@
           padding: 45px;
           color: $grey3;
         }
+        &.pic-hide {
+          display: none;
+        }
       }
 
       ul {

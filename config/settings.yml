@@ -21,6 +21,7 @@ map_zoom:
 user_position: fake
 mapbox_id: "mapbox/streets-v9"
 mapbox_token: "pk.eyJ1IjoibWZyIiwiYSI6ImNpdDBieTFhdzBsZ3gyemtoMmlpODAzYTEifQ.S9MV3eZjN39ZXh_G5_2gWQ"
+facility_photos: true
 default_locale: en
 locales:
   en: English

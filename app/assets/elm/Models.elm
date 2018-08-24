@@ -15,6 +15,7 @@ type alias Settings =
     , facilityTypes : List FacilityType
     , ownerships : List Ownership
     , categoryGroups : List CategoryGroup
+    , facilityPhotos : Bool
     }
 
 
