@@ -59,7 +59,15 @@ class Indexing
     logger.info "Calculating categories by facility"
     categories_by_facility = @dataset[:facility_categories]
                                .group_by   { |assoc| assoc["facility_id"].to_s }
-                               .map_values { |assocs| assocs.map { |a| categories_by_id[a["category_id"]] } }
+                               .map_values { |assocs|
+                                  assocs.map { |a|
+                                    categories_by_id[a["category_id"]].tap do |v|
+                                      if v.nil?
+                                        logger.error("Missing category information for id: #{a["category_id"].inspect} used at facility id: #{a["facility_id"].inspect}")
+                                      end
+                                    end
+                                  }
+                                }
 
     logger.info "Calculating full location paths"
     locations_by_id.values.each do |l|
