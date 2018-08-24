@@ -261,7 +261,7 @@ class Indexing
   def validate_category_group_translations(category_group)
     @locales.each do |l|
       unless category_group["name:#{l}".to_sym]
-        logger.error "Category group #{category[:source_id]} doesn't have a name:#{l} field. Maybe the locale wasn't enabled when normalizing the dataset?"
+        logger.error "Category group #{category_group[:source_id]} doesn't have a name:#{l} field. Maybe the locale wasn't enabled when normalizing the dataset?"
         raise "Missing translation"
       end
     end
