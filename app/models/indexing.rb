@@ -186,22 +186,22 @@ class Indexing
   end
 
   def self.read_csv_dataset(csv_files_path)
-    csv_enumerator = Proc.new do |filename|
-      (Enumerator.new do |out|
-         CSV.foreach(File.join(csv_files_path, filename), headers: true, converters: [:blank_to_nil, :numeric]) do |row|
-           out << row
-         end
-       end)
-    end
-
     {
-      categories: csv_enumerator.call("categories.csv"),
-      category_groups: csv_enumerator.call("category_groups.csv"),
-      facilities: csv_enumerator.call("facilities.csv"),
-      facility_categories: csv_enumerator.call("facility_categories.csv"),
-      facility_types: csv_enumerator.call("facility_types.csv"),
-      locations: csv_enumerator.call("locations.csv"),
+      categories: csv_enumerator(File.join(csv_files_path, "categories.csv")),
+      category_groups: csv_enumerator(File.join(csv_files_path, "category_groups.csv")),
+      facilities: csv_enumerator(File.join(csv_files_path, "facilities.csv")),
+      facility_categories: csv_enumerator(File.join(csv_files_path, "facility_categories.csv")),
+      facility_types: csv_enumerator(File.join(csv_files_path, "facility_types.csv")),
+      locations: csv_enumerator(File.join(csv_files_path, "locations.csv")),
     }
+  end
+
+  def self.csv_enumerator(path)
+    Enumerator.new do |out|
+      CSV.foreach(path, headers: true, converters: [:blank_to_nil, :numeric]) do |row|
+        out << row
+      end
+    end
   end
 
   private
