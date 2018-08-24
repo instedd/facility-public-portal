@@ -198,10 +198,17 @@ class Indexing
 
   def self.csv_enumerator(path)
     Enumerator.new do |out|
-      CSV.foreach(path, headers: true, converters: [:blank_to_nil, :numeric]) do |row|
+      encoding = "utf-8"
+      encoding = "bom|utf-8" if file_with_bom?(path)
+
+      CSV.foreach(path, headers: true, encoding: encoding, converters: [:blank_to_nil, :numeric]) do |row|
         out << row
       end
     end
+  end
+
+  def self.file_with_bom?(path)
+    File.open(path).each_byte.take(3) == [0xEF, 0xBB, 0xBF]
   end
 
   private
