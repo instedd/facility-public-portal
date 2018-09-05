@@ -40,6 +40,7 @@ class ElasticsearchService
               }
             },
             address: {type: 'string'},
+            contact_name: {type: 'string'},
             contact_email: {type: 'string'},
             contact_phone: {type: 'string'},
             opening_hours: localized_string_type,
