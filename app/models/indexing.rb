@@ -132,12 +132,14 @@ class Indexing
         f = f.merge({
           id: @last_facility_id += 1,
           source_id: f[:id].to_s,
-          contact_phone: f[:contact_phone] && f[:contact_phone].to_s,
+          contact_name: nullable_string(f[:contact_name]),
+          contact_phone: nullable_string(f[:contact_phone]),
+          contact_email: nullable_string(f[:contact_email]),
           priority: type[:priority],
           facility_type_id: type[:id],
           ownership_id: f[:ownership] ? ownerships[f[:ownership]][:id] : nil,
           name: f[:name].gsub(/\u00A0/,"").strip,
-          address: f[:address],
+          address: nullable_string(f[:address]),
           opening_hours: localized_string(f, :opening_hours),
 
           position: {
@@ -243,6 +245,10 @@ class Indexing
     }]
 
     res
+  end
+
+  def nullable_string(value)
+    value && value.to_s
   end
 
   def validate_facilities(facilities)
