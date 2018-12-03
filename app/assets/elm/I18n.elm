@@ -22,6 +22,7 @@ type TranslationId
     | Service
     | Search
     | AccessTheMfrApi
+    | Dataset
     | DownloadResult
     | SortBy
     | Distance
