@@ -8,7 +8,7 @@ module Menu
         , fixed
         , togglingContent
         , dimWhenOpen
-        , sideBar
+        , sideBar   
         , parseItem
         )
 
@@ -30,6 +30,7 @@ type Item
     | ApiDoc
     | LandingPage
     | Editor
+    | Dataset
 
 
 type alias Settings =
@@ -72,6 +73,8 @@ menuContent settings active =
                     [ include <| menuItem Map "/map" "map" I18n.Map
                     , iff settings.showEdition <|
                         menuItem Editor "/content" "mode_edit" I18n.Editor
+                    , iff settings.showEdition <|
+                        menuItem Dataset "/datasets" "storage" I18n.Dataset
                     , include <| menuItem LandingPage "/" "info" I18n.LandingPage
                     , include <| menuItem ApiDoc "/docs" "code" I18n.ApiDocs
                     , include <| hr [] []
@@ -150,6 +153,9 @@ parseItem s =
 
         "docs" ->
             ApiDoc
+
+        "datasets" ->
+            Dataset
 
         "map" ->
             Map
