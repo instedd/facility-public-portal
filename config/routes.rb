@@ -12,6 +12,10 @@ Rails.application.routes.draw do
     post ':edit_locale/discard_draft', to: 'content_edition#discard_draft'
   end
 
+  scope :datasets do
+    root to: "datasets#index"
+  end
+
   scope :api do
     get 'search', to: 'api#search'
     get 'dump', to: 'api#dump'
