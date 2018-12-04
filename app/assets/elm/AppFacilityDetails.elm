@@ -1,9 +1,7 @@
 module AppFacilityDetails exposing (Model, Msg(..), PrivateMsg, init, view, update, subscriptions, mapViewport, userLocation)
 
 import Api
-import Date exposing (Date)
 import Html exposing (..)
-import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
 import Http
@@ -230,7 +228,7 @@ mobileFocusToggleView =
 
 
 userLocationView model =
-    Html.App.map (Private << UserLocationMsg) (UserLocation.view (userLocation model))
+    Html.map (Private << UserLocationMsg) (UserLocation.view (userLocation model))
 
 
 reportWindow : FacilityReport -> List (Html Msg)

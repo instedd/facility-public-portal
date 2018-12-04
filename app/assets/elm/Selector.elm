@@ -9,10 +9,9 @@ module Selector
         , close
         )
 
-import Autocomplete
-import Dom
+import Menu
+import Browser.Dom
 import Html exposing (..)
-import Html.App as Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json

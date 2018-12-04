@@ -9,7 +9,7 @@ import Layout
 import Map
 import Menu
 import Models exposing (..)
-import Navigation
+import Browser.Navigation
 import Return exposing (..)
 import Routing
 import SelectList exposing (..)

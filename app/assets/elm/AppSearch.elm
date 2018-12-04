@@ -13,9 +13,8 @@ module AppSearch
         )
 
 import Api
-import Debounce
+import Debounce.Debounce
 import Html exposing (..)
-import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
 import Layout exposing (MapView)

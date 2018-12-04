@@ -12,9 +12,8 @@ module AppHome
         )
 
 import Api
-import Debounce
+import Debounce.Debounce
 import Html
-import Html.App
 import Layout exposing (MapView)
 import Map
 import Models exposing (Settings, MapViewport, LatLng, SearchResult, FacilityType, Ownership, SearchSpec, FacilitySummary, shouldLoadMore, emptySearch)

@@ -1,6 +1,5 @@
 module Decoders exposing (..)
 
-import Date exposing (Date)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded, nullable)
 import Models exposing (..)

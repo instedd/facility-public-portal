@@ -1,7 +1,6 @@
 module Shared exposing (..)
 
 import Html exposing (..)
-import Html.App
 import Html.Attributes exposing (..)
 import Html.Events as Events
 import I18n exposing (..)

@@ -3,7 +3,6 @@ port module MainDatasets exposing (Model, Msg, init, main, subscriptions, update
 import Dataset exposing (Dataset, FileState)
 import Dict exposing (Dict)
 import Html exposing (Html, div, h1, p, text)
-import Html.App
 import Json.Decode exposing (decodeValue)
 import Json.Encode
 

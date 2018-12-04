@@ -15,7 +15,6 @@ module AdvancedSearch
 
 import Api
 import Html exposing (..)
-import Html.App
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Http
@@ -225,11 +224,11 @@ fields model =
             ]
         , field
             [ label [ for locationInputId ] [ text <| t I18n.Location ]
-            , Html.App.map (Private << LocationSelectorMsg) (Selector.view "" viewLocation model.locationSelector)
+            , Html.program.map (Private << LocationSelectorMsg) (Selector.view "" viewLocation model.locationSelector)
             ]
         , field
             [ label [ for categoryInputId ] [ text <| (String.join ", " (List.map (\g -> g.name) model.categoryGroups)) ]
-            , Html.App.map (Private << CategorySelectorMsg) (Selector.view "pull-up" viewCategory model.categorySelector)
+            , Html.program.map (Private << CategorySelectorMsg) (Selector.view "pull-up" viewCategory model.categorySelector)
             ]
         ]
 

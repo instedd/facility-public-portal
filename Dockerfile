@@ -6,7 +6,7 @@ RUN \
   curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
   apt-get install -y nodejs && \
   # elm
-  npm install -g elm@0.17.1 --unsafe-perm=true --allow-root && \
+  npm install -g elm@0.19.0 --unsafe-perm=true --allow-root && \
   # clean
   apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

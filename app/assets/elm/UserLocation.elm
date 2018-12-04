@@ -9,7 +9,7 @@ module UserLocation
         )
 
 import Models exposing (LatLng, Settings)
-import Geolocation
+import PortFunnel.Geolocation
 import Map
 import Process
 import Time

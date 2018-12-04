@@ -1,6 +1,5 @@
 module Models exposing (..)
 
-import Date exposing (Date)
 import Dict exposing (Dict)
 import SelectList exposing (..)
 import String

@@ -20,9 +20,8 @@ module Suggest
 import AdvancedSearch
 import Api
 import Array
-import Debounce
+import Debounce.Debounce
 import Html exposing (..)
-import Html.App
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import I18n exposing (..)

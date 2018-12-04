@@ -9,9 +9,9 @@ module Routing
 
 import Dict exposing (Dict)
 import Models exposing (..)
-import Navigation
+import Browser.Navigation
 import String
-import UrlParser exposing (..)
+import Url.Parser exposing (..)
 import Utils exposing (..)
 
 

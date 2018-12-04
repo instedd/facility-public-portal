@@ -1,14 +1,13 @@
 module MainMenu exposing (..)
 
 import Html exposing (Html, div)
-import Html.App
 import Html.Attributes exposing (class)
 import Layout
 import Menu
-import Navigation
+import Browser.Navigation
 import Shared
 import String
-import UrlParser exposing (..)
+import Url.Parser exposing (..)
 
 
 type alias Flags =

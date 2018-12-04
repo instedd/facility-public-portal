@@ -1,9 +1,7 @@
 module Utils exposing (..)
 
-import Date exposing (Date)
 import Dict exposing (Dict)
 import Html exposing (Html)
-import Html.App
 import Http
 import Return
 import String
