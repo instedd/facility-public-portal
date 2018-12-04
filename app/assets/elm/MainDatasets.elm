@@ -1,30 +1,22 @@
 port module MainDatasets exposing (Model, Msg, init, main, subscriptions, update, view)
 
+import Dataset exposing (Dataset, FileState)
+import Dict exposing (Dict)
 import Html exposing (Html, div, h1, p, text)
 import Html.App
+import Json.Decode exposing (decodeValue)
+import Json.Encode
 
 
 type alias Model =
-    Maybe FileState
-
-
-type alias FileState =
-    { updated_at : String
-    , size : Int
-    , md5 : String
-    , applied : Bool
-    }
-
-
-type alias Dataset =
-    { categories : FileState }
+    Dataset
 
 
 type Msg
-    = DatasetUpdated Dataset
+    = DatasetUpdated (Result String Dataset)
 
 
-port datasetUpdated : (Dataset -> msg) -> Sub msg
+port datasetUpdated : (Json.Decode.Value -> msg) -> Sub msg
 
 
 main : Program Never
@@ -39,7 +31,7 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    Nothing ! []
+    Dict.empty ! []
 
 
 view : Model -> Html Msg
@@ -57,21 +49,29 @@ view model =
 
 datasetView : Model -> Html msg
 datasetView model =
-    case model of
-        Nothing ->
-            div [] []
+    model
+        |> Dict.toList
+        |> List.map fileView
+        |> div []
 
-        Just dataset ->
-            text dataset.updated_at
+
+fileView : ( String, Maybe FileState ) -> Html msg
+fileView ( name, state ) =
+    div [] [ text name ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        DatasetUpdated dataset ->
-            Just dataset.categories ! []
+        DatasetUpdated result ->
+            case result of
+                Ok dataset ->
+                    dataset ! []
+
+                _ ->
+                    model ! []
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    datasetUpdated DatasetUpdated
+    datasetUpdated (decodeValue Dataset.decoder >> DatasetUpdated)
