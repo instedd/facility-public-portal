@@ -85,7 +85,7 @@ locationParser location =
 
 specFromParams : Dict String String -> SearchSpec
 specFromParams params =
-    { q = Dict.get "q" params &> discardEmpty
+    { q = Maybe.andThen (Dict.get "q" params) discardEmpty
     , category = intParam "category" params
     , location = intParam "location" params
     , latLng = paramsLatLng params
@@ -98,14 +98,12 @@ specFromParams params =
 
 intParam : String -> Dict String String -> Maybe Int
 intParam key params =
-    Dict.get key params
-        &> (String.toInt >> Result.toMaybe)
+    Maybe.andThen (Dict.get key params) (String.toInt >> Result.toMaybe)
 
 
 floatParam : String -> Dict String String -> Maybe Float
 floatParam key params =
-    Dict.get key params
-        &> (String.toFloat >> Result.toMaybe)
+    Maybe.andThen (Dict.get key params) (String.toFloat >> Result.toMaybe)
 
 
 boolParam : String -> Dict String String -> Bool
@@ -147,7 +145,7 @@ paramsLatLng params =
         mlng =
             floatParam "lng" params
     in
-    mlat &> (\lat -> Maybe.map (Tuple.pair lat) mlng)
+    Maybe.andThen mlat (\lat -> Maybe.map (Tuple.pair lat) mlng)
 
 
 encodeBoolParam bool =

@@ -122,10 +122,10 @@ update s msg model =
                 Report msg ->
                     case model of
                         Loading _ _ _ _ ->
-                            Utils.unreachable ()
+                            ( model, Cmd.none )
 
                         Loaded _ _ _ _ _ Nothing ->
-                            Utils.unreachable ()
+                            ( model, Cmd.none )
 
                         Loaded mapViewport facility date userLocation b (Just report) ->
                             case msg of
@@ -153,7 +153,7 @@ update s msg model =
                                             (Loaded mapViewport facility date userLocation b (Just updatedReport))
 
                                 ReportResult result ->
-                                    Utils.unreachable ()
+                                    ( model, Cmd.none )
 
                 MapMsg (Map.MapViewportChanged mapViewport) ->
                     ( setMapViewport mapViewport model, Cmd.none )

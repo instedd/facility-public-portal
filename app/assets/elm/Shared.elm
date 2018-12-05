@@ -22,7 +22,7 @@ classNames list =
 
 lmap : (a -> b) -> LHtml a -> LHtml b
 lmap =
-    List.map << Html.App.map
+    List.map << Html.map
 
 
 icon : String -> Html a
@@ -32,11 +32,12 @@ icon name =
 
 onClick : msg -> Attribute msg
 onClick message =
-    Events.onWithOptions "click"
-        { preventDefault = True
-        , stopPropagation = True
+    Events.custom "click"
+        {
+            message = (Json.Decode.succeed message)
+            , preventDefault = True
+            , stopPropagation = True
         }
-        (Json.Decode.succeed message)
 
 
 modalWindow : LHtml a -> LHtml a -> LHtml a -> LHtml a

@@ -44,7 +44,7 @@ fetchFacility : (FetchFacilityMsg -> msg) -> Int -> Cmd msg
 fetchFacility wmsg id =
     let
         url =
-            "/api/facilities/" ++ (toString id)
+            "/api/facilities/" ++ (String.fromInt id)
     in
         Task.perform (wmsg << FetchFacilityFailed) (wmsg << FetchFacilitySuccess) (Http.get Decoders.facility url)
 
@@ -95,7 +95,7 @@ searchMore wmsg result =
 
 byQuery : Maybe LatLng -> Maybe String -> SearchSpec
 byQuery latLng q =
-    { emptySearch | latLng = latLng, q = (q `andThen` discardEmpty) }
+    { emptySearch | latLng = latLng, q = (Maybe.andThen discardEmpty q) }
 
 
 suggestionsPath : String -> Maybe LatLng -> String -> String

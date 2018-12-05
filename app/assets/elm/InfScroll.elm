@@ -63,9 +63,6 @@ view (Config cfg) model items =
   div [ class "inf-scroll-container", onScroll (cfg.msgWrapper << Scroll) ]
     ((List.map cfg.itemView items) ++ (if (cfg.hasMore model) then [cfg.loadingIndicator] else []))
 
-unreachable =
-    (\_ -> Debug.crash "This failure cannot happen.")
-
 performMessage : msg -> Cmd msg
 performMessage msg =
     Task.perform unreachable identity (Task.succeed msg)
@@ -76,7 +73,7 @@ onScroll tagger =
 
 decodeScrollPosition : Json.Decoder Pos
 decodeScrollPosition =
-  Json.object3 Pos
+  Json.map3 Pos
     scrollTop
     scrollHeight
     (maxInt offsetHeight clientHeight)
@@ -99,4 +96,4 @@ clientHeight =
 
 maxInt : Json.Decoder Int -> Json.Decoder Int -> Json.Decoder Int
 maxInt x y =
-  Json.object2 Basics.max x y
+  Json.map2 Basics.max x y
