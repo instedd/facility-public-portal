@@ -1,15 +1,9 @@
-module Debounce.Helpers
-    exposing
-        ( deferredCmd
-        )
+module Debounce.Helpers exposing (deferredCmd)
 
-import Time exposing (Time)
-import Task exposing (Task)
 import Process
+import Task exposing (Task)
 
 
-deferredCmd : Time -> a -> Cmd a
+deferredCmd : Float -> a -> Cmd a
 deferredCmd delay a =
     Task.perform (always a) (Process.sleep delay)
-
-

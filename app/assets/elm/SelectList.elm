@@ -1,4 +1,4 @@
-module SelectList exposing (..)
+module SelectList exposing (Item, iff, include, maybe, select, unless)
 
 import List
 
@@ -22,9 +22,10 @@ select =
 
 
 iff : Bool -> a -> Item a
-iff include x =
-    if include then
+iff i x =
+    if i then
         Just x
+
     else
         Nothing
 

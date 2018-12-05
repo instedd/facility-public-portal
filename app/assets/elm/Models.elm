@@ -1,9 +1,10 @@
-module Models exposing (..)
+module Models exposing (CategoriesByGroup, CategoriesByGroupItem, Category, CategoryGroup, Facility, FacilitySummary, FacilityType, LatLng, Location, LocationState(..), MapScale, MapViewport, MapViewportBounds, Ownership, Route(..), SearchResult, SearchSpec, Settings, Sorting(..), Suggestion(..), between, contains, distance, emptySearch, extend, isEmpty, maxDistance, querySearch, searchEquals, searchParams, setOwnership, setQuery, setType, shouldLoadMore)
 
 import Dict exposing (Dict)
 import SelectList exposing (..)
 import String
-import Utils exposing ((&>), discardEmpty)
+import Time
+import Utils exposing (discardEmpty)
 
 
 type alias Settings =
@@ -64,7 +65,7 @@ type alias Facility =
     , openingHours : Maybe String
     , reportTo : Maybe String
     , photo : Maybe String
-    , lastUpdated : Maybe Date
+    , lastUpdated : Maybe Time.Posix
     }
 
 
@@ -97,9 +98,11 @@ type alias FacilitySummary =
     , adm : List String
     }
 
+
 type alias CategoryGroup =
     { name : String
     }
+
 
 type alias Category =
     { id : Int
@@ -172,12 +175,12 @@ maxDistance mapViewport =
             d * 1.2
 
         _ ->
-            Debug.crash "unreachable"
+            0
 
 
 contains : MapViewport -> LatLng -> Bool
 contains mapViewport ( lat, lng ) =
-    (between mapViewport.bounds.west mapViewport.bounds.east lng) && (between mapViewport.bounds.south mapViewport.bounds.north lat)
+    between mapViewport.bounds.west mapViewport.bounds.east lng && between mapViewport.bounds.south mapViewport.bounds.north lat
 
 
 between : Float -> Float -> Float -> Bool
@@ -197,7 +200,7 @@ shouldLoadMore results mapViewport =
             False
 
         Just furthest ->
-            distance furthest.position mapViewport.center < (maxDistance mapViewport)
+            distance furthest.position mapViewport.center < maxDistance mapViewport
 
 
 extend : Maybe SearchResult -> Maybe SearchResult -> Maybe SearchResult
@@ -209,8 +212,8 @@ extend a b =
         ( _, Nothing ) ->
             a
 
-        ( Just a, Just b ) ->
-            Just { items = a.items ++ b.items, nextUrl = b.nextUrl, total = b.total }
+        ( Just a_, Just b_ ) ->
+            Just { items = a_.items ++ b_.items, nextUrl = b_.nextUrl, total = b_.total }
 
 
 searchParams : SearchSpec -> List ( String, String )
@@ -227,18 +230,18 @@ searchParams search =
                 Type ->
                     "type"
     in
-        select <|
-            List.map maybe
-                [ Maybe.map (\q -> ( "q", q )) search.q
-                , Maybe.map (\s -> ( "category", toString s )) search.category
-                , Maybe.map (\l -> ( "location", toString l )) search.location
-                , Maybe.map (\( lat, _ ) -> ( "lat", toString lat )) search.latLng
-                , Maybe.map (\( _, lng ) -> ( "lng", toString lng )) search.latLng
-                , Maybe.map (\t -> ( "type", toString t )) search.fType
-                , Maybe.map (\o -> ( "ownership", toString o )) search.ownership
-                , Maybe.map (\size -> ( "size", toString size )) search.size
-                , Maybe.map (\s -> ( "sort", sortingToString s )) search.sort
-                ]
+    select <|
+        List.map maybe
+            [ Maybe.map (\q -> ( "q", q )) search.q
+            , Maybe.map (\s -> ( "category", String.fromInt s )) search.category
+            , Maybe.map (\l -> ( "location", String.fromInt l )) search.location
+            , Maybe.map (\( lat, _ ) -> ( "lat", String.fromFloat lat )) search.latLng
+            , Maybe.map (\( _, lng ) -> ( "lng", String.fromFloat lng )) search.latLng
+            , Maybe.map (\t -> ( "type", String.fromInt t )) search.fType
+            , Maybe.map (\o -> ( "ownership", String.fromInt o )) search.ownership
+            , Maybe.map (\size -> ( "size", String.fromInt size )) search.size
+            , Maybe.map (\s -> ( "sort", sortingToString s )) search.sort
+            ]
 
 
 emptySearch : SearchSpec
@@ -262,7 +265,7 @@ querySearch q =
 searchEquals : SearchSpec -> SearchSpec -> Bool
 searchEquals s1 s2 =
     List.all identity
-        [ Utils.equalMaybe (Maybe.andThen s1.q discardEmpty) (Maybe.andThen s2.q discardEmpty)
+        [ Utils.equalMaybe (Maybe.andThen discardEmpty s1.q) (Maybe.andThen discardEmpty s2.q)
         , Utils.equalMaybe s1.category s2.category
         , Utils.equalMaybe s1.location s2.location
         , Utils.equalMaybe s1.latLng s2.latLng

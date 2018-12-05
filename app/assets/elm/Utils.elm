@@ -1,4 +1,19 @@
-module Utils exposing (..)
+module Utils exposing
+    ( buildPath
+    , dateFromEpochMillis
+    , dateFromEpochSeconds
+    , discardEmpty
+    , equalMaybe
+    , isJust
+    , isNothing
+    , last
+    , parseParam
+    , parseQuery
+    , perform
+    , performMessage
+    , setQuery
+    , timeAgo
+    )
 
 import Dict exposing (Dict)
 import Html exposing (Html)
@@ -7,11 +22,7 @@ import Return
 import String
 import Task
 import Time
-
-
-(&>) : Maybe a -> (a -> Maybe b) -> Maybe b
-(&>) =
-    Maybe.andThen
+import Url exposing (percentDecode, percentEncode)
 
 
 buildPath : String -> List ( String, String ) -> String
@@ -25,7 +36,7 @@ buildPath base queryParams =
                 [ base
                 , "?"
                 , queryParams
-                    |> List.map (\( k, v ) -> k ++ "=" ++ Http.uriEncode v)
+                    |> List.map (\( k, v ) -> k ++ "=" ++ percentEncode v)
                     |> String.join "&"
                 ]
 
@@ -34,27 +45,22 @@ parseQuery : String -> Dict String String
 parseQuery query =
     query
         -- "?a=foo&b=bar&baz"
-        |>
-            String.dropLeft 1
+        |> String.dropLeft 1
         -- "a=foo&b=bar&baz"
-        |>
-            String.split "&"
+        |> String.split "&"
         -- ["a=foo","b=bar","baz"]
-        |>
-            List.map parseParam
+        |> List.map parseParam
         -- [[("a", "foo")], [("b", "bar")], []]
-        |>
-            List.concat
+        |> List.concat
         -- [("a", "foo"), ("b", "bar")]
-        |>
-            Dict.fromList
+        |> Dict.fromList
 
 
 parseParam : String -> List ( String, String )
 parseParam s =
     case String.split "=" s of
         k :: v :: [] ->
-            [ ( k, Http.uriDecode v ) ]
+            [ ( k, percentDecode v |> Maybe.withDefault v ) ]
 
         _ ->
             []
@@ -70,7 +76,7 @@ setQuery ( name, value ) url =
             Maybe.withDefault "" (List.head parts)
 
         query =
-            "?" ++ (Maybe.withDefault "" (List.head (Maybe.withDefault [] (List.tail parts))))
+            "?" ++ Maybe.withDefault "" (List.head (Maybe.withDefault [] (List.tail parts)))
 
         queryDict =
             parseQuery query
@@ -78,24 +84,24 @@ setQuery ( name, value ) url =
         newQueryList =
             Dict.toList <| Dict.union (Dict.singleton name value) queryDict
     in
-        buildPath path newQueryList
+    buildPath path newQueryList
 
 
-dateFromEpochSeconds : Float -> Date
+dateFromEpochSeconds : Float -> Time.Posix
 dateFromEpochSeconds i =
-    Date.fromTime (i * 1000 * Time.millisecond)
+    Time.millisToPosix (round i * 1000)
 
 
-dateFromEpochMillis : Float -> Date
+dateFromEpochMillis : Float -> Time.Posix
 dateFromEpochMillis i =
-    Date.fromTime (i * Time.millisecond)
+    Time.millisToPosix (round i)
 
 
-timeAgo : Date -> Date -> String
+timeAgo : Time.Posix -> Time.Posix -> String
 timeAgo d1 d2 =
     let
         diffSeconds =
-            ceiling (Date.toTime d1 / 1000 - Date.toTime d2 / 1000)
+            (Time.posixToMillis d1 // 1000) - (Time.posixToMillis d2 // 1000)
 
         secondsInHour =
             60 * 60
@@ -110,25 +116,28 @@ timeAgo d1 d2 =
             12 * secondsInMonth
 
         ( yearsPassed, rem1 ) =
-            ( diffSeconds // secondsInYear, diffSeconds % secondsInYear )
+            ( diffSeconds // secondsInYear, remainderBy secondsInYear diffSeconds )
 
         ( monthsPassed, rem2 ) =
-            ( rem1 // secondsInMonth, rem1 % secondsInMonth )
+            ( rem1 // secondsInMonth, remainderBy secondsInMonth rem1 )
 
         ( daysPassed, rem3 ) =
-            ( rem2 // secondsInDay, rem2 % secondsInDay )
+            ( rem2 // secondsInDay, remainderBy secondsInDay rem2 )
 
         hoursPassed =
             rem3 // secondsInHour
     in
-        if yearsPassed > 0 then
-            (toString yearsPassed) ++ " years"
-        else if monthsPassed > 0 then
-            (toString monthsPassed) ++ " months"
-        else if daysPassed > 0 then
-            (toString daysPassed) ++ " days"
-        else
-            (toString hoursPassed) ++ " hours"
+    if yearsPassed > 0 then
+        String.fromInt yearsPassed ++ " years"
+
+    else if monthsPassed > 0 then
+        String.fromInt monthsPassed ++ " months"
+
+    else if daysPassed > 0 then
+        String.fromInt daysPassed ++ " days"
+
+    else
+        String.fromInt hoursPassed ++ " hours"
 
 
 isJust : Maybe a -> Bool
@@ -168,18 +177,14 @@ discardEmpty : String -> Maybe String
 discardEmpty q =
     if q == "" then
         Nothing
+
     else
         Just q
 
 
-unreachable : a -> b
-unreachable =
-    (\_ -> Debug.crash "This failure cannot happen.")
-
-
 performMessage : msg -> Cmd msg
 performMessage msg =
-    Task.perform unreachable identity (Task.succeed msg)
+    Task.perform identity (Task.succeed msg)
 
 
 perform : msg -> ( model, Cmd msg ) -> ( model, Cmd msg )

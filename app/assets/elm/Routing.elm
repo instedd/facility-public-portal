@@ -1,15 +1,14 @@
-module Routing
-    exposing
-        ( parser
-        , navigate
-        , routeFromResult
-        , routeToPath
-        , toggleExpandedParam
-        )
+module Routing exposing
+    ( navigate
+    , parser
+    , routeFromResult
+    , routeToPath
+    , toggleExpandedParam
+    )
 
+import Browser.Navigation
 import Dict exposing (Dict)
 import Models exposing (..)
-import Browser.Navigation
 import String
 import Url.Parser exposing (..)
 import Utils exposing (..)
@@ -35,7 +34,7 @@ routeToPath route =
             buildPath "/map/search" (appendExpanded expanded (searchParams spec))
 
         FacilityRoute id ->
-            "/map/facilities/" ++ (toString id)
+            "/map/facilities/" ++ toString id
 
         NotFoundRoute ->
             "/not-found"
@@ -66,25 +65,22 @@ matchers =
         makeFacilityRoute id params =
             FacilityRoute id
     in
-        oneOf
-            [ format makeSearchRoute (s "map" </> s "search")
-            , format makeFacilityRoute (s "map" </> s "facilities" </> int)
-            , format makeRootRoute (s "map")
-            ]
+    oneOf
+        [ format makeSearchRoute (s "map" </> s "search")
+        , format makeFacilityRoute (s "map" </> s "facilities" </> int)
+        , format makeRootRoute (s "map")
+        ]
 
 
 locationParser : Navigation.Location -> Result String Route
 locationParser location =
     location.pathname
         -- corresponds to document.location.pathname
-        |>
-            String.dropLeft 1
+        |> String.dropLeft 1
         -- remove / at the beginning
-        |>
-            parse identity matchers
+        |> parse identity matchers
         -- parse
-        |>
-            Result.map (\p -> p (parseQuery location.search))
+        |> Result.map (\p -> p (parseQuery location.search))
 
 
 specFromParams : Dict String String -> SearchSpec
@@ -119,6 +115,7 @@ boolParam key params =
             (\s ->
                 if s == "1" then
                     True
+
                 else
                     False
             )
@@ -132,8 +129,10 @@ sortParam params =
             (\s ->
                 if s == "name" then
                     Name
+
                 else if s == "type" then
                     Type
+
                 else
                     Distance
             )
@@ -148,7 +147,7 @@ paramsLatLng params =
         mlng =
             floatParam "lng" params
     in
-        mlat &> \lat -> Maybe.map ((,) lat) mlng
+    mlat &> (\lat -> Maybe.map (Tuple.pair lat) mlng)
 
 
 encodeBoolParam bool =
@@ -174,12 +173,13 @@ toggleExpandedParam route =
                 _ ->
                     route
     in
-        navigate toggledUrl
+    navigate toggledUrl
 
 
 appendExpanded : Bool -> List ( String, String ) -> List ( String, String )
 appendExpanded expanded params =
     if expanded then
         params ++ [ ( "expanded", "1" ) ]
+
     else
         params

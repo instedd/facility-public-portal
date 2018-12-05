@@ -1,29 +1,27 @@
-module Selector
-    exposing
-        ( Model
-        , Msg
-        , init
-        , update
-        , view
-        , subscriptions
-        , close
-        )
+module Selector exposing
+    ( Model
+    , Msg
+    , close
+    , init
+    , subscriptions
+    , update
+    , view
+    )
 
-import Menu
 import Browser.Dom
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json
+import Menu
 import String
 import Task
-import Utils exposing ((&>))
 
 
 type alias Model a =
     { inputId : String
     , options : List (Option a)
-    , autoState : Autocomplete.State
+    , autoState : Menu.State
     , howManyToShow : Int
     , query : String
     , selection : Maybe (Option a)
@@ -47,19 +45,19 @@ init id items fId fLabel selectedId =
                 |> List.map (\a -> { id = fId a, label = fLabel a, item = a })
                 |> List.sortBy .label
     in
-        { inputId = id
-        , options = options
-        , autoState = Autocomplete.empty
-        , howManyToShow = 8
-        , query = ""
-        , selection = selectedId &> findById options
-        , showMenu = False
-        }
+    { inputId = id
+    , options = options
+    , autoState = Menu.empty
+    , howManyToShow = 8
+    , query = ""
+    , selection = selectedId |> Maybe.andThen (findById options)
+    , showMenu = False
+    }
 
 
 type Msg
     = SetQuery String
-    | SetAutoState Autocomplete.Msg
+    | SetAutoState Menu.Msg
     | Wrap Bool
     | Reset
     | OverlayClicked
@@ -74,7 +72,7 @@ type Msg
 subscriptions : Sub Msg
 subscriptions =
     -- TODO: keyboard control is not supported yet :(
-    -- Sub.map SetAutoState Autocomplete.subscription
+    -- Sub.map SetAutoState Menu.subscription
     Sub.none
 
 
@@ -84,30 +82,30 @@ update msg model =
         SetQuery newQuery ->
             let
                 showMenu =
-                    not << List.isEmpty <| (matches newQuery model.options)
+                    not << List.isEmpty <| matches newQuery model.options
             in
-                { model | query = newQuery, showMenu = showMenu, selection = Nothing } ! []
+            ( { model | query = newQuery, showMenu = showMenu, selection = Nothing }, Cmd.none )
 
         SetAutoState autoMsg ->
             let
                 ( newState, maybeMsg ) =
-                    Autocomplete.update updateConfig autoMsg model.howManyToShow model.autoState (currentMatches model)
+                    Menu.update updateConfig autoMsg model.howManyToShow model.autoState (currentMatches model)
 
                 newModel =
                     { model | autoState = newState }
             in
-                case maybeMsg of
-                    Nothing ->
-                        newModel ! []
+            case maybeMsg of
+                Nothing ->
+                    ( newModel, Cmd.none )
 
-                    Just updateMsg ->
-                        update updateMsg newModel
+                Just updateMsg ->
+                    update updateMsg newModel
 
         OverlayClicked ->
-            escape model ! []
+            ( escape model, Cmd.none )
 
         HandleEscape ->
-            escape model ! []
+            ( escape model, Cmd.none )
 
         Wrap toTop ->
             case model.selection of
@@ -116,20 +114,23 @@ update msg model =
 
                 Nothing ->
                     if toTop then
-                        { model
-                            | autoState = Autocomplete.resetToLastItem updateConfig (currentMatches model) model.howManyToShow model.autoState
-                            , selection = List.head <| List.reverse <| List.take model.howManyToShow <| (currentMatches model)
-                        }
-                            ! []
+                        ( { model
+                            | autoState = Menu.resetToLastItem updateConfig (currentMatches model) model.howManyToShow model.autoState
+                            , selection = List.head <| List.reverse <| List.take model.howManyToShow <| currentMatches model
+                          }
+                        , Cmd.none
+                        )
+
                     else
-                        { model
-                            | autoState = Autocomplete.resetToFirstItem updateConfig (currentMatches model) model.howManyToShow model.autoState
-                            , selection = List.head <| List.take model.howManyToShow <| (currentMatches model)
-                        }
-                            ! []
+                        ( { model
+                            | autoState = Menu.resetToFirstItem updateConfig (currentMatches model) model.howManyToShow model.autoState
+                            , selection = List.head <| List.take model.howManyToShow <| currentMatches model
+                          }
+                        , Cmd.none
+                        )
 
         Reset ->
-            { model | autoState = Autocomplete.reset updateConfig model.autoState, selection = Nothing } ! []
+            ( { model | autoState = Menu.reset updateConfig model.autoState, selection = Nothing }, Cmd.none )
 
         SelectKeyboard id ->
             let
@@ -137,7 +138,7 @@ update msg model =
                     setQuery model id
                         |> close
             in
-                newModel ! []
+            ( newModel, Cmd.none )
 
         SelectMouse id ->
             let
@@ -145,16 +146,16 @@ update msg model =
                     setQuery model id
                         |> close
             in
-                ( newModel, Task.perform (\err -> NoOp) (\_ -> NoOp) (Dom.focus model.inputId) )
+            ( newModel, Task.attempt (\_ -> NoOp) (Browser.Dom.focus model.inputId) )
 
         Preview id ->
-            { model | selection = findById model.options id } ! []
+            ( { model | selection = findById model.options id }, Cmd.none )
 
         OnFocus ->
-            model ! []
+            ( model, Cmd.none )
 
         NoOp ->
-            model ! []
+            ( model, Cmd.none )
 
 
 resetInput model =
@@ -181,7 +182,7 @@ setQuery model id =
 
 close model =
     { model
-        | autoState = Autocomplete.empty
+        | autoState = Menu.empty
         , showMenu = False
     }
 
@@ -190,23 +191,26 @@ view : String -> OptionView a -> Model a -> Html Msg
 view cssClass optionView model =
     let
         options =
-            { preventDefault = True, stopPropagation = False }
+            { preventDefault = True, stopPropagation = False, message = NoOp }
 
         dec =
-            (Json.customDecoder keyCode
-                (\code ->
-                    if code == 38 || code == 40 then
-                        Ok NoOp
-                    else if code == 27 then
-                        Ok HandleEscape
-                    else
-                        Err "not handling that key"
-                )
-            )
+            keyCode
+                |> Json.andThen
+                    (\code ->
+                        if code == 38 || code == 40 then
+                            Json.succeed options
+
+                        else if code == 27 then
+                            Json.succeed { options | message = HandleEscape }
+
+                        else
+                            Json.fail "not handling that key"
+                    )
 
         menu =
             if model.showMenu then
                 [ viewMenu cssClass optionView model ]
+
             else
                 []
 
@@ -218,27 +222,27 @@ view cssClass optionView model =
                 Nothing ->
                     model.query
     in
-        div []
-            [ overlay model
-            , div
-                [ class "autocomplete-wrapper" ]
-                (List.append
-                    [ input
-                        [ onInput SetQuery
-                        , onFocus OnFocus
-                        , onWithOptions "keydown" options dec
-                        , value query
-                        , id model.inputId
-                        , class "autocomplete-input"
-                        , autocomplete False
-                        , spellcheck False
-                        , attribute "role" "combobox"
-                        ]
-                        []
+    div []
+        [ overlay model
+        , div
+            [ class "autocomplete-wrapper" ]
+            (List.append
+                [ input
+                    [ onInput SetQuery
+                    , onFocus OnFocus
+                    , Html.Events.custom "keydown" dec
+                    , value query
+                    , id model.inputId
+                    , class "autocomplete-input"
+                    , autocomplete False
+                    , spellcheck False
+                    , attribute "role" "combobox"
                     ]
-                    menu
-                )
-            ]
+                    []
+                ]
+                menu
+            )
+        ]
 
 
 overlay : Model a -> Html Msg
@@ -247,14 +251,12 @@ overlay model =
         [ class "autocomplete-overlay"
         , onClick OverlayClicked
         , hidden (not model.showMenu)
-        , style
-            [ ( "backgroundColor", "rgba(0,0,0,0)" )
-            , ( "position", "fixed" )
-            , ( "width", "100%" )
-            , ( "height", "100%" )
-            , ( "top", "0" )
-            , ( "left", "0" )
-            ]
+        , style "backgroundColor" "rgba(0,0,0,0)"
+        , style "position" "fixed"
+        , style "width" "100%"
+        , style "height" "100%"
+        , style "top" "0"
+        , style "left" "0"
         ]
         []
 
@@ -270,12 +272,12 @@ matches query options =
         lowerQuery =
             String.toLower query
     in
-        List.filter (String.contains lowerQuery << String.toLower << .label) options
+    List.filter (String.contains lowerQuery << String.toLower << .label) options
 
 
 parseId : String -> Maybe Int
 parseId =
-    String.toInt >> Result.toMaybe
+    String.toInt
 
 
 escape model =
@@ -288,46 +290,51 @@ escape model =
                 model
                     |> removeSelection
                     |> close
+
             else
                 { model | query = "" }
                     |> removeSelection
                     |> close
     in
-        case model.selection of
-            Just option ->
-                if model.query == option.label then
-                    resetInput model
-                else
-                    clearModel
+    case model.selection of
+        Just option ->
+            if model.query == option.label then
+                resetInput model
 
-            Nothing ->
+            else
                 clearModel
+
+        Nothing ->
+            clearModel
 
 
 viewMenu : String -> OptionView a -> Model a -> Html Msg
 viewMenu cssClass optionView model =
     let
-        matches = (currentMatches model)
+        modelMatches =
+            currentMatches model
     in
-        div [ class ("autocomplete-menu " ++ cssClass ++ " child-count-" ++ (toString <| List.length matches)) ]
-            [ Html.map SetAutoState (Autocomplete.view (viewConfig optionView) model.howManyToShow model.autoState matches) ]
+    div [ class ("autocomplete-menu " ++ cssClass ++ " child-count-" ++ (String.fromInt <| List.length modelMatches)) ]
+        [ Html.map SetAutoState (Menu.view (viewConfig optionView) model.howManyToShow model.autoState modelMatches) ]
 
 
-updateConfig : Autocomplete.UpdateConfig Msg (Option a)
+updateConfig : Menu.UpdateConfig Msg (Option a)
 updateConfig =
-    Autocomplete.updateConfig
+    Menu.updateConfig
         { toId =
-            .id >> toString
+            .id >> String.fromInt
         , onKeyDown =
             \code maybeId ->
                 if code == 38 || code == 40 then
                     maybeId
-                        &> parseId
+                        |> Maybe.andThen parseId
                         |> Maybe.map Preview
+
                 else if code == 13 then
                     maybeId
-                        &> parseId
+                        |> Maybe.andThen parseId
                         |> Maybe.map SelectKeyboard
+
                 else
                     Just <| Reset
         , onTooLow =
@@ -344,19 +351,19 @@ updateConfig =
         }
 
 
-viewConfig : OptionView a -> Autocomplete.ViewConfig (Option a)
+viewConfig : OptionView a -> Menu.ViewConfig (Option a)
 viewConfig optionView =
     let
         customizedLi keySelected mouseSelected option =
             { attributes =
                 [ classList [ ( "autocomplete-item", True ), ( "key-selected", keySelected || mouseSelected ) ]
-                , id (toString option.id)
+                , id (String.fromInt option.id)
                 ]
             , children = optionView option.item
             }
     in
-        Autocomplete.viewConfig
-            { toId = .id >> toString
-            , ul = [ class "autocomplete-list" ]
-            , li = customizedLi
-            }
+    Menu.viewConfig
+        { toId = .id >> String.fromInt
+        , ul = [ class "autocomplete-list" ]
+        , li = customizedLi
+        }

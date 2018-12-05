@@ -1,22 +1,23 @@
-module Decoders exposing (..)
+module Decoders exposing (categories, categoriesByGroup, categoriesByGroupItem, category, date, facility, facilitySummary, latLng, location, locations, search, suggestions)
 
 import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded, nullable)
+import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Models exposing (..)
+import Time
 import Utils exposing (..)
 
 
 search : Decoder SearchResult
 search =
-    object3 (\items nextUrl total -> { items = items, nextUrl = nextUrl, total = total })
-        ("items" := list facilitySummary)
-        (maybe ("next_url" := string))
-        ("total" := int)
+    map3 (\items nextUrl total -> { items = items, nextUrl = nextUrl, total = total })
+        (field "items" (list facilitySummary))
+        (maybe (field "next_url" string))
+        (field "total" int)
 
 
 suggestions : Decoder (List Suggestion)
 suggestions =
-    decode (\f s l -> f ++ s ++ l)
+    succeed (\f s l -> f ++ s ++ l)
         |> required "facilities" (list (map F facilitySummary))
         |> required "categories" (list (map C category))
         |> required "locations" (list (map L location))
@@ -24,7 +25,7 @@ suggestions =
 
 facility : Decoder Facility
 facility =
-    decode Facility
+    succeed Facility
         |> required "id" int
         |> required "source_id" string
         |> required "name" string
@@ -43,19 +44,22 @@ facility =
         |> required "photo" (nullable string)
         |> required "last_updated" (nullable date)
 
+
 categoriesByGroup : Decoder CategoriesByGroup
 categoriesByGroup =
     list categoriesByGroupItem
 
+
 categoriesByGroupItem : Decoder CategoriesByGroupItem
 categoriesByGroupItem =
-    decode CategoriesByGroupItem
+    succeed CategoriesByGroupItem
         |> required "name" string
         |> required "categories" (list string)
 
+
 facilitySummary : Decoder FacilitySummary
 facilitySummary =
-    decode FacilitySummary
+    succeed FacilitySummary
         |> required "id" int
         |> required "name" string
         |> required "position" latLng
@@ -66,7 +70,7 @@ facilitySummary =
 
 category : Decoder Category
 category =
-    decode Category
+    succeed Category
         |> required "id" int
         |> required "name" string
         |> required "facility_count" int
@@ -79,7 +83,7 @@ categories =
 
 location : Decoder Location
 location =
-    decode Location
+    succeed Location
         |> required "id" int
         |> required "name" string
         |> optional "parent_name" (nullable string) Nothing
@@ -92,11 +96,11 @@ locations =
 
 latLng : Decoder LatLng
 latLng =
-    decode (,)
+    succeed Tuple.pair
         |> required "lat" float
         |> required "lng" float
 
 
-date : Decoder Date
+date : Decoder Time.Posix
 date =
     Json.Decode.map dateFromEpochSeconds float
