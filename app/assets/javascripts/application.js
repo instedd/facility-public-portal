@@ -16,6 +16,7 @@
 //= require leaflet.markercluster
 //= require i18n
 //= require i18n/translations
+//= require csrf-xhr
 //= require cable
 //= require content
 //= require map
