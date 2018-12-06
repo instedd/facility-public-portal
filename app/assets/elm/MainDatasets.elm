@@ -9,7 +9,8 @@ import Json.Encode
 
 
 type alias Model =
-    Dataset
+    { dataset : Dataset
+    }
 
 
 type Msg
@@ -31,7 +32,7 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    Dict.empty ! []
+    { dataset = Dict.empty } ! []
 
 
 view : Model -> Html Msg
@@ -43,13 +44,13 @@ view model =
             , text "You could also import ONA files."
             , text "You'll be able to review before new data is deployed."
             ]
-        , datasetView model
+        , datasetView model.dataset
         ]
 
 
-datasetView : Model -> Html msg
-datasetView model =
-    model
+datasetView : Dataset -> Html msg
+datasetView dataset =
+    dataset
         |> Dict.toList
         |> List.map fileView
         |> div []
@@ -66,7 +67,7 @@ update msg model =
         DatasetUpdated result ->
             case result of
                 Ok dataset ->
-                    dataset ! []
+                    { model | dataset = dataset } ! []
 
                 _ ->
                     model ! []
