@@ -45,7 +45,7 @@ main =
         , update = mainUpdate
         , subscriptions = subscriptions
         , onUrlRequest = ClickedLink
-        , onUrlChange = Routing.parser
+        , onUrlChange = ChangedUrl
         }
 
 
@@ -81,7 +81,8 @@ type MainMsg
     | ToggleMenu
     | ToggleExpand
     | DismissNotice
-    | ClickedLink
+    | ClickedLink Browser.UrlRequest
+    | ChangedUrl Url
 
 
 type FacilityDetailsContext

@@ -14,11 +14,6 @@ import Url.Parser exposing (..)
 import Utils exposing (..)
 
 
-parser : Navigation.Parser (Result String Route)
-parser =
-    Navigation.makeParser locationParser
-
-
 navigate : Route -> Cmd msg
 navigate route =
     Navigation.newUrl <| routeToPath route

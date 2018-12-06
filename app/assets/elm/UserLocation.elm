@@ -1,23 +1,22 @@
-module UserLocation
-    exposing
-        ( Model
-        , Msg
-        , init
-        , update
-        , view
-        , toMaybe
-        )
+module UserLocation exposing
+    ( Model
+    , Msg
+    , init
+    , toMaybe
+    , update
+    , view
+    )
 
-import Models exposing (LatLng, Settings)
-import PortFunnel.Geolocation
-import Map
-import Process
-import Time
-import Task
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events
+import Map
+import Models exposing (LatLng, Settings)
+import PortFunnel.Geolocation
+import Process
 import Shared exposing (icon, onClick)
+import Task
+import Time
 
 
 type Model
@@ -29,7 +28,7 @@ type Model
 type Msg
     = Geolocate
     | LocationDetected LatLng
-    | LocationFailed Geolocation.Error
+    | LocationFailed PortFunnel.Geolocation.Error
     | GotoLocation
 
 
@@ -48,33 +47,42 @@ update s msg model =
                         |> Maybe.map fakeGeolocateUser
                         |> Maybe.withDefault geolocateUser
             in
-                ( Detecting, cmd )
+            ( Detecting, cmd )
 
         LocationDetected pos ->
             -- TODO remove old user marker in case he/she moved (?)
-            Detected pos
-                ! [ Map.addUserMarker pos ]
+            ( Detected pos, Map.addUserMarker pos )
 
         LocationFailed e ->
             -- TODO
-            NoLocation ! []
+            ( NoLocation, Cmd.none )
 
         GotoLocation ->
-            model ! [ Map.fitContent ]
+            ( model, Map.fitContent )
 
 
 fakeGeolocateUser : LatLng -> Cmd Msg
 fakeGeolocateUser pos =
-    Process.sleep (1.5 * Time.second)
+    Process.sleep 1500
         |> Task.map (always pos)
-        |> Task.perform LocationFailed LocationDetected
+        |> Task.perform LocationDetected
 
 
 geolocateUser : Cmd Msg
 geolocateUser =
-    Geolocation.now
+    let
+        handler =
+            \result ->
+                case result of
+                    Ok latlng ->
+                        LocationDetected latlng
+
+                    Err err ->
+                        LocationFailed err
+    in
+    PortFunnel.Geolocation.now
         |> Task.map (\location -> ( location.latitude, location.longitude ))
-        |> Task.perform LocationFailed LocationDetected
+        |> Task.perform handler
 
 
 view : Model -> Html Msg

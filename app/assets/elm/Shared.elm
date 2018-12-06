@@ -1,4 +1,4 @@
-module Shared exposing (..)
+module Shared exposing (LHtml, classNames, icon, lmap, modalWindow, onClick, onSelect, targetSelectedIndex)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -16,8 +16,8 @@ type alias LHtml a =
 classNames : List ( String, Bool ) -> List String
 classNames list =
     list
-        |> List.filter snd
-        |> List.map fst
+        |> List.filter Tuple.second
+        |> List.map Tuple.first
 
 
 lmap : (a -> b) -> LHtml a -> LHtml b
@@ -33,11 +33,12 @@ icon name =
 onClick : msg -> Attribute msg
 onClick message =
     Events.custom "click"
-        {
-            message = (Json.Decode.succeed message)
+        (Json.Decode.succeed
+            { message = message
             , preventDefault = True
             , stopPropagation = True
-        }
+            }
+        )
 
 
 modalWindow : LHtml a -> LHtml a -> LHtml a -> LHtml a

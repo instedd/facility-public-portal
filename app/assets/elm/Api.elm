@@ -1,20 +1,20 @@
-module Api
-    exposing
-        ( SuggestionsMsg(..)
-        , getSuggestions
-        , FetchFacilityMsg(..)
-        , fetchFacility
-        , CategoriesMsg(..)
-        , getCategories
-        , LocationsMsg(..)
-        , getLocations
-        , SearchMsg(..)
-        , search
-        , searchMore
-        )
+module Api exposing
+    ( CategoriesMsg(..)
+    , FetchFacilityMsg(..)
+    , LocationsMsg(..)
+    , SearchMsg(..)
+    , SuggestionsMsg(..)
+    , fetchFacility
+    , getCategories
+    , getLocations
+    , getSuggestions
+    , search
+    , searchMore
+    )
 
 import Decoders exposing (..)
 import Http
+import Json.Decode exposing (Decoder)
 import Maybe exposing (andThen)
 import Models exposing (..)
 import Task
@@ -26,13 +26,35 @@ type SuggestionsMsg
     | SuggestionsFailed Http.Error
 
 
+resultHandler : (a -> msg) -> (Http.Error -> msg) -> Result Http.Error a -> msg
+resultHandler successHandler errorHandler result =
+    case result of
+        Ok data ->
+            successHandler data
+
+        Err error ->
+            errorHandler error
+
+
+getJson : String -> Decoder a -> (a -> msg) -> (Http.Error -> msg) -> Cmd msg
+getJson url decoder successHandler errorHandler =
+    let
+        handler =
+            resultHandler successHandler errorHandler
+    in
+    Http.get
+        { url = url
+        , expect = Http.expectJson handler decoder
+        }
+
+
 getSuggestions : (SuggestionsMsg -> msg) -> Maybe LatLng -> String -> Cmd msg
 getSuggestions wmsg latLng query =
-    let
-        url =
-            suggestionsPath "/api/suggest" latLng query
-    in
-        Task.perform (wmsg << SuggestionsFailed) (wmsg << SuggestionsSuccess query) (Http.get Decoders.suggestions url)
+    getJson
+        (suggestionsPath "/api/suggest" latLng query)
+        Decoders.suggestions
+        (wmsg << SuggestionsSuccess query)
+        (wmsg << SuggestionsFailed)
 
 
 type FetchFacilityMsg
@@ -42,11 +64,11 @@ type FetchFacilityMsg
 
 fetchFacility : (FetchFacilityMsg -> msg) -> Int -> Cmd msg
 fetchFacility wmsg id =
-    let
-        url =
-            "/api/facilities/" ++ (String.fromInt id)
-    in
-        Task.perform (wmsg << FetchFacilityFailed) (wmsg << FetchFacilitySuccess) (Http.get Decoders.facility url)
+    getJson
+        ("/api/facilities/" ++ String.fromInt id)
+        Decoders.facility
+        (wmsg << FetchFacilitySuccess)
+        (wmsg << FetchFacilityFailed)
 
 
 type LocationsMsg
@@ -56,7 +78,7 @@ type LocationsMsg
 
 getLocations : (Http.Error -> msg) -> (List Location -> msg) -> Cmd msg
 getLocations error ok =
-    Task.perform error ok (Http.get Decoders.locations "/api/locations")
+    getJson "/api/locations" Decoders.locations ok error
 
 
 type CategoriesMsg
@@ -66,7 +88,7 @@ type CategoriesMsg
 
 getCategories : (Http.Error -> msg) -> (List Category -> msg) -> Cmd msg
 getCategories error ok =
-    Task.perform error ok (Http.get Decoders.categories "/api/categories")
+    getJson "/api/categories" Decoders.categories ok error
 
 
 type SearchMsg
@@ -76,11 +98,11 @@ type SearchMsg
 
 search : (SearchMsg -> msg) -> SearchSpec -> Cmd msg
 search wmsg params =
-    let
-        url =
-            Utils.buildPath "/api/search" (searchParams params)
-    in
-        Task.perform (wmsg << SearchFailed) (wmsg << SearchSuccess) (Http.get Decoders.search url)
+    getJson
+        (Utils.buildPath "/api/search" (searchParams params))
+        Decoders.search
+        (wmsg << SearchSuccess)
+        (wmsg << SearchFailed)
 
 
 searchMore : (SearchMsg -> msg) -> SearchResult -> Cmd msg
@@ -90,12 +112,12 @@ searchMore wmsg result =
             Cmd.none
 
         Just nextUrl ->
-            Task.perform (wmsg << SearchFailed) (wmsg << SearchSuccess) (Http.get Decoders.search nextUrl)
+            getJson nextUrl Decoders.search (wmsg << SearchSuccess) (wmsg << SearchFailed)
 
 
 byQuery : Maybe LatLng -> Maybe String -> SearchSpec
 byQuery latLng q =
-    { emptySearch | latLng = latLng, q = (Maybe.andThen discardEmpty q) }
+    { emptySearch | latLng = latLng, q = Maybe.andThen discardEmpty q }
 
 
 suggestionsPath : String -> Maybe LatLng -> String -> String
@@ -109,5 +131,6 @@ discardEmpty : String -> Maybe String
 discardEmpty q =
     if q == "" then
         Nothing
+
     else
         Just q

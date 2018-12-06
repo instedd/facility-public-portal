@@ -1,4 +1,4 @@
-port module Map exposing (Msg(..), mapViewportChanged, subscriptions, initializeMap, addUserMarker, clearFacilityMarkers, addFacilityMarkers, resetFacilityMarkers, fitContent, facilityMarkerClicked, setHighlightedFacilityMarker, removeHighlightedFacilityMarker, fitContentUsingPadding)
+port module Map exposing (Msg(..), addFacilityMarkers, addUserMarker, clearFacilityMarkers, facilityMarkerClicked, fitContent, fitContentUsingPadding, initializeMap, mapViewportChanged, removeHighlightedFacilityMarker, resetFacilityMarkers, setHighlightedFacilityMarker, subscriptions)
 
 import Json.Encode exposing (..)
 import Models exposing (..)
@@ -57,7 +57,7 @@ clearFacilityMarkers =
 
 addFacilityMarkers : List FacilitySummary -> Cmd msg
 addFacilityMarkers facilities =
-    jsCommand ( "addFacilityMarkers", list (List.map encodeFacilitySummary facilities) )
+    jsCommand ( "addFacilityMarkers", list encodeFacilitySummary facilities )
 
 
 resetFacilityMarkers : List FacilitySummary -> Bool -> Cmd msg
@@ -65,7 +65,7 @@ resetFacilityMarkers facilities fitCont =
     jsCommand
         ( "resetFacilityMarkers"
         , object
-            [ ( "facilities", list <| List.map encodeFacilitySummary facilities )
+            [ ( "facilities", list encodeFacilitySummary facilities )
             , ( "fitContent", bool fitCont )
             ]
         )

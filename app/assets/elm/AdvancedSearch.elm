@@ -1,17 +1,16 @@
-module AdvancedSearch
-    exposing
-        ( Model
-        , Msg(..)
-        , init
-        , update
-        , subscriptions
-        , embeddedView
-        , modalView
-        , isEmpty
-        , search
-        , sorting
-        , updateSorting
-        )
+module AdvancedSearch exposing
+    ( Model
+    , Msg(..)
+    , embeddedView
+    , init
+    , isEmpty
+    , modalView
+    , search
+    , sorting
+    , subscriptions
+    , update
+    , updateSorting
+    )
 
 import Api
 import Html exposing (..)
@@ -20,7 +19,7 @@ import Html.Events exposing (onInput)
 import Http
 import I18n exposing (..)
 import Json.Decode as Json
-import Models exposing (SearchSpec, Category, CategoryGroup, FacilityType, Ownership, Location, Sorting(..), emptySearch)
+import Models exposing (Category, CategoryGroup, FacilityType, Location, Ownership, SearchSpec, Sorting(..), emptySearch)
 import Return exposing (Return)
 import Selector
 import Shared exposing (onClick)
@@ -91,12 +90,12 @@ initCategories categories selection =
 
 fetchLocations : Maybe Int -> Cmd Msg
 fetchLocations selection =
-    Api.getLocations (Private << FetchFailed) (Private << (LocationsFetched selection))
+    Api.getLocations (Private << FetchFailed) (Private << LocationsFetched selection)
 
 
 fetchCategories : Maybe Int -> Cmd Msg
 fetchCategories selection =
-    Api.getCategories (Private << FetchFailed) (Private << (CategoriesFetched selection))
+    Api.getCategories (Private << FetchFailed) (Private << CategoriesFetched selection)
 
 
 update : Model -> Msg -> Return Msg Model
@@ -156,8 +155,8 @@ updateSorting sort model =
         updatedModel =
             { model | sort = Just sort }
     in
-        Return.singleton updatedModel
-            |> Utils.perform (Perform <| search updatedModel)
+    Return.singleton updatedModel
+        |> Utils.perform (Perform <| search updatedModel)
 
 
 subscriptions : Sub Msg
@@ -210,27 +209,27 @@ fields model =
         viewCategory category =
             [ Html.text category.name ]
     in
-        [ field
-            [ label [ for "q" ] [ text <| t I18n.FacilityName ]
-            , input [ id "q", type' "text", value query, onInput (Private << SetName) ] []
-            ]
-        , field
-            [ label [ for "t" ] [ text <| t I18n.FacilityType ]
-            , select "t" (Private << SetType) model.facilityTypes model.fType
-            ]
-        , field
-            [ label [ for "o" ] [ text <| t I18n.Ownership ]
-            , select "o" (Private << SetOwnership) model.ownerships model.ownership
-            ]
-        , field
-            [ label [ for locationInputId ] [ text <| t I18n.Location ]
-            , Html.program.map (Private << LocationSelectorMsg) (Selector.view "" viewLocation model.locationSelector)
-            ]
-        , field
-            [ label [ for categoryInputId ] [ text <| (String.join ", " (List.map (\g -> g.name) model.categoryGroups)) ]
-            , Html.program.map (Private << CategorySelectorMsg) (Selector.view "pull-up" viewCategory model.categorySelector)
-            ]
+    [ field
+        [ label [ for "q" ] [ text <| t I18n.FacilityName ]
+        , input [ id "q", type_ "text", value query, onInput (Private << SetName) ] []
         ]
+    , field
+        [ label [ for "t" ] [ text <| t I18n.FacilityType ]
+        , select "t" (Private << SetType) model.facilityTypes model.fType
+        ]
+    , field
+        [ label [ for "o" ] [ text <| t I18n.Ownership ]
+        , select "o" (Private << SetOwnership) model.ownerships model.ownership
+        ]
+    , field
+        [ label [ for locationInputId ] [ text <| t I18n.Location ]
+        , Html.program.map (Private << LocationSelectorMsg) (Selector.view "" viewLocation model.locationSelector)
+        ]
+    , field
+        [ label [ for categoryInputId ] [ text <| String.join ", " (List.map (\g -> g.name) model.categoryGroups) ]
+        , Html.program.map (Private << CategorySelectorMsg) (Selector.view "pull-up" viewCategory model.categorySelector)
+        ]
+    ]
 
 
 submit : Model -> Html Msg
@@ -239,7 +238,7 @@ submit model =
         [ class "btn-flat"
         , hideSelectorsOnFocus
         , onClick (Perform (search model))
-        , type' "submit"
+        , type_ "submit"
         ]
         [ text <| t Search ]
 
@@ -253,6 +252,7 @@ select domId tagger options choice =
         toMaybe id =
             if id == 0 then
                 Nothing
+
             else
                 Just id
 
@@ -264,9 +264,9 @@ select domId tagger options choice =
                 [ value (toString option.id), selected (option.id == selectedId) ]
                 [ text option.name ]
     in
-        Html.select [ Shared.onSelect (toMaybe >> tagger) ] <|
-            clearOption
-                :: (List.map selectOption options)
+    Html.select [ Shared.onSelect (toMaybe >> tagger) ] <|
+        clearOption
+            :: List.map selectOption options
 
 
 field : List (Html Msg) -> Html Msg
