@@ -7,6 +7,7 @@ class DatasetsController < ApplicationController
 
   def import
     stdin, stdout, stderr, wait_thr = Open3.popen3("#{Rails.root}/bin/import-dataset", "#{Rails.root}/data/input")
+    pid = SecureRandom.uuid
     Thread.new do
       loop do
         ready = IO.select([stdout, stderr]).first
@@ -14,13 +15,13 @@ class DatasetsController < ApplicationController
           data = io.read_nonblock(1024, exception: false)
           next if data == :wait_readable
           break :eof unless data
-          DatasetsChannel.import_log(wait_thr.pid, data)
+          DatasetsChannel.import_log(pid, data)
         end
         break if r == :eof
       end
       [stdin, stdout, stderr].each &:close
-      DatasetsChannel.import_complete(wait_thr.pid, wait_thr.value.exitstatus)
+      DatasetsChannel.import_complete(pid, wait_thr.value.exitstatus)
     end
-    render json: { process_id: wait_thr.pid.to_s }
+    render json: { process_id: pid }
   end
 end
