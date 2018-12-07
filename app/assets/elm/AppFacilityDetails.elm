@@ -1,4 +1,4 @@
-module AppFacilityDetails exposing (Model, Msg(..), PrivateMsg, init, view, update, subscriptions, mapViewport, userLocation)
+module AppFacilityDetails exposing (Model, Msg(..), PrivateMsg, init, mapViewport, subscriptions, update, userLocation, view)
 
 import Api
 import Date exposing (Date)
@@ -12,9 +12,10 @@ import Json.Decode as Decode
 import Json.Encode exposing (..)
 import Layout exposing (MapView)
 import Map
-import Models exposing (Settings, MapViewport, Facility)
+import Models exposing (Facility, MapViewport, Settings)
 import Return exposing (..)
 import Shared exposing (classNames)
+import Spinner exposing (spinner)
 import String
 import Task
 import Time
@@ -87,12 +88,12 @@ update s msg model =
                     ( setDate date model, Cmd.none )
 
                 ApiFetch (Api.FetchFacilitySuccess facility) ->
-                    (Loaded (mapViewport model) facility (date model) (userLocation model) False Nothing)
+                    Loaded (mapViewport model) facility (date model) (userLocation model) False Nothing
                         ! [ let
                                 fitContent =
                                     not (Models.contains (mapViewport model) facility.position)
                             in
-                                Map.setHighlightedFacilityMarker facility fitContent
+                            Map.setHighlightedFacilityMarker facility fitContent
                           ]
 
                 ApiFetch (Api.FetchFacilityFailed e) ->
@@ -112,8 +113,9 @@ update s msg model =
                             ( Loaded a b c d (not e) f, Cmd.none )
 
                 ToggleFacilityReport ->
-                    if (isReportWindowOpen model) then
+                    if isReportWindowOpen model then
                         ( closeReportWindow model, Cmd.none )
+
                     else
                         ( openReportWindow model, Cmd.none )
 
@@ -135,6 +137,7 @@ update s msg model =
                                     if reportIsCompleted report then
                                         Return.singleton (closeReportWindow model)
                                             |> Return.command (sendReport facility report)
+
                                     else
                                         Return.singleton model
 
@@ -143,16 +146,16 @@ update s msg model =
                                         updatedReport =
                                             toggleCheckbox issue report
                                     in
-                                        Return.singleton
-                                            (Loaded mapViewport facility date userLocation b (Just updatedReport))
+                                    Return.singleton
+                                        (Loaded mapViewport facility date userLocation b (Just updatedReport))
 
                                 MessageInput text ->
                                     let
                                         updatedReport =
                                             { report | message = text |> String.trim |> Utils.discardEmpty }
                                     in
-                                        Return.singleton
-                                            (Loaded mapViewport facility date userLocation b (Just updatedReport))
+                                    Return.singleton
+                                        (Loaded mapViewport facility date userLocation b (Just updatedReport))
 
                                 ReportResult result ->
                                     Utils.unreachable ()
@@ -180,48 +183,34 @@ view settings model =
         hideOnMobileDetailsFocused =
             ( "hide-on-med-and-down", not (mobileFocusMap model) )
     in
-        { headerClasses = classNames [ hideOnMobileDetailsFocused ]
-        , content =
-            [ case model of
-                Loading _ _ _ _ ->
-                    spinner
+    { headerClasses = classNames [ hideOnMobileDetailsFocused ]
+    , content =
+        [ case model of
+            Loading _ _ _ _ ->
+                spinner []
 
-                Loaded _ facility date userLocation _ _ ->
-                    facilityDetail settings [ hideOnMobileMapFocused ] date userLocation facility
-            ]
-        , expandedContent = Nothing
-        , toolbar =
-            [ userLocationView model ]
-        , bottom =
-            [ div
-                [ classList [ hideOnMobileDetailsFocused ] ]
-                [ mobileFocusToggleView ]
-            ]
-        , modal =
-            case model of
-                Loading _ _ _ _ ->
-                    []
-
-                Loaded _ _ _ _ _ Nothing ->
-                    []
-
-                Loaded _ _ _ _ _ (Just report) ->
-                    reportWindow report
-        }
-
-
-spinner =
-    div
-        [ class "preloader-wrapper small active" ]
-        [ div [ class "spinner-layer spinner-blue-only" ]
-            [ div [ class "circle-clipper left" ]
-                [ div [ class "circle" ] [] ]
-            , div [ class "gap-patch" ]
-                [ div [ class "circle" ] [] ]
-            , div [ class "circle-clipper right" ]
-                [ div [ class "circle" ] [] ]
-            ]
+            Loaded _ facility date userLocation _ _ ->
+                facilityDetail settings [ hideOnMobileMapFocused ] date userLocation facility
         ]
+    , expandedContent = Nothing
+    , toolbar =
+        [ userLocationView model ]
+    , bottom =
+        [ div
+            [ classList [ hideOnMobileDetailsFocused ] ]
+            [ mobileFocusToggleView ]
+        ]
+    , modal =
+        case model of
+            Loading _ _ _ _ ->
+                []
+
+            Loaded _ _ _ _ _ Nothing ->
+                []
+
+            Loaded _ _ _ _ _ (Just report) ->
+                reportWindow report
+    }
 
 
 mobileFocusToggleView =
@@ -239,38 +228,38 @@ reportWindow report =
         completed =
             reportIsCompleted report
     in
-        Shared.modalWindow
-            [ text <| t ReportAnIssue
-            , a [ href "#", class "right", Shared.onClick (Private ToggleFacilityReport) ] [ Shared.icon "close" ]
-            ]
-            [ Html.form [ action "#", method "GET" ]
-                [ issueToggle WrongLocation report.wrong_location
-                , issueToggle Closed report.closed
-                , issueToggle ContactMissing report.contact_info_missing
-                , issueToggle InnacurateServices report.inaccurate_services
-                , issueToggle Other report.other
-                , div
-                    [ class "input-field col s12", style [ ( "margin-top", "40px" ) ] ]
-                    [ Html.textarea
-                        [ class "materialize-textarea"
-                        , placeholder <| t DetailedDescription
-                        , style [ ( "height", "6rem" ) ]
-                        , Events.onInput (Private << Report << MessageInput)
-                        ]
-                        []
+    Shared.modalWindow
+        [ text <| t ReportAnIssue
+        , a [ href "#", class "right", Shared.onClick (Private ToggleFacilityReport) ] [ Shared.icon "close" ]
+        ]
+        [ Html.form [ action "#", method "GET" ]
+            [ issueToggle WrongLocation report.wrong_location
+            , issueToggle Closed report.closed
+            , issueToggle ContactMissing report.contact_info_missing
+            , issueToggle InnacurateServices report.inaccurate_services
+            , issueToggle Other report.other
+            , div
+                [ class "input-field col s12", style [ ( "margin-top", "40px" ) ] ]
+                [ Html.textarea
+                    [ class "materialize-textarea"
+                    , placeholder <| t DetailedDescription
+                    , style [ ( "height", "6rem" ) ]
+                    , Events.onInput (Private << Report << MessageInput)
                     ]
+                    []
                 ]
             ]
-            [ div
-                [ classList [ ( "warning", True ), ( "hide", completed ) ] ]
-                [ text <| t SelectIssueToReport ]
-            , a
-                [ href "#"
-                , classList [ ( "btn-flat", True ), ( "disabled", not completed ) ]
-                , Shared.onClick (Private (Report Send))
-                ]
-                [ text <| t SendReport ]
+        ]
+        [ div
+            [ classList [ ( "warning", True ), ( "hide", completed ) ] ]
+            [ text <| t SelectIssueToReport ]
+        , a
+            [ href "#"
+            , classList [ ( "btn-flat", True ), ( "disabled", not completed ) ]
+            , Shared.onClick (Private (Report Send))
             ]
+            [ text <| t SendReport ]
+        ]
 
 
 issueToggle : FacilityIssue -> Bool -> Html Msg
@@ -300,10 +289,10 @@ issueToggle issue v =
                     Other ->
                         I18n.Other
     in
-        div [ class "input-field col s12" ]
-            [ input [ type' "checkbox", id htmlId, checked v, Shared.onClick msg ] []
-            , Html.label [ for htmlId ] [ text i18nLabel ]
-            ]
+    div [ class "input-field col s12" ]
+        [ input [ type' "checkbox", id htmlId, checked v, Shared.onClick msg ] []
+        , Html.label [ for htmlId ] [ text i18nLabel ]
+        ]
 
 
 subscriptions : Model -> Sub Msg
@@ -474,13 +463,12 @@ encodeReport report =
         , ( "inaccurate_services", bool report.inaccurate_services )
         , ( "other", bool report.other )
         , ( "message"
-          , (case report.message of
+          , case report.message of
                 Nothing ->
                     null
 
                 Just text ->
                     string text
-            )
           )
         ]
 
@@ -500,7 +488,7 @@ sendReport facility report =
                 |> Http.string
                 |> Http.post (Decode.succeed ()) url
     in
-        Task.perform (always (resultTag ReportFailed)) (always (resultTag ReportSuccess)) request
+    Task.perform (always (resultTag ReportFailed)) (always (resultTag ReportSuccess)) request
 
 
 currentDate : Cmd Msg
@@ -509,7 +497,7 @@ currentDate =
         notFailing x =
             notFailing x
     in
-        Task.perform notFailing (Utils.dateFromEpochMillis >> CurrentDate >> Private) Time.now
+    Task.perform notFailing (Utils.dateFromEpochMillis >> CurrentDate >> Private) Time.now
 
 
 facilityDetail : Settings -> List ( String, Bool ) -> Maybe Date -> UserLocation.Model -> Facility -> Html Msg
@@ -529,53 +517,66 @@ facilityDetail settings cssClasses now userLocation facility =
             [ viewOnMapEntry
             , contactEntry "local_post_office" "mailto:" facility.contactEmail
             , contactEntry "local_phone" "tel:" facility.contactPhone
-              -- , contactEntry "public" ... facility.url
+
+            -- , contactEntry "public" ... facility.url
             , directionsEntry userLocation facility
             , infoEntry "schedule" Nothing (Maybe.withDefault "Unavailable" facility.openingHours)
             ]
     in
-        div [ classList <| ( "facilityDetail", True ) :: cssClasses ]
-            [ div [ class "title" ]
-                [ span [ class "name" ]
-                    [ text facility.name
-                    , span [ class "sub" ] [ text facility.facilityType ]
-                    ]
-                , i
-                    [ class "material-icons right", Events.onClick Close ]
-                    [ text "clear" ]
+    div [ classList <| ( "facilityDetail", True ) :: cssClasses ]
+        [ div [ class "title" ]
+            [ span [ class "name" ]
+                [ text facility.name
+                , span [ class "sub" ] [ text facility.facilityType ]
                 ]
-            , div [ class "content expand" ]
-                [ div [ class ("detailSection pic" ++ (if settings.facilityPhotos then ""  else " pic-hide")) ]
-                    [ if String.isEmpty (Maybe.withDefault "" facility.photo) then
-                        div [ class "no-photo" ] [ Shared.icon "photo", text "No photo" ]
-                      else
-                        div [ class "photo" ] [ img [ src (Maybe.withDefault "" facility.photo) ] [] ]
-                    ]
-                , div [ class "detailSection actions" ] [ facilityActions ]
-                , div [ class "detailSection contact" ] [ ul [] informationLinks ]
-                , div [ class "detailSection info" ]
-                    [ ul []
-                        [ li [] [ text facility.ownership ]
-                        , li [] [ text (String.join ", " (List.reverse facility.adm)) ]
-                        ]
-                    ]
-                , div [ class "detailSection categories" ]
-                    (List.concat
-                        (List.map
-                            (\cg ->
-                                [ span [] [ text <| cg.name ]
-                                , if List.isEmpty cg.categories then
-                                    div [ class "noData" ] [ text "There is currently no information for this facility." ]
-                                  else
-                                    ul [] (List.map (\s -> li [] [ text s ]) cg.categories)
-                                ]
-                            )
-                            facility.categoriesByGroup
-                        )
-                    )
-                , div [ class "detailSection extra" ] [ text ("REF ID: " ++ facility.sourceId) ]
-                ]
+            , i
+                [ class "material-icons right", Events.onClick Close ]
+                [ text "clear" ]
             ]
+        , div [ class "content expand" ]
+            [ div
+                [ class
+                    ("detailSection pic"
+                        ++ (if settings.facilityPhotos then
+                                ""
+
+                            else
+                                " pic-hide"
+                           )
+                    )
+                ]
+                [ if String.isEmpty (Maybe.withDefault "" facility.photo) then
+                    div [ class "no-photo" ] [ Shared.icon "photo", text "No photo" ]
+
+                  else
+                    div [ class "photo" ] [ img [ src (Maybe.withDefault "" facility.photo) ] [] ]
+                ]
+            , div [ class "detailSection actions" ] [ facilityActions ]
+            , div [ class "detailSection contact" ] [ ul [] informationLinks ]
+            , div [ class "detailSection info" ]
+                [ ul []
+                    [ li [] [ text facility.ownership ]
+                    , li [] [ text (String.join ", " (List.reverse facility.adm)) ]
+                    ]
+                ]
+            , div [ class "detailSection categories" ]
+                (List.concat
+                    (List.map
+                        (\cg ->
+                            [ span [] [ text <| cg.name ]
+                            , if List.isEmpty cg.categories then
+                                div [ class "noData" ] [ text "There is currently no information for this facility." ]
+
+                              else
+                                ul [] (List.map (\s -> li [] [ text s ]) cg.categories)
+                            ]
+                        )
+                        facility.categoriesByGroup
+                    )
+                )
+            , div [ class "detailSection extra" ] [ text ("REF ID: " ++ facility.sourceId) ]
+            ]
+        ]
 
 
 directionsEntry : UserLocation.Model -> Facility -> Html a
@@ -599,7 +600,7 @@ directionsEntry userLocation facility =
                 , encodedDestination
                 ]
     in
-        infoEntry "location_on" (Just link) (Maybe.withDefault "Get directions" facility.address)
+    infoEntry "location_on" (Just link) (Maybe.withDefault "Get directions" facility.address)
 
 
 contactEntry : String -> String -> Maybe String -> Html a
@@ -608,16 +609,17 @@ contactEntry iconName scheme value =
         uriFriendly =
             if scheme == "tel:" then
                 String.filter (\c -> c /= ' ' && c /= '-')
+
             else
                 identity
 
         uri =
-            Maybe.map (\v -> scheme ++ (uriFriendly v)) value
+            Maybe.map (\v -> scheme ++ uriFriendly v) value
 
         label =
             span [] [ text <| Maybe.withDefault "Unavailable" value ]
     in
-        infoEntry iconName uri (Maybe.withDefault "Unavailable" value)
+    infoEntry iconName uri (Maybe.withDefault "Unavailable" value)
 
 
 infoEntry : String -> Maybe String -> String -> Html a
@@ -626,12 +628,12 @@ infoEntry iconName uri labelText =
         label =
             span [] [ text <| labelText ]
     in
-        case uri of
-            Nothing ->
-                li [] [ Shared.icon iconName, label ]
+    case uri of
+        Nothing ->
+            li [] [ Shared.icon iconName, label ]
 
-            Just uri ->
-                li [] [ a [ href uri, target "_blank" ] [ Shared.icon iconName, label ] ]
+        Just uri ->
+            li [] [ a [ href uri, target "_blank" ] [ Shared.icon iconName, label ] ]
 
 
 viewOnMapEntry : Html Msg

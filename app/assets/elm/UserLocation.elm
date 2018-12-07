@@ -1,23 +1,23 @@
-module UserLocation
-    exposing
-        ( Model
-        , Msg
-        , init
-        , update
-        , view
-        , toMaybe
-        )
+module UserLocation exposing
+    ( Model
+    , Msg
+    , init
+    , toMaybe
+    , update
+    , view
+    )
 
-import Models exposing (LatLng, Settings)
 import Geolocation
-import Map
-import Process
-import Time
-import Task
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events
+import Map
+import Models exposing (LatLng, Settings)
+import Process
 import Shared exposing (icon, onClick)
+import Spinner exposing (spinner)
+import Task
+import Time
 
 
 type Model
@@ -48,7 +48,7 @@ update s msg model =
                         |> Maybe.map fakeGeolocateUser
                         |> Maybe.withDefault geolocateUser
             in
-                ( Detecting, cmd )
+            ( Detecting, cmd )
 
         LocationDetected pos ->
             -- TODO remove old user marker in case he/she moved (?)
@@ -82,15 +82,7 @@ view model =
     div [ class "location" ]
         [ case model of
             Detecting ->
-                div [ id "location-spinner", class "preloader-wrapper small active" ]
-                    [ div [ class "spinner-layer spinner-blue-only" ]
-                        [ div [ class "circle-clipper left" ]
-                            [ div [ class "circle" ] [] ]
-                        , div [ class "gap-patch" ] []
-                        , div [ class "circle-clipper-right" ]
-                            [ div [ class "circle" ] [] ]
-                        ]
-                    ]
+                spinner [ id "location-spinner" ]
 
             NoLocation ->
                 a [ href "#", onClick Geolocate ]
