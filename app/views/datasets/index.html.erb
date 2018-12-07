@@ -1,3 +1,24 @@
 <% content_for :content do %>
-  <div id='elm-datasets' />
+  <style>
+    #drop-area {
+      border: 2px dashed #ccc;
+      border-radius: 20px;
+      font-family: sans-serif;
+      margin: 100px auto;
+      padding: 20px;
+    }
+    #drop-area.highlight {
+      border-color: purple;
+    }
+    #fileElem {
+      display: none;
+    }
+  </style>
+
+  <div id='drop-area'>
+    <form class='my-form'>
+      <input type="file" id="fileElem" accept="text/csv">
+    </form>
+    <div id='elm-datasets' />
+  </div>
 <% end %>
