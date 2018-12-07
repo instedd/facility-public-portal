@@ -187,7 +187,7 @@ view settings model =
     , content =
         [ case model of
             Loading _ _ _ _ ->
-                spinner []
+                spinner [] Spinner.Blue
 
             Loaded _ facility date userLocation _ _ ->
                 facilityDetail settings [ hideOnMobileMapFocused ] date userLocation facility

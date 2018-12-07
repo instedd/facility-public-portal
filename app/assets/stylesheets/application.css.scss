@@ -461,3 +461,19 @@ input[type="checkbox"]:checked + label:before {
     max-height: 85px;
   }
 }
+
+.spinner-white-only {
+  border-color: #ffffff;
+}
+
+.datasets {
+  #import-button {
+    width: 130px;
+  }
+
+  #import-spinner {
+    width: 25px;
+    height: 25px;
+    vertical-align: middle;
+  }
+}

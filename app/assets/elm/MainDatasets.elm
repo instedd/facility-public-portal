@@ -4,12 +4,13 @@ import Dataset exposing (Dataset, Event(..), FileState, ImportStartResult, event
 import Dict exposing (Dict)
 import Html exposing (Html, a, div, h1, p, pre, span, text)
 import Html.App
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (decodeValue)
 import Json.Encode
 import Process
+import Spinner exposing (spinner)
 import Task
 
 
@@ -73,10 +74,17 @@ view model =
                 importView importState
         , div [ class "actions right-align" ]
             [ a
-                [ class "btn btn-large"
+                [ id "import-button"
+                , class "btn btn-large"
                 , onClick ImportClicked
                 ]
-                [ text "Preview" ]
+                (case model.importState of
+                    Nothing ->
+                        [ text "Preview" ]
+
+                    Just _ ->
+                        [ spinner [ id "import-spinner" ] Spinner.White ]
+                )
             ]
         ]
 
@@ -122,7 +130,12 @@ update msg model =
                     Debug.crash message
 
         ImportClicked ->
-            model ! [ importDataset ImportStarted ]
+            case model.importState of
+                Just _ ->
+                    model ! []
+
+                Nothing ->
+                    model ! [ importDataset ImportStarted ]
 
         ImportStarted result ->
             case result of

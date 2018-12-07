@@ -82,7 +82,7 @@ view model =
     div [ class "location" ]
         [ case model of
             Detecting ->
-                spinner [ id "location-spinner" ]
+                spinner [ id "location-spinner" ] Spinner.Blue
 
             NoLocation ->
                 a [ href "#", onClick Geolocate ]
