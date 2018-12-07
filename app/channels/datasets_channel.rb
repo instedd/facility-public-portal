@@ -4,8 +4,12 @@ class DatasetsChannel < ActionCable::Channel::Base
     stream_for "events"
   end
 
-  def self.broadcast_log(pid, log)
-    DatasetsChannel.broadcast_to("events", type: :import_log, pid: pid.to_s, log: log)
+  def self.import_log(pid, log)
+    broadcast_to("events", type: :import_log, pid: pid.to_s, log: log)
+  end
+
+  def self.import_complete(pid, exit_code)
+    broadcast_to("events", type: :import_complete, pid: pid.to_s, exit_code: exit_code)
   end
 
   private

@@ -14,12 +14,12 @@ class DatasetsController < ApplicationController
           data = io.read_nonblock(1024, exception: false)
           next if data == :wait_readable
           break :eof unless data
-          DatasetsChannel.broadcast_log(wait_thr.pid, data)
+          DatasetsChannel.import_log(wait_thr.pid, data)
         end
         break if r == :eof
       end
       [stdin, stdout, stderr].each &:close
-      puts wait_thr.value
+      DatasetsChannel.import_complete(wait_thr.pid, wait_thr.value.exitstatus)
     end
     render json: { process_id: wait_thr.pid.to_s }
   end

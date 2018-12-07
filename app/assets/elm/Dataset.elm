@@ -1,4 +1,4 @@
-module Dataset exposing (Dataset, Event(..), FileState, ImportResult, eventDecoder, importDataset)
+module Dataset exposing (Dataset, Event(..), FileState, ImportStartResult, eventDecoder, importDataset)
 
 import Dict exposing (Dict)
 import Http
@@ -24,9 +24,16 @@ type alias Log =
     }
 
 
+type alias ImportResult =
+    { processId : String
+    , exitCode : Int
+    }
+
+
 type Event
     = DatasetUpdated Dataset
     | ImportLog Log
+    | ImportComplete ImportResult
 
 
 decoder : Json.Decode.Decoder Dataset
@@ -57,24 +64,31 @@ eventDecoder =
                             ("pid" := string)
                             ("log" := string)
 
+                "import_complete" ->
+                    object1 ImportComplete <|
+                        object2
+                            ImportResult
+                            ("pid" := string)
+                            ("exit_code" := int)
+
                 _ ->
                     fail ("Unexpected event type: " ++ eventType)
         )
 
 
-type alias ImportResult =
+type alias ImportStartResult =
     { processId : String
     }
 
 
-importResultDecoder : Json.Decode.Decoder ImportResult
+importResultDecoder : Json.Decode.Decoder ImportStartResult
 importResultDecoder =
     object1
-        ImportResult
+        ImportStartResult
         ("process_id" := string)
 
 
-importDataset : (Result Http.Error ImportResult -> msg) -> Cmd msg
+importDataset : (Result Http.Error ImportStartResult -> msg) -> Cmd msg
 importDataset handler =
     let
         url =

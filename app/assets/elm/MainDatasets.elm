@@ -1,6 +1,6 @@
 port module MainDatasets exposing (Model, Msg, init, main, subscriptions, update, view)
 
-import Dataset exposing (Dataset, Event(..), FileState, ImportResult, eventDecoder, importDataset)
+import Dataset exposing (Dataset, Event(..), FileState, ImportStartResult, eventDecoder, importDataset)
 import Dict exposing (Dict)
 import Html exposing (Html, a, div, h1, p, pre, span, text)
 import Html.App
@@ -9,6 +9,8 @@ import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (decodeValue)
 import Json.Encode
+import Process
+import Task
 
 
 type alias Model =
@@ -32,7 +34,8 @@ type alias ImportLog =
 type Msg
     = DatasetEvent (Result String Dataset.Event)
     | ImportClicked
-    | ImportStarted (Result Http.Error ImportResult)
+    | ImportStarted (Result Http.Error ImportStartResult)
+    | ImportFinished
 
 
 port datasetEvent : (Json.Decode.Value -> msg) -> Sub msg
@@ -112,6 +115,9 @@ update msg model =
                         _ ->
                             model ! []
 
+                Ok (ImportComplete result) ->
+                    model ! [ delayMessage 1000 ImportFinished ]
+
                 Err message ->
                     Debug.crash message
 
@@ -127,7 +133,20 @@ update msg model =
                 Err _ ->
                     model ! []
 
+        ImportFinished ->
+            { model | importState = Nothing } ! []
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     datasetEvent (decodeValue Dataset.eventDecoder >> DatasetEvent)
+
+
+delayMessage : Float -> msg -> Cmd msg
+delayMessage delay msg =
+    let
+        handler =
+            always msg
+    in
+    Process.sleep delay
+        |> Task.perform handler handler
