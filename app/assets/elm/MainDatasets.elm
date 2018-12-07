@@ -1,6 +1,6 @@
 port module MainDatasets exposing (Model, Msg, init, main, subscriptions, update, view)
 
-import Dataset exposing (Dataset, FileState, ImportResult, importDataset)
+import Dataset exposing (Dataset, Event(..), FileState, ImportResult, eventDecoder, importDataset)
 import Dict exposing (Dict)
 import Html exposing (Html, a, div, h1, p, pre, span, text)
 import Html.App
@@ -30,19 +30,12 @@ type alias ImportLog =
 
 
 type Msg
-    = DatasetUpdated (Result String Dataset)
+    = DatasetEvent (Result String Dataset.Event)
     | ImportClicked
     | ImportStarted (Result Http.Error ImportResult)
-    | ImportProgress ImportLog
 
 
-port datasetUpdated : (Json.Decode.Value -> msg) -> Sub msg
-
-
-port watchImport : String -> Cmd msg
-
-
-port importProgress : (ImportLog -> msg) -> Sub msg
+port datasetEvent : (Json.Decode.Value -> msg) -> Sub msg
 
 
 main : Program Never
@@ -106,13 +99,21 @@ fileView ( name, state ) =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        DatasetUpdated result ->
+        DatasetEvent result ->
             case result of
-                Ok dataset ->
+                Ok (DatasetUpdated dataset) ->
                     { model | dataset = dataset } ! []
 
-                _ ->
-                    model ! []
+                Ok (ImportLog log) ->
+                    case model.importState of
+                        Just importState ->
+                            { model | importState = Just { importState | log = importState.log ++ [ log.log ] } } ! []
+
+                        _ ->
+                            model ! []
+
+                Err message ->
+                    Debug.crash message
 
         ImportClicked ->
             model ! [ importDataset ImportStarted ]
@@ -121,23 +122,12 @@ update msg model =
             case result of
                 Ok result ->
                     { model | importState = Just { processId = result.processId, log = [] } }
-                        ! [ watchImport result.processId ]
+                        ! []
 
                 Err _ ->
-                    model ! []
-
-        ImportProgress log ->
-            case model.importState of
-                Just importState ->
-                    { model | importState = Just { importState | log = importState.log ++ [ log.log ] } } ! []
-
-                _ ->
                     model ! []
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ datasetUpdated (decodeValue Dataset.decoder >> DatasetUpdated)
-        , importProgress ImportProgress
-        ]
+    datasetEvent (decodeValue Dataset.eventDecoder >> DatasetEvent)

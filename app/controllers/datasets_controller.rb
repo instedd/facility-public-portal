@@ -14,8 +14,7 @@ class DatasetsController < ApplicationController
           data = io.read_nonblock(1024, exception: false)
           next if data == :wait_readable
           break :eof unless data
-
-          ImportChannel.broadcast_to(wait_thr.pid, log: data)
+          DatasetsChannel.broadcast_log(wait_thr.pid, data)
         end
         break if r == :eof
       end

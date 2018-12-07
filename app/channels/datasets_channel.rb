@@ -1,6 +1,11 @@
 class DatasetsChannel < ActionCable::Channel::Base
   def subscribed
-    transmit(datasets)
+    transmit(type: :datasets_update, datasets: datasets)
+    stream_for "events"
+  end
+
+  def self.broadcast_log(pid, log)
+    DatasetsChannel.broadcast_to("events", type: :import_log, pid: pid.to_s, log: log)
   end
 
   private

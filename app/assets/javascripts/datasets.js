@@ -5,16 +5,7 @@ $(document).ready(function() {
 
   window.App.cable.subscriptions.create({ channel: "DatasetsChannel" }, {
     received: function(data) {
-      app.ports.datasetUpdated.send(data);
+      app.ports.datasetEvent.send(data);
     }
   });
-
-  app.ports.watchImport.subscribe(function (pid) {
-    window.App.cable.subscriptions.create({ channel: "ImportChannel", pid: pid }, {
-      received: function(data) {
-        console.log(data)
-        app.ports.importProgress.send({ processId: pid, log: data.log })
-      }
-    })
-  })
 });

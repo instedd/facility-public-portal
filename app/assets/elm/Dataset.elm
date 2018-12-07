@@ -1,8 +1,8 @@
-module Dataset exposing (Dataset, FileState, ImportResult, decoder, importDataset)
+module Dataset exposing (Dataset, Event(..), FileState, ImportResult, eventDecoder, importDataset)
 
 import Dict exposing (Dict)
 import Http
-import Json.Decode exposing ((:=), bool, dict, int, maybe, object1, object4, string)
+import Json.Decode exposing ((:=), bool, dict, fail, int, maybe, object1, object2, object4, string)
 import Task
 
 
@@ -18,6 +18,17 @@ type alias Dataset =
     Dict String (Maybe FileState)
 
 
+type alias Log =
+    { processId : String
+    , log : String
+    }
+
+
+type Event
+    = DatasetUpdated Dataset
+    | ImportLog Log
+
+
 decoder : Json.Decode.Decoder Dataset
 decoder =
     dict <|
@@ -28,6 +39,27 @@ decoder =
                 ("size" := int)
                 ("md5" := string)
                 ("applied" := bool)
+
+
+eventDecoder : Json.Decode.Decoder Event
+eventDecoder =
+    Json.Decode.andThen
+        ("type" := string)
+        (\eventType ->
+            case eventType of
+                "datasets_update" ->
+                    object1 DatasetUpdated ("datasets" := decoder)
+
+                "import_log" ->
+                    object1 ImportLog <|
+                        object2
+                            Log
+                            ("pid" := string)
+                            ("log" := string)
+
+                _ ->
+                    fail ("Unexpected event type: " ++ eventType)
+        )
 
 
 type alias ImportResult =
