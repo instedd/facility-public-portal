@@ -15,6 +15,7 @@ Rails.application.routes.draw do
   scope :datasets do
     root to: "datasets#index"
     post 'import', to: 'datasets#import'
+    post 'upload', to: 'datasets#upload'
   end
 
   scope :api do

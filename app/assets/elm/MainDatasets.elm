@@ -8,8 +8,7 @@ import Html.App
 import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 import Http
-import Json.Decode exposing (decodeValue)
-import Json.Encode
+import Json.Decode exposing (decodeValue, string)
 import Process
 import Spinner exposing (spinner)
 import Task
@@ -39,9 +38,16 @@ type Msg
     | ImportStarted (Result Http.Error ImportStartResult)
     | ImportFinished
     | NoOp
+    | DroppedFileEvent (Result String String)
 
 
 port datasetEvent : (Json.Decode.Value -> msg) -> Sub msg
+
+
+port droppedFileEvent : (Json.Decode.Value -> msg) -> Sub msg
+
+
+port requestFileUpload : String -> Cmd msg
 
 
 main : Program Never
@@ -155,10 +161,21 @@ update msg model =
         NoOp ->
             model ! []
 
+        DroppedFileEvent result ->
+            case result of
+                Ok filename ->
+                    model ! handleFileDrop filename model.dataset
+
+                Err _ ->
+                    model ! []
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    datasetEvent (decodeValue Dataset.eventDecoder >> DatasetEvent)
+    Sub.batch
+        [ datasetEvent (decodeValue Dataset.eventDecoder >> DatasetEvent)
+        , droppedFileEvent (decodeValue string >> DroppedFileEvent)
+        ]
 
 
 delayMessage : Float -> msg -> Cmd msg
@@ -179,3 +196,12 @@ scrollToBottom nodeId =
     in
     toBottom nodeId
         |> Task.perform handler handler
+
+
+handleFileDrop : String -> Dataset -> List (Cmd msg)
+handleFileDrop filename dataset =
+    if Dataset.knownFile filename dataset then
+        [ requestFileUpload filename ]
+
+    else
+        []

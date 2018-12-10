@@ -1,4 +1,4 @@
-module Dataset exposing (Dataset, Event(..), FileState, ImportStartResult, eventDecoder, importDataset)
+module Dataset exposing (Dataset, Event(..), FileState, ImportStartResult, eventDecoder, importDataset, knownFile)
 
 import Dict exposing (Dict)
 import Http
@@ -98,3 +98,6 @@ importDataset handler =
         (\error -> handler <| Err error)
         (\result -> handler <| Ok result)
         (Http.post importResultDecoder url Http.empty)
+
+knownFile : String -> Dataset -> Bool
+knownFile = Dict.member

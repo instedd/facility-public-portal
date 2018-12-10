@@ -16,9 +16,9 @@
   </style>
 
   <div id='drop-area'>
-    <form class='my-form'>
-      <input type="file" id="fileElem" accept="text/csv">
-    </form>
+    <%= form_tag({action: :upload}, multipart: true) do %>
+      <%= file_field_tag 'fileElem', accept: 'text/csv' %>
+    <% end %>
     <div id='elm-datasets' />
   </div>
 <% end %>

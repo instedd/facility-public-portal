@@ -9,6 +9,12 @@ $(document).ready(function() {
     }
   });
 
+  droppedFiles = {};
+
+  app.ports.requestFileUpload.subscribe(function(filename) {
+    uploadFile(droppedFiles[filename]);
+  });
+
   const fileInput = document.querySelector('#fileElem');
   fileInput.addEventListener('change', handleFiles(fileInput.files), false);
 
@@ -33,7 +39,10 @@ $(document).ready(function() {
   dropArea.addEventListener('drop', (e) => handleDrop(e), false);
 
   function handleFiles(files) {
-    ([...files]).forEach(uploadFile);
+    ([...files]).forEach(file => {
+      droppedFiles[file.name] = file;
+      app.ports.droppedFileEvent.send(file.name);
+    });
   }
 
   function uploadFile(file) {
@@ -44,7 +53,12 @@ $(document).ready(function() {
 
     fetch(url, {
       method: 'POST',
-      body: formData
+      body: formData,
+      beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+      }
     })
     .then(() => { /* Done. Inform the user */ })
     .catch(() => { /* Error. Inform the user */ })
