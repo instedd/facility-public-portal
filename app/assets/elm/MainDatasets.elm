@@ -2,6 +2,7 @@ port module MainDatasets exposing (Model, Msg, init, main, subscriptions, update
 
 import Dataset exposing (Dataset, Event(..), FileState, ImportStartResult, eventDecoder, importDataset)
 import Dict exposing (Dict)
+import Dom.Scroll exposing (toBottom)
 import Html exposing (Html, a, div, h1, p, pre, span, text)
 import Html.App
 import Html.Attributes exposing (class, id)
@@ -37,6 +38,7 @@ type Msg
     | ImportClicked
     | ImportStarted (Result Http.Error ImportStartResult)
     | ImportFinished
+    | NoOp
 
 
 port datasetEvent : (Json.Decode.Value -> msg) -> Sub msg
@@ -72,7 +74,7 @@ view model =
 
             Just importState ->
                 importView importState
-        , div [ class "actions right-align" ]
+        , div [ class "card-panel actions right-align" ]
             [ a
                 [ id "import-button"
                 , class "btn btn-large"
@@ -99,7 +101,7 @@ datasetView dataset =
 
 importView : ImportState -> Html msg
 importView importState =
-    pre [] (importState.log |> List.map text)
+    pre [ id "import-log" ] (importState.log |> List.map text)
 
 
 fileView : ( String, Maybe FileState ) -> Html msg
@@ -118,7 +120,8 @@ update msg model =
                 Ok (ImportLog log) ->
                     case model.importState of
                         Just importState ->
-                            { model | importState = Just { importState | log = importState.log ++ [ log.log ] } } ! []
+                            { model | importState = Just { importState | log = importState.log ++ [ log.log ] } }
+                                ! [ scrollToBottom "import-log" ]
 
                         _ ->
                             model ! []
@@ -149,6 +152,9 @@ update msg model =
         ImportFinished ->
             { model | importState = Nothing } ! []
 
+        NoOp ->
+            model ! []
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -162,4 +168,14 @@ delayMessage delay msg =
             always msg
     in
     Process.sleep delay
+        |> Task.perform handler handler
+
+
+scrollToBottom : String -> Cmd Msg
+scrollToBottom nodeId =
+    let
+        handler =
+            always NoOp
+    in
+    toBottom nodeId
         |> Task.perform handler handler

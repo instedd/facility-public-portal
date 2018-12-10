@@ -340,7 +340,7 @@ input[type="checkbox"]:checked + label:before {
   border-color: $color_mountain_mist_approx;
 }
 
-.content {
+.map.content {
   max-height: 80vh;
   overflow-y: scroll;
   overflow-x: hidden;
@@ -475,5 +475,11 @@ input[type="checkbox"]:checked + label:before {
     width: 25px;
     height: 25px;
     vertical-align: middle;
+  }
+
+  #import-log {
+    height: 317px;
+    overflow: auto;
+    background-color: #ffffff;
   }
 }
