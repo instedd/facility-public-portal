@@ -102,7 +102,7 @@ datasetView dataset =
     dataset
         |> Dict.toList
         |> List.map fileView
-        |> div []
+        |> div [ class "row" ]
 
 
 importView : ImportState -> Html msg
@@ -112,7 +112,9 @@ importView importState =
 
 fileView : ( String, Maybe FileState ) -> Html msg
 fileView ( name, state ) =
-    div [] [ text name ]
+    div [ class "col m4 s12" ]
+        [ div [ class "card-panel  z-depth-1 file-card" ] [ text name ]
+        ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
