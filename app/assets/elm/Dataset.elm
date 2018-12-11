@@ -1,9 +1,23 @@
-module Dataset exposing (Dataset, Event(..), FileState, ImportStartResult, eventDecoder, importDataset, knownFile)
+module Dataset exposing
+    ( Dataset
+    , Event(..)
+    , FileState
+    , ImportStartResult
+    , eventDecoder
+    , fileLabel
+    , importDataset
+    , knownFile
+    , humanReadableFileTimestamp
+    , humanReadableFileSize
+    )
 
+import Date exposing (Date)
 import Dict exposing (Dict)
 import Http
 import Json.Decode exposing ((:=), bool, dict, fail, int, maybe, object1, object2, object4, string)
 import Task
+import String
+import Time
 
 
 type alias FileState =
@@ -99,5 +113,83 @@ importDataset handler =
         (\result -> handler <| Ok result)
         (Http.post importResultDecoder url Http.empty)
 
+
 knownFile : String -> Dataset -> Bool
-knownFile = Dict.member
+knownFile =
+    Dict.member
+
+
+fileLabel : Maybe FileState -> (FileState -> String) -> String
+fileLabel state lab =
+    case state of
+        Nothing ->
+            ""
+
+        Just st ->
+            lab st
+
+
+humanReadableFileTimestamp : Maybe Date -> FileState -> String
+humanReadableFileTimestamp maybeDate state =
+    case maybeDate of
+        Nothing ->
+            ""
+
+        Just currentDate ->
+            case Date.fromString state.updated_at of
+                Ok fileDate ->
+                    moment currentDate fileDate
+
+                Err _ ->
+                    ""
+
+moment : Date -> Date -> String
+moment referencePoint evaldDate =
+    let
+        sameDay =
+            Date.day referencePoint
+                == Date.day evaldDate
+                && Date.month referencePoint
+                == Date.month evaldDate
+                && Date.year referencePoint
+                == Date.year evaldDate
+
+        minuteDifference =
+            abs <| (evaldDate |> Date.toTime |> Time.inMinutes) - (referencePoint |> Date.toTime |> Time.inMinutes)
+
+        hourDifference =
+            minuteDifference / 60
+
+        dayDifference =
+            hourDifference / 24
+
+        formattedDate =
+            toString <| Date.month evaldDate
+
+        a =
+            minuteDifference |> toString |> Debug.log
+    in
+    if sameDay then
+        if minuteDifference > 10 then
+            "Today"
+
+        else
+            "Now"
+
+    else if dayDifference == 1 then
+        "Yesterday"
+
+    else
+        String.concat [ toString <| Date.month evaldDate, " ", toString <| Date.day evaldDate, ", ", toString <| Date.year evaldDate ]
+
+humanReadableFileSize : FileState -> String
+humanReadableFileSize state =
+    let
+        s =
+            if state.size >= 1024 then
+                [ toString (state.size // 1024), " KB" ]
+
+            else
+                [ toString state.size, " B" ]
+    in
+    String.concat s

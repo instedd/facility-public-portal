@@ -1,6 +1,18 @@
 port module MainDatasets exposing (Model, Msg, init, main, subscriptions, update, view)
 
-import Dataset exposing (Dataset, Event(..), FileState, ImportStartResult, eventDecoder, importDataset)
+import Dataset
+    exposing
+        ( Dataset
+        , Event(..)
+        , FileState
+        , ImportStartResult
+        , eventDecoder
+        , fileLabel
+        , humanReadableFileSize
+        , humanReadableFileTimestamp
+        , importDataset
+        )
+import Date exposing (Date)
 import Dict exposing (Dict)
 import Dom.Scroll exposing (toBottom)
 import Html exposing (Html, a, div, h1, p, pre, span, text)
@@ -12,11 +24,14 @@ import Json.Decode exposing (decodeValue, string)
 import Process
 import Spinner exposing (spinner)
 import Task
+import Time exposing (Time)
+import Utils
 
 
 type alias Model =
     { dataset : Dataset
     , importState : Maybe ImportState
+    , currentDate : Maybe Date
     }
 
 
@@ -39,6 +54,7 @@ type Msg
     | ImportFinished
     | NoOp
     | DroppedFileEvent (Result String String)
+    | CurrentTime Time
 
 
 port datasetEvent : (Json.Decode.Value -> msg) -> Sub msg
@@ -62,7 +78,11 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    { dataset = Dict.empty, importState = Nothing } ! []
+    { dataset = Dict.empty
+    , importState = Nothing
+    , currentDate = Nothing
+    }
+        ! [ Task.perform Utils.notFailing CurrentTime Time.now ]
 
 
 view : Model -> Html Msg
@@ -76,7 +96,7 @@ view model =
             ]
         , case model.importState of
             Nothing ->
-                datasetView model.dataset
+                datasetView model
 
             Just importState ->
                 importView importState
@@ -97,11 +117,11 @@ view model =
         ]
 
 
-datasetView : Dataset -> Html msg
-datasetView dataset =
-    dataset
+datasetView : Model -> Html msg
+datasetView model =
+    model.dataset
         |> Dict.toList
-        |> List.map fileView
+        |> List.map (fileView model.currentDate)
         |> div [ class "row" ]
 
 
@@ -110,11 +130,20 @@ importView importState =
     pre [ id "import-log" ] (importState.log |> List.map text)
 
 
-fileView : ( String, Maybe FileState ) -> Html msg
-fileView ( name, state ) =
+fileView : Maybe Date -> ( String, Maybe FileState ) -> Html msg
+fileView currentDate ( name, state ) =
     div [ class "col m4 s12" ]
-        [ div [ class "card-panel  z-depth-1 file-card" ] [ text name ]
+        [ div [ class "card-panel  z-depth-1 file-card" ]
+            [ div [] [ text name ]
+            , fileLineView <| fileLabel state humanReadableFileSize
+            , fileLineView <| fileLabel state (humanReadableFileTimestamp currentDate)
+            ]
         ]
+
+
+fileLineView : String -> Html msg
+fileLineView line =
+    div [ class "file-info" ] [ text line ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -171,12 +200,16 @@ update msg model =
                 Err _ ->
                     model ! []
 
+        CurrentTime now ->
+            { model | currentDate = Just (Date.fromTime now) } ! []
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ datasetEvent (decodeValue Dataset.eventDecoder >> DatasetEvent)
         , droppedFileEvent (decodeValue string >> DroppedFileEvent)
+        , Time.every Time.minute CurrentTime
         ]
 
 

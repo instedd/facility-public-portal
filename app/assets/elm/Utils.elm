@@ -187,3 +187,6 @@ performMessage msg =
 perform : msg -> ( model, Cmd msg ) -> ( model, Cmd msg )
 perform msg =
     Return.command (performMessage msg)
+
+notFailing : a -> a
+notFailing x = notFailing x
