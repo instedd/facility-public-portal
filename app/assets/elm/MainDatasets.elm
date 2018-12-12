@@ -143,7 +143,7 @@ importView importState =
 fileView : Maybe Date -> ( String, Maybe FileState ) -> Bool -> Html msg
 fileView currentDate ( name, state ) isUploading =
     div [ class "col m4 s12" ]
-        [ div [ class <| appliedClass "card-panel z-depth-0 file-card" state ]
+        [ div [ class <| appliedClass "card-panel z-depth-0 file-card file-applied" state ]
             [ div [] [ text name ]
             , fileLineView <| fileLabel state humanReadableFileSize
             , fileLineView <| fileLabel state (humanReadableFileTimestamp currentDate)
