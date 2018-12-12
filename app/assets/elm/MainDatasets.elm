@@ -23,6 +23,7 @@ import Http
 import Json.Decode exposing (decodeValue, string)
 import Process
 import Spinner exposing (spinner)
+import String
 import Task
 import Time exposing (Time)
 import Utils
@@ -32,8 +33,8 @@ type alias Model =
     { dataset : Dataset
     , importState : Maybe ImportState
     , currentDate : Maybe Date
+    , uploading : Dict String ()
     }
-
 
 type alias ImportState =
     { processId : String
@@ -55,12 +56,20 @@ type Msg
     | NoOp
     | DroppedFileEvent (Result String String)
     | CurrentTime Time
+    | UploadingFile String
+    | UploadedFile String
 
 
 port datasetEvent : (Json.Decode.Value -> msg) -> Sub msg
 
 
 port droppedFileEvent : (Json.Decode.Value -> msg) -> Sub msg
+
+
+port uploadedFile : (String -> msg) -> Sub msg
+
+
+port uploadingFile : (String -> msg) -> Sub msg
 
 
 port requestFileUpload : String -> Cmd msg
@@ -81,6 +90,7 @@ init =
     { dataset = Dict.empty
     , importState = Nothing
     , currentDate = Nothing
+    , uploading = Dict.empty
     }
         ! [ Task.perform Utils.notFailing CurrentTime Time.now ]
 
@@ -121,7 +131,7 @@ datasetView : Model -> Html msg
 datasetView model =
     model.dataset
         |> Dict.toList
-        |> List.map (fileView model.currentDate)
+        |> List.map (\(filename, fileState) -> fileView model.currentDate (filename, fileState) (Dict.member filename model.uploading))
         |> div [ class "row" ]
 
 
@@ -130,15 +140,30 @@ importView importState =
     pre [ id "import-log" ] (importState.log |> List.map text)
 
 
-fileView : Maybe Date -> ( String, Maybe FileState ) -> Html msg
-fileView currentDate ( name, state ) =
+fileView : Maybe Date -> ( String, Maybe FileState ) -> Bool -> Html msg
+fileView currentDate ( name, state ) isUploading =
     div [ class "col m4 s12" ]
-        [ div [ class "card-panel  z-depth-1 file-card" ]
+        [ div [ class <| appliedClass "card-panel z-depth-0 file-card" state ]
             [ div [] [ text name ]
             , fileLineView <| fileLabel state humanReadableFileSize
             , fileLineView <| fileLabel state (humanReadableFileTimestamp currentDate)
+            , fileLineView <| if isUploading then "Uploading..." else ""
             ]
         ]
+
+
+appliedClass : String -> Maybe FileState -> String
+appliedClass baseClass state =
+    case state of
+        Nothing ->
+            baseClass
+
+        Just fileState ->
+            if fileState.applied then
+                String.concat [ baseClass, "file-applied" ]
+
+            else
+                baseClass
 
 
 fileLineView : String -> Html msg
@@ -203,6 +228,22 @@ update msg model =
         CurrentTime now ->
             { model | currentDate = Just (Date.fromTime now) } ! []
 
+        UploadingFile filename ->
+            fileUploading model filename ! []
+
+        UploadedFile filename ->
+            fileUploaded model filename ! []
+
+
+fileUploading : Model -> String -> Model
+fileUploading model filename =
+    { model | uploading = Dict.insert filename () model.uploading }
+
+
+fileUploaded : Model -> String -> Model
+fileUploaded model filename =
+    { model | uploading = Dict.remove filename model.uploading }
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -210,6 +251,8 @@ subscriptions model =
         [ datasetEvent (decodeValue Dataset.eventDecoder >> DatasetEvent)
         , droppedFileEvent (decodeValue string >> DroppedFileEvent)
         , Time.every Time.minute CurrentTime
+        , uploadingFile UploadingFile
+        , uploadedFile UploadedFile
         ]
 
 

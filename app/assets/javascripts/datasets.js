@@ -51,6 +51,8 @@ $(document).ready(function() {
 
     formData.append('file', file)
 
+    app.ports.uploadingFile.send(file.name);
+
     fetch(url, {
       method: 'POST',
       body: formData,
@@ -60,7 +62,7 @@ $(document).ready(function() {
         'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
       }
     })
-    .then(() => { /* Done. Inform the user */ })
+    .then(() => { app.ports.uploadedFile.send(file.name) })
     .catch(() => { /* Error. Inform the user */ })
   }
 

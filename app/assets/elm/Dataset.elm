@@ -5,18 +5,18 @@ module Dataset exposing
     , ImportStartResult
     , eventDecoder
     , fileLabel
+    , humanReadableFileSize
+    , humanReadableFileTimestamp
     , importDataset
     , knownFile
-    , humanReadableFileTimestamp
-    , humanReadableFileSize
     )
 
 import Date exposing (Date)
 import Dict exposing (Dict)
 import Http
 import Json.Decode exposing ((:=), bool, dict, fail, int, maybe, object1, object2, object4, string)
-import Task
 import String
+import Task
 import Time
 
 
@@ -143,6 +143,7 @@ humanReadableFileTimestamp maybeDate state =
                 Err _ ->
                     ""
 
+
 moment : Date -> Date -> String
 moment referencePoint evaldDate =
     let
@@ -181,6 +182,7 @@ moment referencePoint evaldDate =
 
     else
         String.concat [ toString <| Date.month evaldDate, " ", toString <| Date.day evaldDate, ", ", toString <| Date.year evaldDate ]
+
 
 humanReadableFileSize : FileState -> String
 humanReadableFileSize state =

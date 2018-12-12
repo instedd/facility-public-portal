@@ -483,8 +483,22 @@ input[type="checkbox"]:checked + label:before {
     background-color: #ffffff;
   }
 
-  .file-info{
+  .file-info {
     font-size: 9pt;
     color: #8d8d8d;
   }
+
+  .file-card {
+    border-radius: 5pt;
+    border-color: #0f47af;
+    border-width: 2px;
+    border-style: solid;
+    color: #0f47af;
+  }
+
+  .file-applied {
+    border-style: none;
+    color: #000000;
+  }
 }
+
