@@ -1,21 +1,14 @@
 <% content_for :content do %>
   <style>
-    #drop-area {
-      border: 2px dashed #ccc;
-      border-radius: 20px;
-      font-family: sans-serif;
-      margin: 100px auto;
-      padding: 20px;
-    }
-    #drop-area.highlight {
-      border-color: purple;
+    body.datasets.highlight {
+      background-color: #fffbb4;
     }
     #fileElem {
       display: none;
     }
   </style>
 
-  <div id='drop-area'>
+  <div>
     <%= form_tag({action: :upload}, multipart: true) do %>
       <%= file_field_tag 'fileElem', accept: 'text/csv' %>
     <% end %>

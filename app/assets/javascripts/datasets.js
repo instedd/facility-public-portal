@@ -18,7 +18,7 @@ $(document).ready(function() {
   const fileInput = document.querySelector('#fileElem');
   fileInput.addEventListener('change', handleFiles(fileInput.files), false);
 
-  const dropArea = document.querySelector('#drop-area');
+  const dropArea = document.querySelector('body.datasets');
 
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
     dropArea.addEventListener(eventName, preventDefaults, false);
