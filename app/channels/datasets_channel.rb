@@ -16,6 +16,16 @@ class DatasetsChannel < ActionCable::Channel::Base
     broadcast_to("events", type: :datasets_update, datasets: datasets)
   end
 
+  def self.path_for(filename)
+    if ONA_FILES.include?(filename)
+      Rails.root.join('data', 'input', 'ona', filename)
+    elsif (FILES + RAW_FILES).include?(filename)
+      Rails.root.join('data', 'input', filename)
+    else
+      raise ArgumentError.new("Unknown filename")
+    end
+  end
+
   private
 
   FILES = %w(
@@ -37,7 +47,7 @@ class DatasetsChannel < ActionCable::Channel::Base
 
   def self.files_to_hash(files)
     files.each_with_object({}) { |file, datasets|
-      datasets[file] = file_state(file)
+      datasets[file] = file_state(path_for(file))
     }
   end
 
@@ -51,8 +61,7 @@ class DatasetsChannel < ActionCable::Channel::Base
     }
   end
 
-  def self.file_state(name)
-    path = File.join Rails.root, "data/input", name
+  def self.file_state(path)
     return nil unless File.exists?(path)
     stat = File.stat path
 

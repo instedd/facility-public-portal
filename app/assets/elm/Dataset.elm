@@ -1,8 +1,9 @@
 module Dataset exposing
     ( Dataset
-    , Fileset
     , Event(..)
     , FileState
+    , Fileset
+    , FilesetTag(..)
     , ImportStartResult
     , empty
     , eventDecoder
@@ -10,6 +11,7 @@ module Dataset exposing
     , humanReadableFileSize
     , humanReadableFileTimestamp
     , importDataset
+    , inFileset
     , knownFile
     )
 
@@ -20,6 +22,11 @@ import Json.Decode exposing ((:=), bool, dict, fail, int, maybe, object1, object
 import String
 import Task
 import Time
+
+
+type FilesetTag
+    = Raw
+    | Ona
 
 
 type alias FileState =
@@ -138,6 +145,11 @@ importDataset handler =
 knownFile : String -> Dataset -> Bool
 knownFile filename dataset =
     Dict.member filename dataset.ona || Dict.member filename dataset.raw
+
+
+inFileset : String -> Fileset -> Bool
+inFileset =
+    Dict.member
 
 
 fileLabel : Maybe FileState -> (FileState -> String) -> String

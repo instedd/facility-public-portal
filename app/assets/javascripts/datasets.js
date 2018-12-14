@@ -15,6 +15,8 @@ $(document).ready(function() {
     uploadFile(droppedFiles[filename]);
   });
 
+  app.ports.showModal.subscribe(function(msg) { alert(msg); });
+
   const fileInput = document.querySelector('#fileElem');
   fileInput.addEventListener('change', handleFiles(fileInput.files), false);
 

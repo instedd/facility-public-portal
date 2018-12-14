@@ -27,9 +27,11 @@ class DatasetsController < ApplicationController
 
   def upload
     uploaded_io = params["file"]
-    File.open(Rails.root.join('data', 'input', uploaded_io.original_filename), 'wb') do |file|
+
+    File.open(DatasetsChannel.path_for(uploaded_io.original_filename), 'wb') do |file|
       file.write(uploaded_io.read)
     end
+
     DatasetsChannel.dataset_update
     render json: :ok
   end

@@ -6,6 +6,7 @@ import Dataset
         , Event(..)
         , FileState
         , Fileset
+        , FilesetTag(..)
         , ImportStartResult
         , empty
         , eventDecoder
@@ -36,13 +37,8 @@ type alias Model =
     , importState : Maybe ImportState
     , currentDate : Maybe Date
     , uploading : Dict String ()
-    , currentTab : Tab
+    , currentTab : FilesetTag
     }
-
-
-type Tab
-    = Raw
-    | Ona
 
 
 type alias ImportState =
@@ -67,7 +63,7 @@ type Msg
     | CurrentTime Time
     | UploadingFile String
     | UploadedFile String
-    | SelectTab Tab
+    | SelectTab FilesetTag
 
 
 port datasetEvent : (Json.Decode.Value -> msg) -> Sub msg
@@ -83,6 +79,9 @@ port uploadingFile : (String -> msg) -> Sub msg
 
 
 port requestFileUpload : String -> Cmd msg
+
+
+port showModal : String -> Cmd msg
 
 
 main : Program Never
@@ -144,7 +143,7 @@ view model =
         ]
 
 
-tab : Tab -> Tab -> String -> Html Msg
+tab : FilesetTag -> FilesetTag -> String -> Html Msg
 tab tab activeTab label =
     div
         [ class <| pseudoTabClass activeTab tab
@@ -153,7 +152,7 @@ tab tab activeTab label =
         [ text label ]
 
 
-pseudoTabClass : Tab -> Tab -> String
+pseudoTabClass : FilesetTag -> FilesetTag -> String
 pseudoTabClass activeTab evaldTab =
     if activeTab == evaldTab then
         "pseudo-tab active"
@@ -167,7 +166,7 @@ tabView model =
     filesetView model <| tabFileset model.dataset model.currentTab
 
 
-tabFileset : Dataset -> Tab -> Fileset
+tabFileset : Dataset -> FilesetTag -> Fileset
 tabFileset model tab =
     case tab of
         Raw ->
@@ -275,7 +274,7 @@ update msg model =
         DroppedFileEvent result ->
             case result of
                 Ok filename ->
-                    model ! handleFileDrop filename model.dataset
+                    handleFileDrop model filename
 
                 Err _ ->
                     model ! []
@@ -290,7 +289,12 @@ update msg model =
             fileUploaded model filename ! []
 
         SelectTab tab ->
-            { model | currentTab = tab } ! []
+            selectTab model tab ! []
+
+
+selectTab : Model -> FilesetTag -> Model
+selectTab model tab =
+    { model | currentTab = tab }
 
 
 fileUploading : Model -> String -> Model
@@ -334,10 +338,26 @@ scrollToBottom nodeId =
         |> Task.perform handler handler
 
 
-handleFileDrop : String -> Dataset -> List (Cmd msg)
-handleFileDrop filename dataset =
-    if Dataset.knownFile filename dataset then
-        [ requestFileUpload filename ]
+handleFileDrop : Model -> String -> ( Model, Cmd msg )
+handleFileDrop model filename =
+    if Dataset.knownFile filename model.dataset then
+        if not (Dataset.inFileset filename model.dataset.ona) && model.currentTab == Ona then
+            selectTab model Raw ! [ requestFileUpload filename ]
+
+        else if not (Dataset.inFileset filename model.dataset.raw) && model.currentTab == Raw then
+            selectTab model Ona ! [ requestFileUpload filename ]
+
+        else
+            model ! [ requestFileUpload filename ]
 
     else
-        []
+        model
+            ! [ showModal <|
+                    """
+Unknown file.
+
+Check that the file you're dropping is listed in either tab ONA or tab Raw.
+
+If it's not, determine which file you want to replace, and if the contents are right, """
+                        ++ """rename the file so that it matches the list and try dropping again."""
+              ]
