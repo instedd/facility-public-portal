@@ -5,7 +5,9 @@ import Dataset
         ( Dataset
         , Event(..)
         , FileState
+        , Fileset
         , ImportStartResult
+        , empty
         , eventDecoder
         , fileLabel
         , humanReadableFileSize
@@ -15,9 +17,9 @@ import Dataset
 import Date exposing (Date)
 import Dict exposing (Dict)
 import Dom.Scroll exposing (toBottom)
-import Html exposing (Html, a, div, h1, p, pre, span, text)
+import Html exposing (Html, a, div, h1, li, p, pre, span, text, ul)
 import Html.App
-import Html.Attributes exposing (class, id)
+import Html.Attributes exposing (class, href, id)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (decodeValue, string)
@@ -34,7 +36,14 @@ type alias Model =
     , importState : Maybe ImportState
     , currentDate : Maybe Date
     , uploading : Dict String ()
+    , currentTab : Tab
     }
+
+
+type Tab
+    = Raw
+    | Ona
+
 
 type alias ImportState =
     { processId : String
@@ -58,6 +67,7 @@ type Msg
     | CurrentTime Time
     | UploadingFile String
     | UploadedFile String
+    | SelectTab Tab
 
 
 port datasetEvent : (Json.Decode.Value -> msg) -> Sub msg
@@ -87,10 +97,11 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    { dataset = Dict.empty
+    { dataset = Dataset.empty
     , importState = Nothing
     , currentDate = Nothing
     , uploading = Dict.empty
+    , currentTab = Ona
     }
         ! [ Task.perform Utils.notFailing CurrentTime Time.now ]
 
@@ -104,9 +115,15 @@ view model =
             , text "You could also import ONA files."
             , text "You'll be able to review before new data is deployed."
             ]
+        , div [ class "row" ]
+            [ div [ class "col s12 pseudo-tabs" ]
+                [ tab Ona model.currentTab "ONA"
+                , tab Raw model.currentTab "RAW"
+                ]
+            ]
         , case model.importState of
             Nothing ->
-                datasetView model
+                tabView model
 
             Just importState ->
                 importView importState
@@ -127,11 +144,44 @@ view model =
         ]
 
 
-datasetView : Model -> Html msg
-datasetView model =
-    model.dataset
+tab : Tab -> Tab -> String -> Html Msg
+tab tab activeTab label =
+    div
+        [ class <| pseudoTabClass activeTab tab
+        , onClick <| SelectTab tab
+        ]
+        [ text label ]
+
+
+pseudoTabClass : Tab -> Tab -> String
+pseudoTabClass activeTab evaldTab =
+    if activeTab == evaldTab then
+        "pseudo-tab active"
+
+    else
+        "pseudo-tab"
+
+
+tabView : Model -> Html msg
+tabView model =
+    filesetView model <| tabFileset model.dataset model.currentTab
+
+
+tabFileset : Dataset -> Tab -> Fileset
+tabFileset model tab =
+    case tab of
+        Raw ->
+            model.raw
+
+        Ona ->
+            model.ona
+
+
+filesetView : Model -> Fileset -> Html msg
+filesetView model fileset =
+    fileset
         |> Dict.toList
-        |> List.map (\(filename, fileState) -> fileView model.currentDate (filename, fileState) (Dict.member filename model.uploading))
+        |> List.map (\( filename, fileState ) -> fileView model.currentDate ( filename, fileState ) (Dict.member filename model.uploading))
         |> div [ class "row" ]
 
 
@@ -147,7 +197,12 @@ fileView currentDate ( name, state ) isUploading =
             [ div [] [ text name ]
             , fileLineView <| fileLabel state humanReadableFileSize
             , fileLineView <| fileLabel state (humanReadableFileTimestamp currentDate)
-            , fileLineView <| if isUploading then "Uploading..." else ""
+            , fileLineView <|
+                if isUploading then
+                    "Uploading..."
+
+                else
+                    ""
             ]
         ]
 
@@ -233,6 +288,9 @@ update msg model =
 
         UploadedFile filename ->
             fileUploaded model filename ! []
+
+        SelectTab tab ->
+            { model | currentTab = tab } ! []
 
 
 fileUploading : Model -> String -> Model

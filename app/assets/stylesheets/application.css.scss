@@ -494,11 +494,36 @@ input[type="checkbox"]:checked + label:before {
     border-width: 2px;
     border-style: solid;
     color: #0f47af;
+    height: 110px;
   }
 
   .file-applied {
     border-style: none;
     color: #000000;
   }
-}
 
+  .pseudo-tabs {
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: #dddddd;
+    padding: 0px;
+  }
+
+  .pseudo-tab {
+    display: inline-block;
+    padding: 8px;
+    padding-bottom: 0px;
+    width: 80px;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .pseudo-tab.active {
+    border-style: solid;
+    border-color:  #0f47af;
+    border-width: 0px;
+    border-bottom-width: 5px;
+    font-weight: 500;
+    font-size: 16px;
+  }
+}

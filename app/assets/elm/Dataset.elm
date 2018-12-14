@@ -1,8 +1,10 @@
 module Dataset exposing
     ( Dataset
+    , Fileset
     , Event(..)
     , FileState
     , ImportStartResult
+    , empty
     , eventDecoder
     , fileLabel
     , humanReadableFileSize
@@ -28,8 +30,14 @@ type alias FileState =
     }
 
 
-type alias Dataset =
+type alias Fileset =
     Dict String (Maybe FileState)
+
+
+type alias Dataset =
+    { ona : Fileset
+    , raw : Fileset
+    }
 
 
 type alias Log =
@@ -50,8 +58,21 @@ type Event
     | ImportComplete ImportResult
 
 
+empty : Dataset
+empty =
+    { ona = Dict.empty, raw = Dict.empty }
+
+
 decoder : Json.Decode.Decoder Dataset
 decoder =
+    object2
+        Dataset
+        ("ona" := filesetDecoder)
+        ("raw" := filesetDecoder)
+
+
+filesetDecoder : Json.Decode.Decoder Fileset
+filesetDecoder =
     dict <|
         maybe <|
             object4
@@ -115,8 +136,8 @@ importDataset handler =
 
 
 knownFile : String -> Dataset -> Bool
-knownFile =
-    Dict.member
+knownFile filename dataset =
+    Dict.member filename dataset.ona || Dict.member filename dataset.raw
 
 
 fileLabel : Maybe FileState -> (FileState -> String) -> String

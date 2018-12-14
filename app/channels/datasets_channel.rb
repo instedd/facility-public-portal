@@ -16,21 +16,38 @@ class DatasetsChannel < ActionCable::Channel::Base
     broadcast_to("events", type: :datasets_update, datasets: datasets)
   end
 
-
   private
 
   FILES = %w(
     categories.csv
     category_groups.csv
-    facilities.csv
-    facility_categories.csv
     facility_types.csv
     locations.csv
   )
 
-  def self.datasets
-    FILES.each_with_object({}) { |file, datasets|
+  RAW_FILES = %w(
+    facilities.csv
+    facility_categories.csv
+  )
+
+  ONA_FILES = %w(
+    data.csv
+    mapping.csv
+  )
+
+  def self.files_to_hash(files)
+    files.each_with_object({}) { |file, datasets|
       datasets[file] = file_state(file)
+    }
+  end
+
+  def self.datasets
+    ona_files = files_to_hash(FILES + ONA_FILES)
+    raw_files = files_to_hash(FILES + RAW_FILES)
+
+    {
+      ona: ona_files,
+      raw: raw_files,
     }
   end
 
