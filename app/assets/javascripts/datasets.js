@@ -22,34 +22,34 @@ $(document).ready(function() {
 
   const dropArea = document.querySelector('body.datasets');
 
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function (eventName) {
     dropArea.addEventListener(eventName, preventDefaults, false);
   });
 
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function (eventName) {
     dropArea.addEventListener(eventName, preventDefaults, false)
   });
 
-  ['dragenter', 'dragover'].forEach(eventName => {
-    dropArea.addEventListener(eventName, (e) => highlight(e), false);
+  ['dragenter', 'dragover'].forEach(function (eventName) {
+    dropArea.addEventListener(eventName, function (e) { highlight(e) }, false);
   });
 
-  ['dragleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, (e) => unhighlight(e), false);
+  ['dragleave', 'drop'].forEach(function (eventName) {
+    dropArea.addEventListener(eventName, function (e) { unhighlight(e) }, false);
   });
 
-  dropArea.addEventListener('drop', (e) => handleDrop(e), false);
+  dropArea.addEventListener('drop', function (e) { handleDrop(e) }, false);
 
   function handleFiles(files) {
-    ([...files]).forEach(file => {
+    files.forEach(function (file) {
       droppedFiles[file.name] = file;
       app.ports.droppedFileEvent.send(file.name);
     });
   }
 
   function uploadFile(file) {
-    let url = '/datasets/upload';
-    let formData = new FormData()
+    var url = '/datasets/upload';
+    var formData = new FormData()
 
     formData.append('file', file)
 
@@ -64,8 +64,8 @@ $(document).ready(function() {
         'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
       }
     })
-    .then(() => { app.ports.uploadedFile.send(file.name) })
-    .catch(() => { /* Error. Inform the user */ })
+    .then(function () { app.ports.uploadedFile.send(file.name) })
+    .catch(function () { /* Error. Inform the user */ })
   }
 
   function preventDefaults(e) {
@@ -82,8 +82,8 @@ $(document).ready(function() {
   }
 
   function handleDrop(e) {
-    let dt = e.dataTransfer;
-    let files = dt.files;
+    var dt = e.dataTransfer;
+    var files = dt.files;
 
     handleFiles(files);
   }
