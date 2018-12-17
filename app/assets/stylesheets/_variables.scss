@@ -1,8 +1,9 @@
 //colors
 $color_mountain_mist_approx: #999999;
-$primary: #0f47af;
-$primary-light: lighten($primary, 3%);
-$primary-light2: lighten($primary, 45%);
+$primary-color: #0f47af;
+$primary: var(--primary, $primary-color);
+$primary-light: var(--primary-light, lighten($primary-color, 3%));
+$primary-light2: var(--primary-light2, lighten($primary-color, 45%));
 $grey3: #dadada;
 $grey-background: #F7F7F7;
 $code-background: #EAEAEA;
@@ -23,7 +24,7 @@ $sidebar_width_home: 300px;
   border-color: $primary;
 }
 .progress {
-  background-color: lighten($primary, 40%);
+  background-color: $primary-light2;
   .indeterminate {
       background-color: $primary;
   }

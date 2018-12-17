@@ -1,0 +1,12 @@
+<% if ENV['PRIMARY_COLOR'] %>
+  <style type="text/css">
+    <%= Sass.compile(<<-CSS
+      :root {
+        --primary: #{ENV['PRIMARY_COLOR']};
+        --primary-light: \#{lighten(#{ENV['PRIMARY_COLOR']}, 3%)};
+        --primary-light2: \#{lighten(#{ENV['PRIMARY_COLOR']}, 45%)};
+      };
+    CSS
+    ) %>
+  </style>
+<% end %>
