@@ -1,7 +1,7 @@
 $(document).ready(function() {
   var elmDatasetsContainer = document.getElementById('elm-datasets');
   if (!elmDatasetsContainer) return;
-  var app = Elm.MainDatasets.embed(elmDatasetsContainer);
+  var app = Elm.MainDatasets.embed(elmDatasetsContainer, '/datasets/download/');
 
   window.App.cable.subscriptions.create({ channel: "DatasetsChannel" }, {
     received: function(data) {

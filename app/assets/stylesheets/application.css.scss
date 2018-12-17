@@ -494,7 +494,9 @@ input[type="checkbox"]:checked + label:before {
     border-width: 2px;
     border-style: solid;
     color: #0f47af;
-    height: 110px;
+    height: 130px;
+    padding-bottom: 10px;
+    position: relative;
   }
 
   .file-applied {
@@ -525,5 +527,13 @@ input[type="checkbox"]:checked + label:before {
     border-bottom-width: 5px;
     font-weight: 500;
     font-size: 16px;
+  }
+
+  .file-download {
+    color: #999999;
+    position: absolute;
+    bottom: 10px;
+    left: 15px;
+    cursor: pointer;
   }
 }

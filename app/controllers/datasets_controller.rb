@@ -35,4 +35,12 @@ class DatasetsController < ApplicationController
     DatasetsChannel.dataset_update
     render json: :ok
   end
+
+  def download
+    requested_file = "#{params[:filename]}.csv"
+
+    # Set MIME type to */* to avoid browsers complaining with
+    # "Resource interpreted as Document but transferred with MIME type text/csv"
+    send_file(DatasetsChannel.path_for(requested_file), filename: requested_file, type: '*/*')
+  end
 end

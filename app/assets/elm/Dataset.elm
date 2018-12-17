@@ -8,6 +8,7 @@ module Dataset exposing
     , empty
     , eventDecoder
     , fileLabel
+    , fileMissing
     , humanReadableFileSize
     , humanReadableFileTimestamp
     , importDataset
@@ -228,3 +229,8 @@ humanReadableFileSize state =
                 [ toString state.size, " B" ]
     in
     String.concat s
+
+
+fileMissing : FileState -> Bool
+fileMissing f =
+    f.size == 0

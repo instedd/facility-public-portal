@@ -11,6 +11,7 @@ import Dataset
         , empty
         , eventDecoder
         , fileLabel
+        , fileMissing
         , humanReadableFileSize
         , humanReadableFileTimestamp
         , importDataset
@@ -18,9 +19,9 @@ import Dataset
 import Date exposing (Date)
 import Dict exposing (Dict)
 import Dom.Scroll exposing (toBottom)
-import Html exposing (Html, a, div, h1, li, p, pre, span, text, ul)
+import Html exposing (Html, a, div, h1, i, li, p, pre, span, text, ul)
 import Html.App
-import Html.Attributes exposing (class, href, id)
+import Html.Attributes exposing (attribute, class, download, href, id)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (decodeValue, string)
@@ -38,6 +39,7 @@ type alias Model =
     , currentDate : Maybe Date
     , uploading : Dict String ()
     , currentTab : FilesetTag
+    , downloadEndpoint : String
     }
 
 
@@ -84,9 +86,13 @@ port requestFileUpload : String -> Cmd msg
 port showModal : String -> Cmd msg
 
 
-main : Program Never
+type alias Flags =
+    String
+
+
+main : Program Flags
 main =
-    Html.App.program
+    Html.App.programWithFlags
         { init = init
         , view = view
         , update = update
@@ -94,13 +100,14 @@ main =
         }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Flags -> ( Model, Cmd Msg )
+init downloadEndpoint =
     { dataset = Dataset.empty
     , importState = Nothing
     , currentDate = Nothing
     , uploading = Dict.empty
     , currentTab = Ona
+    , downloadEndpoint = downloadEndpoint
     }
         ! [ Task.perform Utils.notFailing CurrentTime Time.now ]
 
@@ -161,7 +168,7 @@ pseudoTabClass activeTab evaldTab =
         "pseudo-tab"
 
 
-tabView : Model -> Html msg
+tabView : Model -> Html Msg
 tabView model =
     filesetView model <| tabFileset model.dataset model.currentTab
 
@@ -176,12 +183,17 @@ tabFileset model tab =
             model.ona
 
 
-filesetView : Model -> Fileset -> Html msg
+filesetView : Model -> Fileset -> Html Msg
 filesetView model fileset =
     fileset
         |> Dict.toList
-        |> List.map (\( filename, fileState ) -> fileView model.currentDate ( filename, fileState ) (Dict.member filename model.uploading))
+        |> List.map (configureFileView model)
         |> div [ class "row" ]
+
+
+configureFileView : Model -> ( String, Maybe FileState ) -> Html Msg
+configureFileView model ( filename, fileState ) =
+    fileView model.downloadEndpoint model.currentDate ( filename, fileState ) (Dict.member filename model.uploading)
 
 
 importView : ImportState -> Html msg
@@ -189,8 +201,8 @@ importView importState =
     pre [ id "import-log" ] (importState.log |> List.map text)
 
 
-fileView : Maybe Date -> ( String, Maybe FileState ) -> Bool -> Html msg
-fileView currentDate ( name, state ) isUploading =
+fileView : String -> Maybe Date -> ( String, Maybe FileState ) -> Bool -> Html Msg
+fileView downloadEndpoint currentDate ( name, state ) isUploading =
     div [ class "col m4 s12" ]
         [ div [ class <| appliedClass "card-panel z-depth-0 file-card file-applied" state ]
             [ div [] [ text name ]
@@ -202,8 +214,31 @@ fileView currentDate ( name, state ) isUploading =
 
                 else
                     ""
+            , downloadButton downloadEndpoint name state
             ]
         ]
+
+
+downloadButton : String -> String -> Maybe FileState -> Html Msg
+downloadButton downloadEndpoint name mayF =
+    case mayF of
+        Nothing ->
+            div [] []
+
+        Just state ->
+            if fileMissing state then
+                div [] []
+
+            else
+                a
+                    [ href <| downloadEndpoint ++ name
+                    , download True
+                    ]
+                    [ i
+                        [ class "material-icons file-download"
+                        ]
+                        [ text "arrow_downward" ]
+                    ]
 
 
 appliedClass : String -> Maybe FileState -> String
