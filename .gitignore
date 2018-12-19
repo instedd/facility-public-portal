@@ -31,5 +31,6 @@ config/environments/*.local.yml
 
 app/assets/javascripts/i18n/
 public/pictures/
+public/assets/
 
 docker-compose\.override\.yml
