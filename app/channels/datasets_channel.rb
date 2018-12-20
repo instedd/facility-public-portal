@@ -18,9 +18,9 @@ class DatasetsChannel < ActionCable::Channel::Base
 
   def self.directory_for(filename)
     if ONA_FILES.include?(filename)
-      Rails.root.join('data', 'input', 'ona')
+      Rails.root.join(Settings.input_dir, 'ona')
     elsif (FILES + RAW_FILES).include?(filename)
-      Rails.root.join('data', 'input')
+      Rails.root.join(Settings.input_dir)
     else
       raise ArgumentError.new("Unknown filename")
     end

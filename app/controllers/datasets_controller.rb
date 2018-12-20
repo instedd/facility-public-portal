@@ -7,7 +7,7 @@ class DatasetsController < ApplicationController
   layout "content"
 
   def import
-    stdin, stdout, stderr, wait_thr = Open3.popen3("#{Rails.root}/bin/import-dataset", "#{Rails.root}/data/input")
+    stdin, stdout, stderr, wait_thr = Open3.popen3("#{Rails.root}/bin/import-dataset", Rails.root.join(Settings.input_dir).to_s)
     pid = SecureRandom.uuid
     Thread.new do
       loop do
