@@ -8,6 +8,7 @@ RAILS_ENV=production \
   SETTINGS__LOCALES__ES=Español \
   SETTINGS__LOCALES__AM=አማርኛ \
   SETTINGS__LOCALES__FR=Français \
+  SECRET_KEY_BASE=secret \
   bundle exec rake i18n:js:export
 
 bundle exec rake assets:precompile RAILS_ENV=production SECRET_KEY_BASE=secret

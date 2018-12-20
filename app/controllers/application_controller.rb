@@ -39,7 +39,7 @@ class ApplicationController < ActionController::Base
 
   def set_js_flags
     @js_flags = {
-      "authenticated" => valid_credentials?,
+      "authenticated" => user_signed_in?,
       "contactEmail" => Settings.report_email_to,
     }
   end
@@ -52,14 +52,5 @@ class ApplicationController < ActionController::Base
       I18n.locale = I18n.default_locale
     end
     cookies[:locale] = I18n.locale
-  end
-
-  def valid_credentials?
-    if auth_headers = request.headers["Authorization"]
-      expected = ActionController::HttpAuthentication::Basic.encode_credentials(Settings.admin_user, Settings.admin_pass)
-      return auth_headers.eql? expected
-    end
-
-    return false
   end
 end

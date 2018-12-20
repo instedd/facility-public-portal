@@ -1,4 +1,4 @@
-module I18n exposing (..)
+module I18n exposing (TranslationId(..), t)
 
 import Native.I18n
 
@@ -35,6 +35,8 @@ type TranslationId
     | DetailedDescription
     | SelectIssueToReport
     | SendReport
+    | Logout
+
 
 t : TranslationId -> String
 t resource =

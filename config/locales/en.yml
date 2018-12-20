@@ -50,3 +50,4 @@ en:
   detailed_description: Detailed description (optional)
   select_issue_to_report: Please select at least 1 issue to report
   send_report: Send report
+  logout: Logout

@@ -1,22 +1,21 @@
-module Menu
-    exposing
-        ( Model(..)
-        , Item(..)
-        , Settings
-        , toggle
-        , anchor
-        , fixed
-        , togglingContent
-        , dimWhenOpen
-        , sideBar   
-        , parseItem
-        )
+module Menu exposing
+    ( Item(..)
+    , Model(..)
+    , Settings
+    , anchor
+    , dimWhenOpen
+    , fixed
+    , parseItem
+    , sideBar
+    , toggle
+    , togglingContent
+    )
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import I18n exposing (..)
 import Layout
-import SelectList exposing (include, iff)
+import SelectList exposing (iff, include)
 import Shared exposing (icon, onClick)
 
 
@@ -31,6 +30,7 @@ type Item
     | LandingPage
     | Editor
     | Dataset
+    | Logout
 
 
 type alias Settings =
@@ -67,34 +67,36 @@ menuContent settings active =
                     ]
                 ]
     in
-        div [ class "menu" ]
-            [ ul []
-                (SelectList.select
-                    [ include <| menuItem Map "/map" "map" I18n.Map
-                    , iff settings.showEdition <|
-                        menuItem Editor "/content" "mode_edit" I18n.Editor
-                    , iff settings.showEdition <|
-                        menuItem Dataset "/datasets" "storage" I18n.Dataset
-                    , include <| menuItem LandingPage "/" "info" I18n.LandingPage
-                    , include <| menuItem ApiDoc "/docs" "code" I18n.ApiDocs
-                    , include <| hr [] []
-                    , include <|
-                        li []
-                            [ a [ href <| "/api/dump" ]
-                                [ icon "file_download"
-                                , text <| t I18n.FullDownload
-                                ]
+    div [ class "menu" ]
+        [ ul []
+            (SelectList.select
+                [ include <| menuItem Map "/map" "map" I18n.Map
+                , iff settings.showEdition <|
+                    menuItem Editor "/content" "mode_edit" I18n.Editor
+                , iff settings.showEdition <|
+                    menuItem Dataset "/datasets" "storage" I18n.Dataset
+                , iff settings.showEdition <|
+                    menuItem Logout "/users/sign_out" "logout" I18n.Logout
+                , include <| menuItem LandingPage "/" "info" I18n.LandingPage
+                , include <| menuItem ApiDoc "/docs" "code" I18n.ApiDocs
+                , include <| hr [] []
+                , include <|
+                    li []
+                        [ a [ href <| "/api/dump" ]
+                            [ icon "file_download"
+                            , text <| t I18n.FullDownload
                             ]
-                    , include <|
-                        li []
-                            [ a [ href <| "mailto:" ++ settings.contactEmail ]
-                                [ icon "email"
-                                , text <| t I18n.Contact
-                                ]
+                        ]
+                , include <|
+                    li []
+                        [ a [ href <| "mailto:" ++ settings.contactEmail ]
+                            [ icon "email"
+                            , text <| t I18n.Contact
                             ]
-                    ]
-                )
-            ]
+                        ]
+                ]
+            )
+        ]
 
 
 togglingContent : Settings -> Item -> Model -> List (Html a) -> List (Html a)
@@ -118,7 +120,7 @@ dimWhenOpen content model =
             content
 
         Open ->
-            (div [ class "overlay" ] [])
+            div [ class "overlay" ] []
                 :: content
 
 

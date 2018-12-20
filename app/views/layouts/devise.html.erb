@@ -1,0 +1,22 @@
+<% content_for :body do %>
+  <script>
+    window.FPP = {
+      settings: <%= raw({authenticated: false, contactEmail: '', menuItem: ''}.to_json) %>
+    }
+  </script>
+  <header>
+    <div id="elm-menu">
+    </div>
+  </header>
+  <main>
+    <section class="content">
+      <%= content_for?(:content) ? yield(:content) : yield %>
+    </section>
+  </main>
+  <footer>
+    <section class="content">
+      <span class="right">version: <%= Rails.application.config.version_name %></span>
+    </section>
+  </footer>
+<% end %>
+<%= render template: "layouts/application" %>

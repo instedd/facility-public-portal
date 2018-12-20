@@ -1,5 +1,5 @@
 class ContentEditionController < ApplicationController
-  http_basic_authenticate_with name: Settings.admin_user, password: Settings.admin_pass
+  before_action :authenticate_user!
   before_action :set_editing_locale, except: :index
   before_action { @js_flags["menuItem"] = :editor }
 

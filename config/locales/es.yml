@@ -28,3 +28,4 @@ es:
   detailed_description: Descripción detallada (opcional)
   select_issue_to_report: Seleccione alguna opción para reportar
   send_report: Enviar reporte
+  logout: Cerrar sesión

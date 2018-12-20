@@ -16,7 +16,7 @@
     <%= stylesheet_link_tag "application", media: 'all' %>
   </head>
 
-  <body class="<%= params[:controller] %> <%= params[:action] %>">
+  <body class="<%= params[:controller].gsub('/', '_') %> <%= params[:action] %>">
     <%= content_for?(:body) ? yield(:body) : yield %>
   </body>
 </html>
