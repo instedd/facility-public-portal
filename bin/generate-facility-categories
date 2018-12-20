@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+APP_PATH = File.expand_path('../../config/application',  __dir__)
+require_relative '../config/boot'
+require_relative '../config/environment'
+
+require 'csv'
+
+unless ARGV.size == 1
+  puts "Usage: #{__FILE__} path/to/csvs/directory"
+  exit 1
+end
+
+input_path = ARGV[0]
+
+def assert_exists(input_path, file, error_message)
+  unless File.file? "#{input_path}/#{file}"
+    puts error_message
+    exit 1
+  end
+end
+
+puts "Generating facility_categories.csv file..."
+
+assert_exists(input_path, "ona/data.csv", "Error: ONA facility data file missing. I searched in: #{input_path}/ona/data.csv")
+assert_exists(input_path, "categories.csv", "Error: categories file missing. I need categories to be defined before I can generate the facility categories file.")
+assert_exists(input_path, "ona/mapping.csv", "Error: mapping file missing. I need mappings to be defined before I can generate the facility categories file.")
+
+begin
+  facility_data = OnaTransformation.read_csv("#{input_path}/ona/data.csv")
+  categories = OnaTransformation.read_csv("#{input_path}/categories.csv")
+  mappings = OnaTransformation.read_csv("#{input_path}/ona/mapping.csv")
+
+  facility_categories =
+    OnaTransformation.facility_categories(facility_data, categories, mappings)
+
+  CSV.open("#{input_path}/facility_categories.csv", "wb") do |csv|
+    facility_categories.each do |row|
+      csv << row
+    end
+  end
+
+  puts "Successfully generated facility_categories.csv file."
+rescue Exception => e
+  puts e.message()
+  puts e.backtrace
+  exit 1
+end
