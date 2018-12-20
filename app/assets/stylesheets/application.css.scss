@@ -536,4 +536,10 @@ input[type="checkbox"]:checked + label:before {
     left: 15px;
     cursor: pointer;
   }
+
+  .import-flash {
+    .valign-wrapper {
+      height: 53px;
+    }
+  }
 }

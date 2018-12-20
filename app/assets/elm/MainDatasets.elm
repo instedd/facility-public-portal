@@ -133,19 +133,39 @@ view model =
 
             Just importState ->
                 importView importState
-        , div [ class "card-panel actions right-align" ]
-            [ a
-                [ id "import-button"
-                , class "btn btn-large"
-                , onClick ImportClicked
-                ]
-                (case model.importState of
-                    Nothing ->
-                        [ text "Preview" ]
+        , div [ class "row card-panel" ]
+            [ div [ class "col s10 import-flash" ]
+                [ div [ class "valign-wrapper" ]
+                    [ text <|
+                        if missingFiles model then
+                            "Upload all files in order to run an import."
 
-                    Just _ ->
-                        [ spinner [ id "import-spinner" ] Spinner.White ]
-                )
+                        else
+                            ""
+                    ]
+                ]
+            , div [ class "col s2" ]
+                [ a
+                    [ id "import-button"
+                    , class
+                        ("actions btn btn-large"
+                            ++ (if missingFiles model then
+                                    " disabled"
+
+                                else
+                                    ""
+                               )
+                        )
+                    , onClick ImportClicked
+                    ]
+                    (case model.importState of
+                        Nothing ->
+                            [ text "Import" ]
+
+                        Just _ ->
+                            [ spinner [ id "import-spinner" ] Spinner.White ]
+                    )
+                ]
             ]
         ]
 
@@ -260,6 +280,17 @@ fileLineView line =
     div [ class "file-info" ] [ text line ]
 
 
+missingFiles : Model -> Bool
+missingFiles model =
+    (model.currentTab == Ona && missingFilesForProcess model.dataset.ona)
+        || (model.currentTab == Raw && missingFilesForProcess model.dataset.raw)
+
+
+missingFilesForProcess : Fileset -> Bool
+missingFilesForProcess set =
+    set |> Dict.values |> List.any ((==) Nothing)
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -289,7 +320,11 @@ update msg model =
                     model ! []
 
                 Nothing ->
-                    model ! [ importDataset ImportStarted ]
+                    if missingFiles model then
+                        model ! []
+
+                    else
+                        model ! [ importDataset ImportStarted ]
 
         ImportStarted result ->
             case result of
