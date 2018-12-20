@@ -41,10 +41,12 @@ $(document).ready(function() {
   dropArea.addEventListener('drop', function (e) { handleDrop(e) }, false);
 
   function handleFiles(files) {
-    files.forEach(function (file) {
+    console.log(files)
+    for (i = 0; i < files.length; i++) {
+      var file = files[i];
       droppedFiles[file.name] = file;
       app.ports.droppedFileEvent.send(file.name);
-    });
+    }
   }
 
   function uploadFile(file) {
