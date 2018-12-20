@@ -41,7 +41,6 @@ $(document).ready(function() {
   dropArea.addEventListener('drop', function (e) { handleDrop(e) }, false);
 
   function handleFiles(files) {
-    console.log(files)
     for (i = 0; i < files.length; i++) {
       var file = files[i];
       droppedFiles[file.name] = file;

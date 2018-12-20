@@ -16,14 +16,18 @@ class DatasetsChannel < ActionCable::Channel::Base
     broadcast_to("events", type: :datasets_update, datasets: datasets)
   end
 
-  def self.path_for(filename)
+  def self.directory_for(filename)
     if ONA_FILES.include?(filename)
-      Rails.root.join('data', 'input', 'ona', filename)
+      Rails.root.join('data', 'input', 'ona')
     elsif (FILES + RAW_FILES).include?(filename)
-      Rails.root.join('data', 'input', filename)
+      Rails.root.join('data', 'input')
     else
       raise ArgumentError.new("Unknown filename")
     end
+  end
+
+  def self.path_for(filename)
+    Rails.root.join(directory_for(filename), filename)
   end
 
   private

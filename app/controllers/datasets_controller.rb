@@ -1,4 +1,5 @@
 require "open3"
+require "fileutils"
 
 class DatasetsController < ApplicationController
   http_basic_authenticate_with name: Settings.admin_user, password: Settings.admin_pass
@@ -27,8 +28,11 @@ class DatasetsController < ApplicationController
 
   def upload
     uploaded_io = params["file"]
+    filename_to_upload = uploaded_io.original_filename
 
-    File.open(DatasetsChannel.path_for(uploaded_io.original_filename), 'wb') do |file|
+    FileUtils.mkdir_p DatasetsChannel.directory_for(filename_to_upload)
+
+    File.open(DatasetsChannel.path_for(filename_to_upload), 'wb') do |file|
       file.write(uploaded_io.read)
     end
 
