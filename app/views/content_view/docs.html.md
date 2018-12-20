@@ -10,8 +10,8 @@ All API endpoints allows a `locale` parameter to specify the language or locale 
 | am | Amharic |
 
 ```
-$ curl 'vitalwave.instedd.org/api/facilities/85?locale=en'
-$ curl 'vitalwave.instedd.org/api/facilities/85?locale=am'
+$ curl '<%= request.base_url %>/api/facilities/85?locale=en'
+$ curl '<%= request.base_url %>/api/facilities/85?locale=am'
 ```
 
 ## Discovery
@@ -36,7 +36,7 @@ No paging is supported in this endpoint.
 ### Sample
 
 ```
-$ curl 'vitalwave.instedd.org/api/suggest?q=ur&lat=8.979780521754858&lng=38.758907318115234'
+$ curl '<%= request.base_url %>/api/suggest?q=ur&lat=8.979780521754858&lng=38.758907318115234'
 {
   "facilities": [
     {
@@ -104,7 +104,7 @@ Paging is supported to interate the whole results.
 
 
 ```
-$ curl 'vitalwave.instedd.org/api/search?location=113&size=7&lat=8.9797&lng=38.7589'
+$ curl '<%= request.base_url %>/api/search?location=113&size=7&lat=8.9797&lng=38.7589'
 {
   "items": [
     {
@@ -151,7 +151,7 @@ The `next_url` contains the path to be requested for the following page of resul
 
 
 ```
-$ curl 'vitalwave.instedd.org/api/search?from=7&location=113&size=7&lat=8.9797&lng=38.7589'
+$ curl '<%= request.base_url %>/api/search?from=7&location=113&size=7&lat=8.9797&lng=38.7589'
 {
   "items": [
     {
@@ -184,7 +184,7 @@ Given an `id` of a facility the details endpoint allows getting all the known in
 ### Sample
 
 ```
-$ curl 'vitalwave.instedd.org/api/facilities/85'
+$ curl '<%= request.base_url %>/api/facilities/85'
 {
   "id": 85,
   "source_id": "101466-1",
@@ -233,7 +233,7 @@ The facility types endpoint allows listing the types of all facilities.
 
 ### Sample
 ```
-$ curl 'vitalwave.instedd.org/api/facility_types'
+$ curl '<%= request.base_url %>/api/facility_types'
 [
   {
     "id": 1,
