@@ -1,4 +1,4 @@
-module Models exposing (..)
+module Models exposing (CategoriesByGroup, CategoriesByGroupItem, Category, CategoryGroup, Facility, FacilitySummary, FacilityType, LatLng, Location, LocationState(..), MapScale, MapViewport, MapViewportBounds, Ownership, Route(..), SearchResult, SearchSpec, Settings, Sorting(..), Suggestion(..), between, contains, distance, emptySearch, extend, isEmpty, maxDistance, querySearch, searchEquals, searchParams, setOwnership, setQuery, setType, shouldLoadMore)
 
 import Date exposing (Date)
 import Dict exposing (Dict)
@@ -16,6 +16,7 @@ type alias Settings =
     , ownerships : List Ownership
     , categoryGroups : List CategoryGroup
     , facilityPhotos : Bool
+    , authenticated : Bool
     }
 
 
@@ -98,9 +99,11 @@ type alias FacilitySummary =
     , adm : List String
     }
 
+
 type alias CategoryGroup =
     { name : String
     }
+
 
 type alias Category =
     { id : Int
@@ -178,7 +181,7 @@ maxDistance mapViewport =
 
 contains : MapViewport -> LatLng -> Bool
 contains mapViewport ( lat, lng ) =
-    (between mapViewport.bounds.west mapViewport.bounds.east lng) && (between mapViewport.bounds.south mapViewport.bounds.north lat)
+    between mapViewport.bounds.west mapViewport.bounds.east lng && between mapViewport.bounds.south mapViewport.bounds.north lat
 
 
 between : Float -> Float -> Float -> Bool
@@ -198,7 +201,7 @@ shouldLoadMore results mapViewport =
             False
 
         Just furthest ->
-            distance furthest.position mapViewport.center < (maxDistance mapViewport)
+            distance furthest.position mapViewport.center < maxDistance mapViewport
 
 
 extend : Maybe SearchResult -> Maybe SearchResult -> Maybe SearchResult
@@ -228,18 +231,18 @@ searchParams search =
                 Type ->
                     "type"
     in
-        select <|
-            List.map maybe
-                [ Maybe.map (\q -> ( "q", q )) search.q
-                , Maybe.map (\s -> ( "category", toString s )) search.category
-                , Maybe.map (\l -> ( "location", toString l )) search.location
-                , Maybe.map (\( lat, _ ) -> ( "lat", toString lat )) search.latLng
-                , Maybe.map (\( _, lng ) -> ( "lng", toString lng )) search.latLng
-                , Maybe.map (\t -> ( "type", toString t )) search.fType
-                , Maybe.map (\o -> ( "ownership", toString o )) search.ownership
-                , Maybe.map (\size -> ( "size", toString size )) search.size
-                , Maybe.map (\s -> ( "sort", sortingToString s )) search.sort
-                ]
+    select <|
+        List.map maybe
+            [ Maybe.map (\q -> ( "q", q )) search.q
+            , Maybe.map (\s -> ( "category", toString s )) search.category
+            , Maybe.map (\l -> ( "location", toString l )) search.location
+            , Maybe.map (\( lat, _ ) -> ( "lat", toString lat )) search.latLng
+            , Maybe.map (\( _, lng ) -> ( "lng", toString lng )) search.latLng
+            , Maybe.map (\t -> ( "type", toString t )) search.fType
+            , Maybe.map (\o -> ( "ownership", toString o )) search.ownership
+            , Maybe.map (\size -> ( "size", toString size )) search.size
+            , Maybe.map (\s -> ( "sort", sortingToString s )) search.sort
+            ]
 
 
 emptySearch : SearchSpec

@@ -1,10 +1,10 @@
-module Main exposing (..)
+module Main exposing (main)
 
 import AppFacilityDetails
 import AppHome
 import AppSearch
-import Html exposing (Html, div, span, p, text, a)
-import Html.Attributes exposing (id, class, style, href, attribute, classList)
+import Html exposing (Html, a, div, p, span, text)
+import Html.Attributes exposing (attribute, class, classList, href, id, style)
 import Layout
 import Map
 import Menu
@@ -28,6 +28,7 @@ type alias Flags =
     , ownerships : List Ownership
     , categoryGroups : List CategoryGroup
     , facilityPhotos : Bool
+    , authenticated : Bool
     }
 
 
@@ -95,11 +96,11 @@ init flags route =
     let
         settings =
             { fakeLocation =
-                (if flags.fakeUserPosition then
+                if flags.fakeUserPosition then
                     Just flags.initialPosition
-                 else
+
+                else
                     Nothing
-                )
             , contactEmail = flags.contactEmail
             , locale = flags.locale
             , locales = flags.locales
@@ -107,6 +108,7 @@ init flags route =
             , ownerships = flags.ownerships
             , categoryGroups = flags.categoryGroups
             , facilityPhotos = flags.facilityPhotos
+            , authenticated = flags.authenticated
             }
 
         model =
@@ -115,7 +117,7 @@ init flags route =
         cmds =
             [ Map.initializeMap flags.initialPosition ]
     in
-        model ! cmds
+    model ! cmds
 
 
 subscriptions : MainModel -> Sub MainMsg
@@ -169,7 +171,7 @@ mainUpdate msg mainModel =
                 Initializing route _ settings ->
                     case msg of
                         MapViewportChanged mapViewport ->
-                            (Initialized mapViewport settings Nothing)
+                            Initialized mapViewport settings Nothing
                                 ! [ Routing.navigate (Routing.routeFromResult route) ]
 
                         _ ->
@@ -223,7 +225,7 @@ mainUpdate msg mainModel =
                                     ( Page common (FacilityDetailsModel facilityModel context), navigateFacility facilityId )
 
                                 _ ->
-                                    (AppFacilityDetails.update common.settings msg facilityModel)
+                                    AppFacilityDetails.update common.settings msg facilityModel
                                         |> mapCmd FacilityDetailsMsg
                                         |> map (\m -> FacilityDetailsModel m context)
                                         |> map (Page common)
@@ -271,10 +273,10 @@ mainUrlUpdate result mainModel =
         _ ->
             let
                 viewport =
-                    (mapViewport mainModel)
+                    mapViewport mainModel
 
                 userLocation =
-                    (getUserLocation mainModel)
+                    getUserLocation mainModel
 
                 route =
                     Routing.routeFromResult result
@@ -287,48 +289,49 @@ mainUrlUpdate result mainModel =
                     , notice = notice mainModel
                     }
             in
-                case route of
-                    RootRoute { expanded } ->
-                        AppHome.init common.settings viewport userLocation
-                            |> mapBoth HomeMsg HomeModel
-                            |> map (Page { common | expanded = expanded })
+            case route of
+                RootRoute { expanded } ->
+                    AppHome.init common.settings viewport userLocation
+                        |> mapBoth HomeMsg HomeModel
+                        |> map (Page { common | expanded = expanded })
 
-                    FacilityRoute facilityId ->
-                        let
-                            context =
-                                case mainModel of
-                                    Page { expanded } (SearchModel searchModel) ->
-                                        FromSearch searchModel expanded
+                FacilityRoute facilityId ->
+                    let
+                        context =
+                            case mainModel of
+                                Page { expanded } (SearchModel searchModel) ->
+                                    FromSearch searchModel expanded
 
-                                    Page _ (FacilityDetailsModel _ previousContext) ->
-                                        previousContext
+                                Page _ (FacilityDetailsModel _ previousContext) ->
+                                    previousContext
 
-                                    Page { expanded } _ ->
-                                        FromUnknown expanded
+                                Page { expanded } _ ->
+                                    FromUnknown expanded
 
-                                    _ ->
-                                        FromUnknown False
-                        in
-                            AppFacilityDetails.init viewport userLocation facilityId
-                                |> mapBoth FacilityDetailsMsg ((flip FacilityDetailsModel) context)
-                                |> map (Page common)
+                                _ ->
+                                    FromUnknown False
+                    in
+                    AppFacilityDetails.init viewport userLocation facilityId
+                        |> mapBoth FacilityDetailsMsg (flip FacilityDetailsModel context)
+                        |> map (Page common)
 
-                    SearchRoute { spec, expanded } ->
-                        (case mainModel of
-                            Page _ (FacilityDetailsModel _ (FromSearch searchModel _)) ->
-                                if searchModel.query == spec then
-                                    ( searchModel, AppSearch.restoreCmd )
-                                else
-                                    AppSearch.init common.settings spec viewport userLocation
+                SearchRoute { spec, expanded } ->
+                    (case mainModel of
+                        Page _ (FacilityDetailsModel _ (FromSearch searchModel _)) ->
+                            if searchModel.query == spec then
+                                ( searchModel, AppSearch.restoreCmd )
 
-                            _ ->
+                            else
                                 AppSearch.init common.settings spec viewport userLocation
-                        )
-                            |> mapBoth SearchMsg SearchModel
-                            |> map (Page { common | expanded = expanded })
 
-                    NotFoundRoute ->
-                        ( withNotice unknownRouteErrorNotice mainModel, navigateHome False )
+                        _ ->
+                            AppSearch.init common.settings spec viewport userLocation
+                    )
+                        |> mapBoth SearchMsg SearchModel
+                        |> map (Page { common | expanded = expanded })
+
+                NotFoundRoute ->
+                    ( withNotice unknownRouteErrorNotice mainModel, navigateHome False )
 
 
 mapViewport : MainModel -> MapViewport
@@ -397,21 +400,21 @@ mainView mainModel =
                 withControls =
                     withLocale << withScale
             in
-                case pagedModel of
-                    HomeModel pagedModel ->
-                        AppHome.view pagedModel
-                            |> withControls
-                            |> mapView HomeMsg common
+            case pagedModel of
+                HomeModel pagedModel ->
+                    AppHome.view pagedModel
+                        |> withControls
+                        |> mapView HomeMsg common
 
-                    FacilityDetailsModel pagedModel _ ->
-                        AppFacilityDetails.view common.settings pagedModel
-                            |> withControls
-                            |> mapView FacilityDetailsMsg common
+                FacilityDetailsModel pagedModel _ ->
+                    AppFacilityDetails.view common.settings pagedModel
+                        |> withControls
+                        |> mapView FacilityDetailsMsg common
 
-                    SearchModel pagedModel ->
-                        AppSearch.view pagedModel
-                            |> withControls
-                            |> mapView SearchMsg common
+                SearchModel pagedModel ->
+                    AppSearch.view pagedModel
+                        |> withControls
+                        |> mapView SearchMsg common
 
         Initializing _ _ _ ->
             loadingView Nothing
@@ -429,7 +432,7 @@ scaleControlView : MapScale -> Html a
 scaleControlView scale =
     div [ class "scale" ]
         [ span [] [ Html.text scale.label ]
-        , div [ class "line", style [ ( "width", (toString scale.width) ++ "px" ) ] ] []
+        , div [ class "line", style [ ( "width", toString scale.width ++ "px" ) ] ] []
         ]
 
 
@@ -443,8 +446,8 @@ localeControlView settings route =
             Html.a [ Html.Attributes.href (localeUrl key), classList [ ( "active", key == settings.locale ) ] ]
                 [ Html.text name ]
     in
-        div [ class "locales" ] <|
-            List.map localeAnchor settings.locales
+    div [ class "locales" ] <|
+        List.map localeAnchor settings.locales
 
 
 loadingView : Maybe Notice -> Html MainMsg
@@ -461,7 +464,7 @@ mapView wmsg { settings, menu, expanded, notice } viewContent =
     let
         menuSettings =
             { contactEmail = settings.contactEmail
-            , showEdition = False
+            , showEdition = settings.authenticated
             }
 
         hosting =
@@ -491,21 +494,21 @@ mapView wmsg { settings, menu, expanded, notice } viewContent =
         mapControl =
             Layout.expansibleControl header expanded ToggleExpand collapsedView expandedView
     in
-        Layout.overMap <|
-            select
-                [ include <|
-                    mapControl
-                , unless (List.isEmpty viewContent.bottom) <|
-                    div [ id "bottom-action", class "z-depth-1" ] (hosting viewContent.bottom)
-                , include <|
-                    div [ id "map-toolbar", class "z-depth-1" ] (hosting viewContent.toolbar)
-                , unless (List.isEmpty viewContent.modal) <|
-                    div [ id "modal", class "modal open" ] (hosting viewContent.modal)
-                , include <|
-                    mobileMenu
-                , maybe <|
-                    Maybe.map noticePopup notice
-                ]
+    Layout.overMap <|
+        select
+            [ include <|
+                mapControl
+            , unless (List.isEmpty viewContent.bottom) <|
+                div [ id "bottom-action", class "z-depth-1" ] (hosting viewContent.bottom)
+            , include <|
+                div [ id "map-toolbar", class "z-depth-1" ] (hosting viewContent.toolbar)
+            , unless (List.isEmpty viewContent.modal) <|
+                div [ id "modal", class "modal open" ] (hosting viewContent.modal)
+            , include <|
+                mobileMenu
+            , maybe <|
+                Maybe.map noticePopup notice
+            ]
 
 
 noticePopup : Notice -> Html MainMsg
@@ -517,9 +520,9 @@ noticePopup notice =
         , div [ class "card-action" ]
             (select
                 [ iff notice.refresh <|
-                    (a [ href "#", attribute "onClick" "event.preventDefault(); window.location.reload(true)" ] [ text "Refresh" ])
+                    a [ href "#", attribute "onClick" "event.preventDefault(); window.location.reload(true)" ] [ text "Refresh" ]
                 , include <|
-                    (a [ href "#", Shared.onClick DismissNotice ] [ text "Dismiss" ])
+                    a [ href "#", Shared.onClick DismissNotice ] [ text "Dismiss" ]
                 ]
             )
         ]
@@ -582,6 +585,7 @@ withErrorNotice msg mainModel =
         |> withNotice
             (if displayErrorDetail then
                 { message = msg, refresh = True }
+
              else
                 { message = "Something went wrong. You may want to refresh the application.", refresh = True }
             )
