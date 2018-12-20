@@ -41,6 +41,7 @@ class ApplicationController < ActionController::Base
     @js_flags = {
       "authenticated" => user_signed_in?,
       "contactEmail" => Settings.report_email_to,
+      "menuItem" => ""
     }
   end
 

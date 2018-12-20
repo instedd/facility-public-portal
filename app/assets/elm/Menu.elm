@@ -31,6 +31,7 @@ type Item
     | Editor
     | Dataset
     | Logout
+    | Account
 
 
 type alias Settings =
@@ -70,13 +71,16 @@ menuContent settings active =
     div [ class "menu" ]
         [ ul []
             (SelectList.select
-                [ include <| menuItem Map "/map" "map" I18n.Map
+                [ iff settings.showEdition <|
+                    menuItem Account "/users/edit" "account_circle" I18n.Account
                 , iff settings.showEdition <|
                     menuItem Editor "/content" "mode_edit" I18n.Editor
                 , iff settings.showEdition <|
                     menuItem Dataset "/datasets" "storage" I18n.Dataset
                 , iff settings.showEdition <|
                     menuItem Logout "/users/sign_out" "logout" I18n.Logout
+                , iff settings.showEdition <| hr [] []
+                , include <| menuItem Map "/map" "map" I18n.Map
                 , include <| menuItem LandingPage "/" "info" I18n.LandingPage
                 , include <| menuItem ApiDoc "/docs" "code" I18n.ApiDocs
                 , include <| hr [] []
@@ -161,6 +165,9 @@ parseItem s =
 
         "map" ->
             Map
+
+        "account" ->
+            Account
 
         _ ->
             LandingPage

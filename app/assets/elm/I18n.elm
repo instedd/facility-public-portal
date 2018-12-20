@@ -36,6 +36,7 @@ type TranslationId
     | SelectIssueToReport
     | SendReport
     | Logout
+    | Account
 
 
 t : TranslationId -> String
