@@ -52,3 +52,10 @@ en:
   send_report: Send report
   logout: Logout
   account: My Account
+  mon_thu: Monday to Thursday
+  mon_fri: Monday to Friday
+  fri: Friday
+  sat: Saturday
+  sun: Sunday
+  to: to
+  from: from

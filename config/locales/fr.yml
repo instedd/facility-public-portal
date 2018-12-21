@@ -28,3 +28,10 @@ fr:
   detailed_description: Description détaillée (facultatif)
   select_issue_to_report: Veuillez sélectionner au moins 1 problème à signaler
   send_report: Envoyer un rapport
+  mon_thu: Lundi à Jeudi
+  mon_fri: Lundi à Vendredi
+  fri: Vendredi
+  sat: Samedi
+  sun: Dimanche
+  to: à
+  from: de
