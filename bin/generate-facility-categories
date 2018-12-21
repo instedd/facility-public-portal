@@ -12,18 +12,21 @@ end
 
 input_path = ARGV[0]
 
-def assert_exists(input_path, file, error_message)
+logger = Logger.new(STDOUT)
+logger.level = Logger::INFO
+
+logger.info "Generating facility_categories.csv file..."
+
+def assert_exists(logger, input_path, file, error_message)
   unless File.file? "#{input_path}/#{file}"
-    puts error_message
+    logger.info error_message
     exit 1
   end
 end
 
-puts "Generating facility_categories.csv file..."
-
-assert_exists(input_path, "ona/data.csv", "Error: ONA facility data file missing. I searched in: #{input_path}/ona/data.csv")
-assert_exists(input_path, "categories.csv", "Error: categories file missing. I need categories to be defined before I can generate the facility categories file.")
-assert_exists(input_path, "ona/mapping.csv", "Error: mapping file missing. I need mappings to be defined before I can generate the facility categories file.")
+assert_exists(logger, input_path, "ona/data.csv", "Error: ONA facility data file missing. I searched in: #{input_path}/ona/data.csv")
+assert_exists(logger, input_path, "categories.csv", "Error: categories file missing. I need categories to be defined before I can generate the facility categories file.")
+assert_exists(logger, input_path, "ona/mapping.csv", "Error: mapping file missing. I need mappings to be defined before I can generate the facility categories file.")
 
 begin
   facility_data = OnaTransformation.read_csv("#{input_path}/ona/data.csv")
@@ -39,9 +42,9 @@ begin
     end
   end
 
-  puts "Successfully generated facility_categories.csv file."
+  logger.info "Successfully generated facility_categories.csv file.\n"
 rescue Exception => e
-  puts e.message()
-  puts e.backtrace
+  logger.error e.message()
+  logger.error e.backtrace
   exit 1
 end

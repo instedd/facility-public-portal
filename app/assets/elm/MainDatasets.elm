@@ -43,10 +43,14 @@ type alias Model =
     }
 
 
-type alias ImportState =
-    { processId : String
-    , log : List String
-    }
+type alias ImportDetails =
+    { processId : String, log : List String }
+
+
+type ImportState
+    = Started ImportDetails
+    | Succeeded ImportDetails
+    | Failed ImportDetails
 
 
 type alias ImportLog =
@@ -55,11 +59,19 @@ type alias ImportLog =
     }
 
 
+type ButtonAction
+    = Action Msg
+    | Navigate String
+
+
 type Msg
     = DatasetEvent (Result String Dataset.Event)
-    | ImportClicked
+    | ImportRaw
+    | ImportOna
+    | BackToFiles
     | ImportStarted (Result Http.Error ImportStartResult)
-    | ImportFinished
+    | ImportSucceeded
+    | ImportFailed
     | NoOp
     | DroppedFileEvent (Result String String)
     | CurrentTime Time
@@ -145,29 +157,87 @@ view model =
                     ]
                 ]
             , div [ class "col s2" ]
-                [ a
-                    [ id "import-button"
-                    , class
-                        ("actions btn btn-large"
-                            ++ (if missingFiles model then
-                                    " disabled"
-
-                                else
-                                    ""
-                               )
-                        )
-                    , onClick ImportClicked
-                    ]
-                    (case model.importState of
-                        Nothing ->
-                            [ text "Import" ]
-
-                        Just _ ->
-                            [ spinner [ id "import-spinner" ] Spinner.White ]
-                    )
+                [ actionButton
+                    (actionLabel model.importState)
+                    (not <| missingFiles model)
+                    (importAction model.currentTab model.importState)
                 ]
             ]
         ]
+
+
+actionLabel : Maybe ImportState -> Html Msg
+actionLabel maybeState =
+    case maybeState of
+        Nothing ->
+            text "Import"
+
+        Just state ->
+            case state of
+                Started _ ->
+                    spinner [ id "import-spinner" ] Spinner.White
+
+                Succeeded _ ->
+                    text "Map"
+
+                Failed _ ->
+                    text "Back"
+
+
+importAction : FilesetTag -> Maybe ImportState -> ButtonAction
+importAction fileset maybeState =
+    case maybeState of
+        Nothing ->
+            case fileset of
+                Ona ->
+                    Action ImportOna
+
+                Raw ->
+                    Action ImportRaw
+
+        Just state ->
+            case state of
+                Started _ ->
+                    Action NoOp
+
+                Succeeded _ ->
+                    Navigate "/map"
+
+                Failed _ ->
+                    Action BackToFiles
+
+
+actionButton : Html Msg -> Bool -> ButtonAction -> Html Msg
+actionButton content enabled action =
+    a
+        [ id "import-button"
+        , class
+            ("actions btn btn-large"
+                ++ (if enabled then
+                        ""
+
+                    else
+                        " disabled"
+                   )
+            )
+        , onClick
+            (case action of
+                Navigate _ ->
+                    NoOp
+
+                Action a ->
+                    a
+            )
+        , href
+            (case action of
+                Navigate uri ->
+                    uri
+
+                Action _ ->
+                    "#"
+            )
+        ]
+        [ content ]
 
 
 tab : FilesetTag -> FilesetTag -> String -> Html Msg
@@ -216,9 +286,32 @@ configureFileView model ( filename, fileState ) =
     fileView model.downloadEndpoint model.currentDate ( filename, fileState ) (Dict.member filename model.uploading)
 
 
+importDetails : ImportState -> ImportDetails
+importDetails state =
+    case state of
+        Started details ->
+            details
+
+        Succeeded details ->
+            details
+
+        Failed details ->
+            details
+
+
+importFailed : ImportState -> Bool
+importFailed state =
+    case state of
+        Failed _ ->
+            True
+
+        _ ->
+            False
+
+
 importView : ImportState -> Html msg
 importView importState =
-    pre [ id "import-log" ] (importState.log |> List.map text)
+    pre [ id "import-log" ] (importState |> importDetails |> .log |> List.map text)
 
 
 fileView : String -> Maybe Date -> ( String, Maybe FileState ) -> Bool -> Html Msg
@@ -302,41 +395,65 @@ update msg model =
                 Ok (ImportLog log) ->
                     case model.importState of
                         Just importState ->
-                            { model | importState = Just { importState | log = importState.log ++ [ log.log ] } }
-                                ! [ scrollToBottom "import-log" ]
+                            let
+                                details =
+                                    importDetails importState
+
+                                newImportState =
+                                    Just <| Started { details | log = details.log ++ [ log.log ] }
+                            in
+                            { model | importState = newImportState } ! [ scrollToBottom "import-log" ]
 
                         _ ->
                             model ! []
 
                 Ok (ImportComplete result) ->
-                    model ! [ delayMessage 1000 ImportFinished ]
+                    if result.exitCode == 0 then
+                        model ! [ delayMessage 1000 ImportSucceeded ]
+
+                    else
+                        model ! [ delayMessage 1000 ImportFailed ]
 
                 Err message ->
                     Debug.crash message
 
-        ImportClicked ->
-            case model.importState of
-                Just _ ->
-                    model ! []
+        ImportRaw ->
+            model ! [ importDataset model.currentTab ImportStarted ]
 
-                Nothing ->
-                    if missingFiles model then
-                        model ! []
+        ImportOna ->
+            model ! [ importDataset model.currentTab ImportStarted ]
 
-                    else
-                        model ! [ importDataset ImportStarted ]
+        BackToFiles ->
+            { model | importState = Nothing } ! []
 
         ImportStarted result ->
             case result of
                 Ok result ->
-                    { model | importState = Just { processId = result.processId, log = [] } }
+                    { model | importState = Just <| Started { processId = result.processId, log = [] } }
                         ! []
 
                 Err _ ->
                     model ! []
 
-        ImportFinished ->
-            { model | importState = Nothing } ! []
+        ImportSucceeded ->
+            (case model.importState of
+                Nothing ->
+                    model
+
+                Just state ->
+                    { model | importState = Just <| Succeeded <| importDetails state }
+            )
+                ! []
+
+        ImportFailed ->
+            (case model.importState of
+                Nothing ->
+                    model
+
+                Just state ->
+                    { model | importState = Just <| Failed <| importDetails state }
+            )
+                ! []
 
         NoOp ->
             model ! []

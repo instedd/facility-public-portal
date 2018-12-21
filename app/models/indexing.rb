@@ -136,7 +136,7 @@ class Indexing
           priority: type[:priority],
           facility_type_id: type[:id],
           ownership_id: f[:ownership] ? ownerships[f[:ownership]][:id] : nil,
-          name: f[:name].gsub(/\u00A0/,"").strip,
+          name: f[:name].to_s.gsub(/\u00A0/,"").strip,
           address: f[:address],
           opening_hours: localized_string(f, :opening_hours),
 

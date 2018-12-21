@@ -131,11 +131,15 @@ importResultDecoder =
         ("process_id" := string)
 
 
-importDataset : (Result Http.Error ImportStartResult -> msg) -> Cmd msg
-importDataset handler =
+importDataset : FilesetTag -> (Result Http.Error ImportStartResult -> msg) -> Cmd msg
+importDataset filesetTag handler =
     let
         url =
-            "/datasets/import"
+            if filesetTag == Ona then
+                "/datasets/import_ona"
+
+            else
+                "/datasets/import"
     in
     Task.perform
         (\error -> handler <| Err error)

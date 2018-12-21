@@ -21,7 +21,7 @@ class ConvertFromOna
   end
 
   def convert
-    logger.info "Convert process started!"
+    logger.info "Generating facilities.csv file"
 
     data = []
 
@@ -49,7 +49,7 @@ class ConvertFromOna
 
     write_csv(data)
 
-    logger.info "Done!"
+    logger.info "Generated facilities.csv file"
   end
 
   def get_opening_hours_array line
@@ -107,7 +107,7 @@ class ConvertFromOna
 
   def self.read_csv_dataset(csv_files_path)
     {
-      ona_source: csv_enumerator(File.join(csv_files_path, "onaSource.csv")),
+      ona_source: csv_enumerator(File.join(csv_files_path, "data.csv")),
     }
   end
 

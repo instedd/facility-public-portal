@@ -22,6 +22,7 @@ Rails.application.routes.draw do
   scope :datasets do
     root to: "datasets#index"
     post 'import', to: 'datasets#import'
+    post 'import_ona', to: 'datasets#import_ona'
     post 'upload', to: 'datasets#upload'
     get 'download/:filename', to: 'datasets#download'
   end
