@@ -30,3 +30,10 @@ es:
   send_report: Enviar reporte
   logout: Cerrar sesión
   account: Mi Cuenta
+  mon_thu: Lunes a Jueves
+  mon_fri: Lunes a Viernes
+  fri: Viernes
+  sat: Sábado
+  sun: Domingo
+  to: a
+  from: de

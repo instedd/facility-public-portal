@@ -26,4 +26,3 @@ default_locale: en
 input_dir: data/input
 locales:
   en: English
-  fr: Français
