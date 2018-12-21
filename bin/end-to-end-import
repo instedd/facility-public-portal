@@ -10,22 +10,20 @@ unless ARGV.size == 1
 end
 
 input_path = ARGV[0]
-
-input_dir = "#{Rails.root}/data/input"
-ona_dir = "#{Rails.root}/#{input_path}/ona"
+ona_path = "#{input_path}/ona"
 
 # Run facilities
-system("#{Rails.root}/bin/convert-from-ona #{ona_dir} #{input_dir}")
+system("#{Rails.root}/bin/convert-from-ona #{ona_path} #{input_path}")
 if $?.exitstatus != 0
   exit 1
 end
 
-system("#{Rails.root}/bin/generate-facility-categories #{input_dir}")
+system("#{Rails.root}/bin/generate-facility-categories #{input_path}")
 if $?.exitstatus != 0
   exit 1
 end
 
-system("#{Rails.root}/bin/import-dataset #{input_dir}")
+system("#{Rails.root}/bin/import-dataset #{input_path}")
 if $?.exitstatus != 0
   exit 1
 end

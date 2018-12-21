@@ -130,8 +130,8 @@ view model =
         [ h1 [] [ text "Dataset" ]
         , p []
             [ text "Drop your files here to update the dataset."
-            , text "You could also import ONA files."
-            , text "You'll be able to review before new data is deployed."
+            , text " You could also import ONA files."
+            , text " It's a good idea to download current files as a backup before running this process in case anything goes wrong."
             ]
         , div [ class "row" ]
             [ div [ class "col s12 pseudo-tabs" ]
