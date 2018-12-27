@@ -565,7 +565,7 @@ facilityDetail settings cssClasses now userLocation facility =
                         (\cg ->
                             [ span [] [ text <| cg.name ]
                             , if List.isEmpty cg.categories then
-                                div [ class "noData" ] [ text "There is currently no information for this facility." ]
+                                div [ class "noData" ] [ text <| t I18n.NoInformationAboutFacility ]
 
                               else
                                 ul [] (List.map (\s -> li [] [ text s ]) cg.categories)

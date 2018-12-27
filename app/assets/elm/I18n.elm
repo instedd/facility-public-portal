@@ -37,6 +37,8 @@ type TranslationId
     | SendReport
     | Logout
     | Account
+    | NoInformationAboutFacility
+
 
 
 t : TranslationId -> String
