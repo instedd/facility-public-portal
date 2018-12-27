@@ -157,11 +157,11 @@ inFileset =
     Dict.member
 
 
-fileLabel : Maybe FileState -> (FileState -> String) -> String
-fileLabel state lab =
+fileLabel : Maybe FileState -> String -> (FileState -> String) -> String
+fileLabel state default lab =
     case state of
         Nothing ->
-            ""
+            default
 
         Just st ->
             lab st
@@ -225,8 +225,7 @@ moment referencePoint evaldDate =
 humanReadableFileSize : FileState -> String
 humanReadableFileSize state =
     let
-        s =
-            if state.size >= 1024 then
+        s = if state.size >= 1024 then
                 [ toString (state.size // 1024), " KB" ]
 
             else

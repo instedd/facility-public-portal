@@ -19,7 +19,7 @@ import Dataset
 import Date exposing (Date)
 import Dict exposing (Dict)
 import Dom.Scroll exposing (toBottom)
-import Html exposing (Html, a, div, h1, i, li, p, pre, span, text, ul)
+import Html exposing (Html, a, button, div, h1, i, li, p, pre, span, text, ul)
 import Html.App
 import Html.Attributes exposing (attribute, class, download, href, id)
 import Html.Events exposing (onClick)
@@ -209,35 +209,38 @@ importAction fileset maybeState =
 
 actionButton : Html Msg -> Bool -> ButtonAction -> Html Msg
 actionButton content enabled action =
-    a
-        [ id "import-button"
-        , class
-            ("actions btn btn-large"
-                ++ (if enabled then
-                        ""
+    let
+        baseAttributes =
+            [ id "import-button"
+            , class
+                ("actions btn btn-large"
+                    ++ (if enabled then
+                            ""
+
+                        else
+                            " disabled"
+                       )
+                )
+            ]
+    in
+    case action of
+        Navigate uri ->
+            a
+                (href uri :: baseAttributes)
+                [ content ]
+
+        Action a ->
+            button
+                ((onClick <|
+                    if enabled then
+                        a
 
                     else
-                        " disabled"
-                   )
-            )
-        , onClick
-            (case action of
-                Navigate _ ->
-                    NoOp
-
-                Action a ->
-                    a
-            )
-        , href
-            (case action of
-                Navigate uri ->
-                    uri
-
-                Action _ ->
-                    "#"
-            )
-        ]
-        [ content ]
+                        NoOp
+                 )
+                    :: baseAttributes
+                )
+                [ content ]
 
 
 tab : FilesetTag -> FilesetTag -> String -> Html Msg
@@ -319,8 +322,8 @@ fileView downloadEndpoint currentDate ( name, state ) isUploading =
     div [ class "col m4 s12" ]
         [ div [ class <| appliedClass "card-panel z-depth-0 file-card file-applied" state ]
             [ div [] [ text name ]
-            , fileLineView <| fileLabel state humanReadableFileSize
-            , fileLineView <| fileLabel state (humanReadableFileTimestamp currentDate)
+            , fileLineView <| fileLabel state "not yet uploaded" humanReadableFileSize
+            , fileLineView <| fileLabel state "" (humanReadableFileTimestamp currentDate)
             , fileLineView <|
                 if isUploading then
                     "Uploading..."
