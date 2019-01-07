@@ -205,6 +205,24 @@ RSpec.describe Indexing do
       end
     end
 
+    # This is to prevent Elm from hanging when the facility decoder fails downstream
+    # Looks like real world files come with a lot "numeric addresses" so it'd be
+    # too cumbersome for users if we asked them to make sure those always come
+    # enclosed in quotes. We just do it at the moment of indexing and that's it.
+    it "indexes a facility whose address is a number, but stores it as a string" do
+      valid_dataset[:facilities][0][:address] = 0
+
+      index_dataset(valid_dataset)
+
+      expect(all_facilities.size).to eq(1)
+
+      all_facilities[0].tap do |f|
+        expect(f["ownership"]).to eq("Public")
+        expect(f["address"]).to eq("0")
+      end
+    end
+
+
     describe "facility priority" do
       context "priority is not explicit in the dataset" do
         it "assigns minimum value" do
