@@ -9,8 +9,8 @@ fr:
   services: Services
   facilities_count: "%{count} établissements"
   report_an_issue: Signaler un problème
-  landing_page: À propos de MFR
-  editor: Paramètres
+  landing_page: À propos de
+  editor: Éditer le contenu
   facility_name: Nom de l'établissement
   facility_type: Type d'installation
   ownership: La possession

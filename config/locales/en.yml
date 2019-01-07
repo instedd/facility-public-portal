@@ -30,8 +30,8 @@ en:
   services: Services
   facilities_count: "%{count} facilities"
   report_an_issue: Report an issue
-  landing_page: About MFR
-  editor: Settings
+  landing_page: About
+  editor: Edit Content
   facility_name: Facility name
   facility_type: Facility type
   ownership: Ownership
