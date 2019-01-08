@@ -133,6 +133,8 @@ class Indexing
           id: @last_facility_id += 1,
           source_id: f[:id].to_s,
           contact_phone: f[:contact_phone] && f[:contact_phone].to_s,
+          contact_name: f[:contact_name] && f[:contact_name].to_s,
+          contact_email: f[:contact_email] && f[:contact_email].to_s,
           priority: type[:priority],
           facility_type_id: type[:id],
           ownership_id: f[:ownership] ? ownerships[f[:ownership]][:id] : nil,

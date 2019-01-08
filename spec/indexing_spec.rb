@@ -206,19 +206,24 @@ RSpec.describe Indexing do
     end
 
     # This is to prevent Elm from hanging when the facility decoder fails downstream
-    # Looks like real world files come with a lot "numeric addresses" so it'd be
+    # Looks like real world files come with a lot of "numeric gibberish" so it'd be
     # too cumbersome for users if we asked them to make sure those always come
     # enclosed in quotes. We just do it at the moment of indexing and that's it.
-    it "indexes a facility whose address is a number, but stores it as a string" do
-      valid_dataset[:facilities][0][:address] = 0
+    it "coerces some fields to string when indexiong" do
+      string_coerced_fields = [:name, :address, :contact_name, :contact_phone, :contact_email]
+
+      string_coerced_fields.each do |field|
+        valid_dataset[:facilities][0][field] = 0
+      end
 
       index_dataset(valid_dataset)
 
       expect(all_facilities.size).to eq(1)
 
       all_facilities[0].tap do |f|
-        expect(f["ownership"]).to eq("Public")
-        expect(f["address"]).to eq("0")
+        string_coerced_fields.each do |field|
+          expect(f[field.to_s]).to eq("0"), "expected \"0\", got #{f[field.to_s]} from field \"#{field.to_s}\""
+        end
       end
     end
 
