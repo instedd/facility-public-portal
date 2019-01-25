@@ -1,7 +1,7 @@
 version: 2
 
 jobs:
-  build:
+  test:
     machine: true
 
     steps:
@@ -27,13 +27,27 @@ jobs:
       - run: docker-compose up -d elasticsearch db smtp
       - run: docker-compose run app rspec
       - run: docker-compose run app ./bin/precompile-assets.sh
+
+  build:
+    machine: true
+
+    steps:
+      - checkout
       - run: ./.circleci/deploy.sh
 
 workflows:
   version: 2
-  build:
+  test-and-build:
     jobs:
+      - test:
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /.*/
       - build:
+          requires:
+            - test
           filters:
             branches:
               only: /.*/
