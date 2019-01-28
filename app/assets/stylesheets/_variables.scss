@@ -7,7 +7,7 @@ $primary-light2: var(--primary-light2, lighten($primary-color, 45%));
 $grey3: #dadada;
 $grey-background: #F7F7F7;
 $code-background: #EAEAEA;
-$topnav_background: $primary;
+$topnav_background: var(--topnav_background, $primary);
 
 // same media query as fitContent
 $width-breakpoint: 992px;
