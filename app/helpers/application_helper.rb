@@ -26,4 +26,20 @@ module ApplicationHelper
   def publish_draft_path(locale)
     url_for(controller: :content_edition, action: :publish_draft, edit_locale: locale)
   end
+
+  def custom_colors
+    colors = {}
+
+    if ENV['PRIMARY_COLOR'].present?
+      colors['primary'] = ENV['PRIMARY_COLOR']
+      colors['primary-light'] = "\#{lighten(#{ENV['PRIMARY_COLOR']}, 3%)}"
+      colors['primary-light2'] = "\#{lighten(#{ENV['PRIMARY_COLOR']}, 45%)}"
+    end
+
+    if ENV['TOPNAV_BACKGROUND_COLOR'].present?
+      colors['topnav_background'] = ENV['TOPNAV_BACKGROUND_COLOR']
+    end
+
+    colors
+  end
 end

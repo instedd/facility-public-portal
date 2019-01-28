@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
     <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <%= render 'shared/favicomatic' %>
-    <%= render 'shared/colors' %>
+    <%- cache do %><%= render 'shared/colors' %><%- end %>
     <%= csrf_meta_tags %>
     <script type="text/javascript">
       I18n = {};
