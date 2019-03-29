@@ -1,0 +1,39 @@
+pt:
+  search: Pesquisar
+  advanced_search: Pesquisa avançada
+  search_health_facility: Pesquisar centros de saúde
+  map: Mapa
+  api_docs: Documentação API
+  full_download: Baixar conjunto de dados completo
+  services: Serviços
+  contact: Contato
+  facilities_count: "%{count} centro de saúde"
+  report_an_issue: Relatar um problema
+  landing_page: Sobre MFR
+  editor: Configuração
+  facility_name: Nome do centro de saúde
+  facility_type: Tipo de centro de saúde
+  ownership: Domínio
+  location: Localização
+  access_the_mfr_api: Acesse a API
+  download_result: Baixar listado
+  sort_by: Ordenar por
+  distance: Distância
+  name: Nome
+  wrong_location: Localização incorreta
+  closed: Centro fechado
+  contact_missing: Informação de contato incorreta
+  innacurate_services: Lista de serviços imprecisa
+  other: Outro
+  detailed_description: Descrição detalhada (opcional)
+  select_issue_to_report: Selecione um problema para relatar
+  send_report: Enviar relatório
+  logout: Fechar sessão
+  account: Minha conta
+  mon_thu: Segunda-feira a quinta-feira
+  mon_fri: Segunda a Sexta
+  fri: Sexta
+  sat: Sabado
+  sun: Domingo
+  to: a
+  from: de
