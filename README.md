@@ -86,7 +86,7 @@ $ bin/rake elasticsearch:setup
 
 ### Ruby and Rails
 
-This project uses Ruby v2.3.1. All Ruby dependencies (including Rails 5) can be installed using Bundler:
+This project uses Ruby v2.3.8. All Ruby dependencies (including Rails 5) can be installed using Bundler:
 
 ```
 $ bin/bundle install --path=.bundle
