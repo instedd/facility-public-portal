@@ -33,27 +33,27 @@ class DatasetsChannel < ActionCable::Channel::Base
   private
 
   FILES = [
-    {name: "categories.csv"},
-    {name: "category_groups.csv"},
-    {name: "facility_types.csv"},
-    {name: "locations.csv"},
+    {name: "categories.csv", drive_enabled: false},
+    {name: "category_groups.csv", drive_enabled: false},
+    {name: "facility_types.csv", drive_enabled: false},
+    {name: "locations.csv", drive_enabled: false},
   ]
 
   RAW_FILES = [
-    {name: "facilities.csv"},
-    {name: "facility_categories.csv"},
+    {name: "facilities.csv", drive_enabled: false},
+    {name: "facility_categories.csv", drive_enabled: false},
   ]
 
   ONA_FILES = [
     {name: "data.csv", drive_enabled: true},
-    {name: "mapping.csv"},
+    {name: "mapping.csv", drive_enabled: false},
   ]
 
   def self.files_to_hash(files)
     files.each_with_object({}) { |file, datasets|
       datasets[file[:name]] = {
         state: file_state(path_for(file)),
-        drive_enabled: file.key?('drive_enabled') ? file[:drive_enabled] : false,
+        drive_enabled: file[:drive_enabled],
       }
     }
   end
