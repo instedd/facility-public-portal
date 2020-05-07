@@ -23,6 +23,7 @@ gem 'elasticsearch'
 gem 'config'
 gem 'i18n-js', '>= 3.0.0.rc14'
 gem 'http_accept_language'
+gem 'google-api-client'
 
 source 'https://rails-assets.org' do
   gem 'rails-assets-materialize'

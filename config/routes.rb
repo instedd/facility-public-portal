@@ -35,6 +35,7 @@ Rails.application.routes.draw do
     get 'facility_types', to: 'api#facility_types'
     get 'locations', to: 'api#locations'
     get 'categories', to: 'api#categories'
+    get 'test_sheet', to: 'api#test_sheet'
   end
 
   post 'facilities/:id/report', to: 'application#report_facility'
