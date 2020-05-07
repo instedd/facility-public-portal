@@ -3,6 +3,8 @@ default: &default
   pool: 5
   timeout: 5000
   host: <%= ENV["DATABASE_HOST"] %>
+  username: root
+  password: root
 
 development:
   <<: *default
