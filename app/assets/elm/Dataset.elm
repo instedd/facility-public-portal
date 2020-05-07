@@ -20,7 +20,7 @@ module Dataset exposing
 import Date exposing (Date)
 import Dict exposing (Dict)
 import Http
-import Json.Decode exposing ((:=), bool, dict, fail, int, maybe, object1, object2, object4, string)
+import Json.Decode exposing ((:=), bool, dict, fail, int, maybe, object1, object2, object3, object4, string, succeed)
 import String
 import Task
 import Time
@@ -41,6 +41,7 @@ type alias FileState =
 type alias FileConfig =
     { drive_enabled : Bool
     , state : Maybe FileState
+    , url : Maybe String
     }
 
 type alias Fileset =
@@ -87,7 +88,7 @@ decoder =
 filesetDecoder : Json.Decode.Decoder Fileset
 filesetDecoder =
     dict <|
-        object2
+        object3
             FileConfig
             ("drive_enabled" := bool)
             ("state" := (maybe <|
@@ -97,6 +98,7 @@ filesetDecoder =
                     ("size" := int)
                     ("md5" := string)
                     ("applied" := bool)))
+            (succeed Nothing)
         
 
 

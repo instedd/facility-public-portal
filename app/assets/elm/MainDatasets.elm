@@ -41,6 +41,7 @@ type alias Model =
     , uploading : Dict String ()
     , currentTab : FilesetTag
     , downloadEndpoint : String
+    , displayDriveModal : Bool
     }
 
 
@@ -75,6 +76,8 @@ type Msg
     | ImportFailed
     | NoOp
     | DroppedFileEvent (Result String String)
+    | AddedFileURLEvent (String)
+    | ToggleDriveModal
     | CurrentTime Time
     | UploadingFile String
     | UploadedFile String
@@ -121,6 +124,7 @@ init downloadEndpoint =
     , uploading = Dict.empty
     , currentTab = Ona
     , downloadEndpoint = downloadEndpoint
+    , displayDriveModal = False
     }
         ! [ Task.perform Utils.notFailing CurrentTime Time.now ]
 
@@ -164,6 +168,16 @@ view model =
                     (importAction model.currentTab model.importState)
                 ]
             ]
+            , if model.displayDriveModal then
+                div [ id "drive-modal", class "modal open" ] [
+                    div [ class "modal-content" ]
+                        [ div [ class "header" ] [ text "Upload with Google Drive" ]
+                        , div [ class "body" ] [ text "Enter a URL" ]
+                        ]
+                    , div [ class "modal-footer" ] [ text "there will be a button here" ]
+                ]
+                else 
+                    div [] []
         ]
 
 
@@ -332,6 +346,7 @@ fileView downloadEndpoint currentDate ( name, config ) isUploading =
                 else
                     ""
             , downloadButton downloadEndpoint name config.state
+            , driveButton config.drive_enabled
             ]
         ]
 
@@ -356,6 +371,17 @@ downloadButton downloadEndpoint name mayF =
                         ]
                         [ text "arrow_downward" ]
                     ]
+
+
+driveButton : Bool -> Html Msg
+driveButton isDriveEnabled =
+    if isDriveEnabled then
+        div [
+            class "btn btn-flat drive-button"
+            , onClick <| ToggleDriveModal
+        ] [text "Drive"]
+    else
+        div [] []
 
 
 appliedClass : String -> Maybe FileState -> String
@@ -472,6 +498,12 @@ update msg model =
                 Err _ ->
                     model ! []
 
+        AddedFileURLEvent fileUrl ->
+            handleAddFileUrl model fileUrl ! []
+        
+        ToggleDriveModal ->
+            toggleDriveModal model ! []
+
         CurrentTime now ->
             { model | currentDate = Just (Date.fromTime now) } ! []
 
@@ -484,6 +516,12 @@ update msg model =
         SelectTab tab ->
             selectTab model tab ! []
 
+handleAddFileUrl : Model -> String -> Model
+handleAddFileUrl model fileUrl = { model | displayDriveModal = not model.displayDriveModal }
+-- todo actually save the thing
+
+toggleDriveModal : Model -> Model
+toggleDriveModal model = { model | displayDriveModal = not model.displayDriveModal }
 
 selectTab : Model -> FilesetTag -> Model
 selectTab model tab =
