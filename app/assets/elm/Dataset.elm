@@ -2,6 +2,7 @@ module Dataset exposing
     ( Dataset
     , Event(..)
     , FileState
+    , FileConfig
     , Fileset
     , FilesetTag(..)
     , ImportStartResult
@@ -37,9 +38,13 @@ type alias FileState =
     , applied : Bool
     }
 
+type alias FileConfig =
+    { drive_enabled : Bool
+    , state : Maybe FileState
+    }
 
 type alias Fileset =
-    Dict String (Maybe FileState)
+    Dict String FileConfig
 
 
 type alias Dataset =
@@ -82,13 +87,17 @@ decoder =
 filesetDecoder : Json.Decode.Decoder Fileset
 filesetDecoder =
     dict <|
-        maybe <|
-            object4
-                FileState
-                ("updated_at" := string)
-                ("size" := int)
-                ("md5" := string)
-                ("applied" := bool)
+        object2
+            FileConfig
+            ("drive_enabled" := bool)
+            ("state" := (maybe <|
+                object4
+                    FileState
+                    ("updated_at" := string)
+                    ("size" := int)
+                    ("md5" := string)
+                    ("applied" := bool)))
+        
 
 
 eventDecoder : Json.Decode.Decoder Event

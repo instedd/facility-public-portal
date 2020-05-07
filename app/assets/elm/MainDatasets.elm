@@ -5,6 +5,7 @@ import Dataset
         ( Dataset
         , Event(..)
         , FileState
+        , FileConfig
         , Fileset
         , FilesetTag(..)
         , ImportStartResult
@@ -284,9 +285,9 @@ filesetView model fileset =
         |> div [ class "row" ]
 
 
-configureFileView : Model -> ( String, Maybe FileState ) -> Html Msg
-configureFileView model ( filename, fileState ) =
-    fileView model.downloadEndpoint model.currentDate ( filename, fileState ) (Dict.member filename model.uploading)
+configureFileView : Model -> ( String, FileConfig ) -> Html Msg
+configureFileView model ( filename, config ) =
+    fileView model.downloadEndpoint model.currentDate ( filename, config ) (Dict.member filename model.uploading)
 
 
 importDetails : ImportState -> ImportDetails
@@ -317,20 +318,20 @@ importView importState =
     pre [ id "import-log" ] (importState |> importDetails |> .log |> List.map text)
 
 
-fileView : String -> Maybe Date -> ( String, Maybe FileState ) -> Bool -> Html Msg
-fileView downloadEndpoint currentDate ( name, state ) isUploading =
+fileView : String -> Maybe Date -> ( String, FileConfig ) -> Bool -> Html Msg
+fileView downloadEndpoint currentDate ( name, config ) isUploading =
     div [ class "col m4 s12" ]
-        [ div [ class <| appliedClass "card-panel z-depth-0 file-card file-applied" state ]
+        [ div [ class <| appliedClass "card-panel z-depth-0 file-card file-applied" config.state ]
             [ div [] [ text name ]
-            , fileLineView <| fileLabel state "not yet uploaded" humanReadableFileSize
-            , fileLineView <| fileLabel state "" (humanReadableFileTimestamp currentDate)
+            , fileLineView <| fileLabel config.state "not yet uploaded" humanReadableFileSize
+            , fileLineView <| fileLabel config.state "" (humanReadableFileTimestamp currentDate)
             , fileLineView <|
                 if isUploading then
                     "Uploading..."
 
                 else
                     ""
-            , downloadButton downloadEndpoint name state
+            , downloadButton downloadEndpoint name config.state
             ]
         ]
 
@@ -384,7 +385,9 @@ missingFiles model =
 
 missingFilesForProcess : Fileset -> Bool
 missingFilesForProcess set =
-    set |> Dict.values |> List.any ((==) Nothing)
+    set |> Dict.values
+        |> List.map .state
+        |> List.any (((==) Nothing))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

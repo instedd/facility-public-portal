@@ -16,42 +16,45 @@ class DatasetsChannel < ActionCable::Channel::Base
     broadcast_to("events", type: :datasets_update, datasets: datasets)
   end
 
-  def self.directory_for(filename)
-    if ONA_FILES.include?(filename)
+  def self.directory_for(file)
+    if ONA_FILES.include?(file)
       Rails.root.join(Settings.input_dir, 'ona')
-    elsif (FILES + RAW_FILES).include?(filename)
+    elsif (FILES + RAW_FILES).include?(file)
       Rails.root.join(Settings.input_dir)
     else
       raise ArgumentError.new("Unknown filename")
     end
   end
 
-  def self.path_for(filename)
-    Rails.root.join(directory_for(filename), filename)
+  def self.path_for(file)
+    Rails.root.join(directory_for(file), file[:name])
   end
 
   private
 
-  FILES = %w(
-    categories.csv
-    category_groups.csv
-    facility_types.csv
-    locations.csv
-  )
+  FILES = [
+    {name: "categories.csv"},
+    {name: "category_groups.csv"},
+    {name: "facility_types.csv"},
+    {name: "locations.csv"},
+  ]
 
-  RAW_FILES = %w(
-    facilities.csv
-    facility_categories.csv
-  )
+  RAW_FILES = [
+    {name: "facilities.csv"},
+    {name: "facility_categories.csv"},
+  ]
 
-  ONA_FILES = %w(
-    data.csv
-    mapping.csv
-  )
+  ONA_FILES = [
+    {name: "data.csv", drive_enabled: true},
+    {name: "mapping.csv"},
+  ]
 
   def self.files_to_hash(files)
     files.each_with_object({}) { |file, datasets|
-      datasets[file] = file_state(path_for(file))
+      datasets[file[:name]] = {
+        state: file_state(path_for(file)),
+        drive_enabled: file.key?('drive_enabled') ? file[:drive_enabled] : false,
+      }
     }
   end
 
