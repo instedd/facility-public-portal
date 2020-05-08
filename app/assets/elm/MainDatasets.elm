@@ -20,10 +20,10 @@ import Dataset
 import Date exposing (Date)
 import Dict exposing (Dict)
 import Dom.Scroll exposing (toBottom)
-import Html exposing (Html, a, button, div, h1, i, li, p, pre, span, text, ul)
+import Html exposing (Html, a, button, div, h1, h5, i, li, p, pre, span, text, ul, input)
 import Html.App
-import Html.Attributes exposing (attribute, class, download, href, id)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (attribute, class, download, href, id, value)
+import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (decodeValue, string)
 import Process
@@ -41,7 +41,8 @@ type alias Model =
     , uploading : Dict String ()
     , currentTab : FilesetTag
     , downloadEndpoint : String
-    , displayDriveModal : Bool
+    , displayDriveModal : Maybe String
+    , driveUrl : Maybe String
     }
 
 
@@ -76,8 +77,9 @@ type Msg
     | ImportFailed
     | NoOp
     | DroppedFileEvent (Result String String)
-    | AddedFileURLEvent (String)
-    | ToggleDriveModal
+    | AddedFileURLEvent String (Maybe String)
+    | ToggleDriveModal (Maybe String) (Maybe String)
+    | SetDriveUrl String
     | CurrentTime Time
     | UploadingFile String
     | UploadedFile String
@@ -124,7 +126,8 @@ init downloadEndpoint =
     , uploading = Dict.empty
     , currentTab = Ona
     , downloadEndpoint = downloadEndpoint
-    , displayDriveModal = False
+    , displayDriveModal = Nothing
+    , driveUrl = Nothing
     }
         ! [ Task.perform Utils.notFailing CurrentTime Time.now ]
 
@@ -168,16 +171,7 @@ view model =
                     (importAction model.currentTab model.importState)
                 ]
             ]
-            , if model.displayDriveModal then
-                div [ id "drive-modal", class "modal open" ] [
-                    div [ class "modal-content" ]
-                        [ div [ class "header" ] [ text "Upload with Google Drive" ]
-                        , div [ class "body" ] [ text "Enter a URL" ]
-                        ]
-                    , div [ class "modal-footer" ] [ text "there will be a button here" ]
-                ]
-                else 
-                    div [] []
+            , driveModalView model.driveUrl model.displayDriveModal
         ]
 
 
@@ -299,6 +293,47 @@ filesetView model fileset =
         |> div [ class "row" ]
 
 
+driveModalView : Maybe String -> Maybe String -> Html Msg
+driveModalView driveUrl fileName = 
+    case fileName of
+        Nothing ->
+                div [] []
+
+        Just name ->
+            div [ id "drive-modal", class "modal open" ] [
+                div [ class "modal-content" ] [
+                    div [ class "header row" ] [
+                        h5 [ class "col s10" ] [text ("Upload " ++ name ++ " with Google Drive")],
+                        div [ class "col s2" ] [
+                            button [
+                                id "close-modal"
+                                , class "btn btn-flat"
+                                , onClick <| ToggleDriveModal Nothing Nothing
+                            ] [
+                                i [class "material-icons"] [text "close"]
+                            ]
+                        ]
+                    ]
+                    , div [ class "body" ] [
+                        input
+                            [
+                                onInput SetDriveUrl
+                                , value (Maybe.withDefault "" driveUrl)
+                            ]
+                            []
+                        ]
+                    ]
+                , div [ class "modal-footer" ] [ 
+                    button [
+                        class "btn btn-flat"
+                        , onClick <| AddedFileURLEvent name driveUrl
+                    ] [
+                        text "Add Google Spreadsheet"
+                    ]
+                ]
+            ]
+
+
 configureFileView : Model -> ( String, FileConfig ) -> Html Msg
 configureFileView model ( filename, config ) =
     fileView model.downloadEndpoint model.currentDate ( filename, config ) (Dict.member filename model.uploading)
@@ -346,7 +381,10 @@ fileView downloadEndpoint currentDate ( name, config ) isUploading =
                 else
                     ""
             , downloadButton downloadEndpoint name config.state
-            , driveButton config.drive_enabled
+            , driveButton name config
+            , case config.url of
+                Nothing -> div [] []
+                Just url -> text url
             ]
         ]
 
@@ -367,18 +405,17 @@ downloadButton downloadEndpoint name mayF =
                     , download True
                     ]
                     [ i
-                        [ class "material-icons file-download"
-                        ]
+                        [ class "material-icons file-download" ]
                         [ text "arrow_downward" ]
                     ]
 
 
-driveButton : Bool -> Html Msg
-driveButton isDriveEnabled =
-    if isDriveEnabled then
+driveButton : String -> FileConfig -> Html Msg
+driveButton name config =
+    if config.drive_enabled then
         div [
             class "btn btn-flat drive-button"
-            , onClick <| ToggleDriveModal
+            , onClick <| ToggleDriveModal (Just name) config.url
         ] [text "Drive"]
     else
         div [] []
@@ -498,11 +535,14 @@ update msg model =
                 Err _ ->
                     model ! []
 
-        AddedFileURLEvent fileUrl ->
-            handleAddFileUrl model fileUrl ! []
+        AddedFileURLEvent fileName fileUrl ->
+            handleAddFileUrl model fileName fileUrl ! []
         
-        ToggleDriveModal ->
-            toggleDriveModal model ! []
+        ToggleDriveModal name url ->
+            toggleDriveModal model name url ! []
+
+        SetDriveUrl url ->
+            setDriveUrl model url ! []
 
         CurrentTime now ->
             { model | currentDate = Just (Date.fromTime now) } ! []
@@ -516,12 +556,38 @@ update msg model =
         SelectTab tab ->
             selectTab model tab ! []
 
-handleAddFileUrl : Model -> String -> Model
-handleAddFileUrl model fileUrl = { model | displayDriveModal = not model.displayDriveModal }
--- todo actually save the thing
+handleAddFileUrl : Model -> String -> Maybe String -> Model
+handleAddFileUrl ({dataset, currentTab} as model) fileName fileUrl = 
+    let
+        fileSetToModify = tabFileset dataset currentTab
+        fileToModify = fileSetToModify |> Dict.get fileName
+        -- modifiedFile = { fileToModify | url = fileUrl }
+        -- modifiedFileSet = Dict.update fileName (\_ -> (Just modifiedFile)) fileSetToModify
+    in 
+    case fileToModify of
+        Nothing -> model
+        Just file ->
+            {
+                model
+                | displayDriveModal = Nothing
+                    , driveUrl = Nothing
+                    , dataset = 
+                        case currentTab of
+                            Raw ->
+                                { dataset | raw = Dict.update fileName (\_ -> (Just { file | url = fileUrl })) fileSetToModify }
+                            Ona ->
+                                { dataset | ona = Dict.update fileName (\_ -> (Just { file | url = fileUrl })) fileSetToModify }
+            }
 
-toggleDriveModal : Model -> Model
-toggleDriveModal model = { model | displayDriveModal = not model.displayDriveModal }
+toggleDriveModal : Model -> Maybe String -> Maybe String -> Model
+toggleDriveModal model fileName url = {
+        model
+        | displayDriveModal = fileName
+        , driveUrl = url
+    }
+
+setDriveUrl : Model -> String -> Model
+setDriveUrl model url = { model | driveUrl = (Just url) }
 
 selectTab : Model -> FilesetTag -> Model
 selectTab model tab =

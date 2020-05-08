@@ -467,6 +467,13 @@ input[type="checkbox"]:checked + label:before {
 }
 
 .datasets {
+  #close-modal {
+    padding: 0 1rem;
+    i {
+      top: 0;
+    }
+  }
+
   #import-button {
     width: 130px;
     background-color: #0f47af;
