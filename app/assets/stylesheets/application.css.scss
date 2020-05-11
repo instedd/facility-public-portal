@@ -467,6 +467,14 @@ input[type="checkbox"]:checked + label:before {
 }
 
 .datasets {
+  .upload-error {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+
+    .material-icons { margin-right: 8px; }
+  }
+
   .file-title {
     display: flex;
     justify-content: space-between;

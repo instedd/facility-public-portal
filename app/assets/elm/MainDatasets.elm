@@ -39,6 +39,7 @@ type alias Model =
     , importState : Maybe ImportState
     , currentDate : Maybe Date
     , uploading : Dict String ()
+    , errors : Dict String String
     , currentTab : FilesetTag
     , downloadEndpoint : String
     , displayDriveModal : Maybe String
@@ -82,7 +83,7 @@ type Msg
     | SetDriveUrl String
     | CurrentTime Time
     | UploadingFile String
-    | UploadedFile String
+    | UploadedFile (String, (Maybe String))
     | SelectTab FilesetTag
 
 
@@ -92,7 +93,7 @@ port datasetEvent : (Json.Decode.Value -> msg) -> Sub msg
 port droppedFileEvent : (Json.Decode.Value -> msg) -> Sub msg
 
 
-port uploadedFile : (String -> msg) -> Sub msg
+port uploadedFile : ((String, Maybe String) -> msg) -> Sub msg
 
 
 port uploadingFile : (String -> msg) -> Sub msg
@@ -124,6 +125,7 @@ init downloadEndpoint =
     , importState = Nothing
     , currentDate = Nothing
     , uploading = Dict.empty
+    , errors = Dict.empty
     , currentTab = Ona
     , downloadEndpoint = downloadEndpoint
     , displayDriveModal = Nothing
@@ -337,7 +339,7 @@ driveModalView driveUrl fileName =
 
 configureFileView : Model -> ( String, FileConfig ) -> Html Msg
 configureFileView model ( filename, config ) =
-    fileView model.downloadEndpoint model.currentDate ( filename, config ) (Dict.member filename model.uploading)
+    fileView model.downloadEndpoint model.currentDate ( filename, config ) (Dict.member filename model.uploading) (model.errors |> Dict.get filename)
 
 
 importDetails : ImportState -> ImportDetails
@@ -368,8 +370,8 @@ importView importState =
     pre [ id "import-log" ] (importState |> importDetails |> .log |> List.map text)
 
 
-fileView : String -> Maybe Date -> ( String, FileConfig ) -> Bool -> Html Msg
-fileView downloadEndpoint currentDate ( name, config ) isUploading =
+fileView : String -> Maybe Date -> ( String, FileConfig ) -> Bool -> Maybe String -> Html Msg
+fileView downloadEndpoint currentDate ( name, config ) isUploading errorMessage =
     div [ class "col m4 s12" ]
         [ div [ class <| appliedClass "card-panel z-depth-0 file-card file-applied" config.state ]
             [ div [ class "file-title" ] [
@@ -377,6 +379,7 @@ fileView downloadEndpoint currentDate ( name, config ) isUploading =
                 , driveButton name config
             ]
             , fileLineView <| fileLabel config.state "not yet uploaded" humanReadableFileSize
+            , fileError errorMessage
             , fileLineView <| fileLabel config.state "" (humanReadableFileTimestamp currentDate)
             , fileLineView <|
                 if isUploading then
@@ -441,6 +444,16 @@ appliedClass baseClass state =
 fileLineView : String -> Html msg
 fileLineView line =
     div [ class "file-info" ] [ text line ]
+
+fileError : Maybe String -> Html msg
+fileError error =
+    case error of
+        Nothing -> div [] []
+        Just errorMessage ->
+            div [ class "file-info orange-text text-darken-2 upload-error"] [ 
+                i [ class "material-icons"] [ text "error" ]
+                , text errorMessage
+            ]
 
 
 missingFiles : Model -> Bool
@@ -553,8 +566,8 @@ update msg model =
         UploadingFile filename ->
             fileUploading model filename ! []
 
-        UploadedFile filename ->
-            fileUploaded model filename ! []
+        UploadedFile (filename, errorMessage) ->
+            fileUploaded model filename errorMessage ! []
 
         SelectTab tab ->
             selectTab model tab ! []
@@ -600,9 +613,21 @@ fileUploading model filename =
     { model | uploading = Dict.insert filename () model.uploading }
 
 
-fileUploaded : Model -> String -> Model
-fileUploaded model filename =
-    { model | uploading = Dict.remove filename model.uploading }
+fileUploaded : Model -> String -> Maybe String -> Model
+fileUploaded model filename errorMessage =
+    case errorMessage of
+        Nothing -> 
+            {
+                model
+                | uploading = Dict.remove filename model.uploading
+                , errors = Dict.remove filename model.errors 
+            }
+        error ->
+            {
+                model
+                | uploading = Dict.remove filename model.uploading
+                , errors = Dict.update filename (\_ -> error) model.errors
+            }
 
 
 subscriptions : Model -> Sub Msg
