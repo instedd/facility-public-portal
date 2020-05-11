@@ -11,7 +11,9 @@ $(document).ready(function() {
 
   droppedFiles = {};
 
-  app.ports.requestFileUpload.subscribe(function(filename) {
+  app.ports.requestFileUpload.subscribe(function(args) {
+    const [filename, fileUrl] = args;
+    if (fileUrl) droppedFiles[filename] = { ...droppedFiles[filename], url: fileUrl };
     uploadFile(droppedFiles[filename]);
   });
 

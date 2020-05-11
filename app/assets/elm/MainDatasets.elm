@@ -98,7 +98,7 @@ port uploadedFile : (String -> msg) -> Sub msg
 port uploadingFile : (String -> msg) -> Sub msg
 
 
-port requestFileUpload : String -> Cmd msg
+port requestFileUpload : (String, Maybe String) -> Cmd msg
 
 
 port showModal : String -> Cmd msg
@@ -536,7 +536,7 @@ update msg model =
                     model ! []
 
         AddedFileURLEvent fileName fileUrl ->
-            handleAddFileUrl model fileName fileUrl ! []
+            handleAddFileUrl model fileName fileUrl
         
         ToggleDriveModal name url ->
             toggleDriveModal model name url ! []
@@ -556,16 +556,14 @@ update msg model =
         SelectTab tab ->
             selectTab model tab ! []
 
-handleAddFileUrl : Model -> String -> Maybe String -> Model
+handleAddFileUrl : Model -> String -> Maybe String -> ( Model, Cmd msg )
 handleAddFileUrl ({dataset, currentTab} as model) fileName fileUrl = 
     let
         fileSetToModify = tabFileset dataset currentTab
         fileToModify = fileSetToModify |> Dict.get fileName
-        -- modifiedFile = { fileToModify | url = fileUrl }
-        -- modifiedFileSet = Dict.update fileName (\_ -> (Just modifiedFile)) fileSetToModify
     in 
     case fileToModify of
-        Nothing -> model
+        Nothing -> model ! []
         Just file ->
             {
                 model
@@ -577,7 +575,7 @@ handleAddFileUrl ({dataset, currentTab} as model) fileName fileUrl =
                                 { dataset | raw = Dict.update fileName (\_ -> (Just { file | url = fileUrl })) fileSetToModify }
                             Ona ->
                                 { dataset | ona = Dict.update fileName (\_ -> (Just { file | url = fileUrl })) fileSetToModify }
-            }
+            } ! [ requestFileUpload (fileName, fileUrl) ]
 
 toggleDriveModal : Model -> Maybe String -> Maybe String -> Model
 toggleDriveModal model fileName url = {
@@ -639,13 +637,13 @@ handleFileDrop : Model -> String -> ( Model, Cmd msg )
 handleFileDrop model filename =
     if Dataset.knownFile filename model.dataset then
         if not (Dataset.inFileset filename model.dataset.ona) && model.currentTab == Ona then
-            selectTab model Raw ! [ requestFileUpload filename ]
+            selectTab model Raw ! [ requestFileUpload (filename, Nothing) ]
 
         else if not (Dataset.inFileset filename model.dataset.raw) && model.currentTab == Raw then
-            selectTab model Ona ! [ requestFileUpload filename ]
+            selectTab model Ona ! [ requestFileUpload (filename, Nothing) ]
 
         else
-            model ! [ requestFileUpload filename ]
+            model ! [ requestFileUpload (filename, Nothing) ]
 
     else
         model
