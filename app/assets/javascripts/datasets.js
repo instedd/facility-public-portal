@@ -13,7 +13,7 @@ $(document).ready(function() {
 
   app.ports.requestFileUpload.subscribe(function(args) {
     const [filename, fileUrl] = args;
-    if (fileUrl) droppedFiles[filename] = { ...droppedFiles[filename], url: fileUrl };
+    if (fileUrl) droppedFiles[filename] = { ...droppedFiles[filename], url: fileUrl, name: filename };
     uploadFile(droppedFiles[filename]);
   });
 
