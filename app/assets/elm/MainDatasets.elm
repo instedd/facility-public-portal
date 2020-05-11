@@ -22,7 +22,7 @@ import Dict exposing (Dict)
 import Dom.Scroll exposing (toBottom)
 import Html exposing (Html, a, button, div, h1, h5, i, li, p, pre, span, text, ul, input)
 import Html.App
-import Html.Attributes exposing (attribute, class, download, href, id, value)
+import Html.Attributes exposing (attribute, class, download, href, id, value, title, placeholder)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (decodeValue, string)
@@ -319,6 +319,7 @@ driveModalView driveUrl fileName =
                             [
                                 onInput SetDriveUrl
                                 , value (Maybe.withDefault "" driveUrl)
+                                , placeholder "Enter the URL for a public Google Spreadsheet"
                             ]
                             []
                         ]
@@ -371,7 +372,10 @@ fileView : String -> Maybe Date -> ( String, FileConfig ) -> Bool -> Html Msg
 fileView downloadEndpoint currentDate ( name, config ) isUploading =
     div [ class "col m4 s12" ]
         [ div [ class <| appliedClass "card-panel z-depth-0 file-card file-applied" config.state ]
-            [ div [] [ text name ]
+            [ div [ class "file-title" ] [
+                text name
+                , driveButton name config
+            ]
             , fileLineView <| fileLabel config.state "not yet uploaded" humanReadableFileSize
             , fileLineView <| fileLabel config.state "" (humanReadableFileTimestamp currentDate)
             , fileLineView <|
@@ -381,11 +385,7 @@ fileView downloadEndpoint currentDate ( name, config ) isUploading =
                 else
                     ""
             , downloadButton downloadEndpoint name config.state
-            , driveButton name config
-            , case config.url of
-                Nothing -> div [] []
-                Just url -> text url
-            ]
+        ]
         ]
 
 
@@ -414,9 +414,12 @@ driveButton : String -> FileConfig -> Html Msg
 driveButton name config =
     if config.drive_enabled then
         div [
-            class "btn btn-flat drive-button"
+            class "drive-button"
+            , title "Upload with Google Drive"
             , onClick <| ToggleDriveModal (Just name) config.url
-        ] [text "Drive"]
+        ] [
+            i [ class "material-icons" ] [ text "link" ]
+        ]
     else
         div [] []
 

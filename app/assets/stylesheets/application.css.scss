@@ -467,6 +467,32 @@ input[type="checkbox"]:checked + label:before {
 }
 
 .datasets {
+  .file-title {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .modal{
+    &.open {
+      overflow-y: auto;
+    }
+    
+    .header {
+      margin: 0;
+    }
+  }
+
+  .drive-button {
+    cursor: pointer;
+    color: #999999;
+    transition: 0.3s;
+
+    :hover {
+      transition: 0.3s;
+      color: #0f47af;
+    }
+  }
+
   #close-modal {
     padding: 0 1rem;
     i {
