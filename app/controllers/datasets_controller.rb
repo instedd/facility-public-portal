@@ -15,17 +15,35 @@ class DatasetsController < ApplicationController
   end
 
   def upload
+    # TODO: Refactor `if/else` mess
     uploaded_io = params["file"]
-    filename_to_upload = uploaded_io.original_filename
+    url = params["url"]
+    name = params["name"]
 
-    FileUtils.mkdir_p DatasetsChannel.directory_for(filename_to_upload)
+    # TODO: Add parsing Sheet logic
+    if url && name
+      sheetId = url.match /^.*\/d\/(.*)\/.*$/
+      if !sheetId
+        render :json => {:error => "SheetId Not Found"}.to_json, :status => 404
+      else
+        render json: :ok
+      end
+    else
+      if uploaded_io 
+        filename_to_upload = uploaded_io.original_filename
+        # TODO: Don't hardcode drive_enabled = `false `
+        file_to_upload = {name: filename_to_upload, drive_enabled: false}
 
-    File.open(DatasetsChannel.path_for(filename_to_upload), 'wb') do |file|
-      file.write(uploaded_io.read)
+        FileUtils.mkdir_p DatasetsChannel.directory_for(file_to_upload)
+
+        File.open(DatasetsChannel.path_for(file_to_upload), 'wb') do |file|
+          file.write(uploaded_io.read)
+        end
+
+        DatasetsChannel.dataset_update
+      end
+      render json: :ok
     end
-
-    DatasetsChannel.dataset_update
-    render json: :ok
   end
 
   def download

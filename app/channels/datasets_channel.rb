@@ -1,4 +1,4 @@
-class DatasetsChannel < ActionCable::Channel::Base
+class DatasetsChannel < ApplicationCable::Channel
   def subscribed
     transmit(type: :datasets_update, datasets: DatasetsChannel.datasets)
     stream_for "events"
