@@ -53,8 +53,13 @@ $(document).ready(function() {
   function uploadFile(file) {
     var url = '/datasets/upload';
     var formData = new FormData()
-
-    formData.append('file', file)
+    
+    if (!file.url) {
+      formData.append('file', file)
+    } else {
+      formData.append('url', file.url);
+      formData.append('name', file.name);
+    }
 
     app.ports.uploadingFile.send(file.name);
 
