@@ -272,7 +272,7 @@ DEPENDENCIES
   sass-rails (~> 5.0)
   spring
   spring-watcher-listen (~> 2.0.0)
-  uglifier (>= 3.2.0)
+  uglifier (~> 4.2)
   web-console
 
 BUNDLED WITH

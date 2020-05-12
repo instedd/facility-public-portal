@@ -6,7 +6,7 @@ gem 'devise'
 gem 'pg'
 gem 'puma', '~> 3.0'
 gem 'sass-rails', '~> 5.0'
-gem 'uglifier', '>= 3.2.0'
+gem 'uglifier', '~> 4.2'
 gem 'coffee-rails', '~> 4.2'
 gem 'redcarpet'
 # See https://github.com/rails/execjs#readme for more supported runtimes
