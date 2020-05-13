@@ -73,7 +73,7 @@ $(document).ready(function() {
       }
     });
     result = await result.json()
-    app.ports.uploadedFile.send([ file.name, result.error ]);
+    app.ports.uploadedFile.send([ file.name, result.error || null ]);
   }
 
   function preventDefaults(e) {

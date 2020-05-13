@@ -378,8 +378,8 @@ fileView downloadEndpoint currentDate ( name, config ) isUploading errorMessage 
                 text name
                 , driveButton name config
             ]
-            , fileLineView <| fileLabel config.state "not yet uploaded" humanReadableFileSize
             , fileError errorMessage
+            , fileLineView <| fileLabel config.state "not yet uploaded" humanReadableFileSize
             , fileLineView <| fileLabel config.state "" (humanReadableFileTimestamp currentDate)
             , fileLineView <|
                 if isUploading then
@@ -609,24 +609,27 @@ selectTab model tab =
 
 
 fileUploading : Model -> String -> Model
-fileUploading model filename =
-    { model | uploading = Dict.insert filename () model.uploading }
+fileUploading ({errors, uploading} as model) filename =
+    { 
+        model | uploading = Dict.insert filename () uploading
+        , errors = Dict.remove filename errors
+    }
 
 
 fileUploaded : Model -> String -> Maybe String -> Model
-fileUploaded model filename errorMessage =
+fileUploaded ({errors, uploading} as model) filename errorMessage =
     case errorMessage of
         Nothing -> 
             {
                 model
-                | uploading = Dict.remove filename model.uploading
-                , errors = Dict.remove filename model.errors 
+                | uploading = Dict.remove filename uploading
+                , errors = Dict.remove filename errors 
             }
         error ->
             {
                 model
-                | uploading = Dict.remove filename model.uploading
-                , errors = Dict.update filename (\_ -> error) model.errors
+                | uploading = Dict.remove filename uploading
+                , errors = Dict.update filename (\_ -> error) errors
             }
 
 
