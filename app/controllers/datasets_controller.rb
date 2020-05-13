@@ -21,22 +21,18 @@ class DatasetsController < ApplicationController
 
     if params["url"] 
       sheetId = sheet_id_match(params["url"])
-      data_enum = SpreadsheetService.get_data(sheetId)
-      CSV.open(DatasetsChannel.path_for(filename), 'wb') do |file|
-        data_enum.each do |row|
-          file << row
-        end
-      end
+      range = SpreadsheetService.get_range(sheetId)
+
+      run_process("#{Rails.root}/bin/import-csv-from-google-sheet #{filename} #{sheetId} #{range}")
     else
       if params["file"] 
         File.open(DatasetsChannel.path_for(filename), 'wb') do |file|
           file.write(params[:file].read)
         end
       end
+      DatasetsChannel.dataset_update
+      render json: :ok
     end
-
-    DatasetsChannel.dataset_update
-    render json: :ok
   end
 
   def download

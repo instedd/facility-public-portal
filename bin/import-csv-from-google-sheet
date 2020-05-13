@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+APP_PATH = File.expand_path('../../config/application',  __dir__)
+require_relative '../config/boot'
+require_relative '../config/environment'
+require "benchmark"
+
+puts ARGV.inspect
+unless ARGV.size == 3
+  puts "Usage: #{__FILE__} expects filename, sheetId and range"
+  exit 1
+end
+
+filename = ARGV[0]
+sheetId = ARGV[1]
+range = ARGV[2]
+
+rows = SpreadsheetService.get_data(sheetId)
+
+CSV.open(DatasetsChannel.path_for(filename), 'wb') do |file|
+  rows.each do |row|
+    file << row
+  end
+end
+
+DatasetsChannel.dataset_update
