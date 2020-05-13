@@ -21,5 +21,3 @@ CSV.open(DatasetsChannel.path_for(filename), 'wb') do |file|
     file << row
   end
 end
-
-DatasetsChannel.dataset_update

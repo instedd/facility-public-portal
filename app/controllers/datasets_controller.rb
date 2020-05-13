@@ -7,11 +7,11 @@ class DatasetsController < ApplicationController
   layout "content"
 
   def import
-    run_process("#{Rails.root}/bin/import-dataset #{Rails.root.join(Settings.input_dir).to_s}")
+    run_import_process("#{Rails.root}/bin/import-dataset #{Rails.root.join(Settings.input_dir).to_s}")
   end
 
   def import_ona
-    run_process("#{Rails.root}/bin/end-to-end-import #{Rails.root.join(Settings.input_dir).to_s}")
+    run_import_process("#{Rails.root}/bin/end-to-end-import #{Rails.root.join(Settings.input_dir).to_s}")
   end
 
   def upload
@@ -23,7 +23,7 @@ class DatasetsController < ApplicationController
       sheetId = sheet_id_match(params["url"])
       range = SpreadsheetService.get_range(sheetId)
 
-      run_process("#{Rails.root}/bin/import-csv-from-google-sheet #{filename} #{sheetId} #{range}")
+      run_upload_from_google_sheet_process("#{Rails.root}/bin/upload-from-google-sheet #{filename} #{sheetId} #{range}")
     else
       if params["file"] 
         File.open(DatasetsChannel.path_for(filename), 'wb') do |file|
@@ -45,7 +45,7 @@ class DatasetsController < ApplicationController
 
   private
 
-  def run_process(cmd)
+  def run_import_process(cmd)
     stdin, stdout, stderr, wait_thr = Open3.popen3(cmd)
     pid = SecureRandom.uuid
     Thread.new do
@@ -61,6 +61,25 @@ class DatasetsController < ApplicationController
       end
       [stdin, stdout, stderr].each &:close
       DatasetsChannel.import_complete(pid, wait_thr.value.exitstatus)
+    end
+    render json: { process_id: pid }
+  end
+
+  def run_upload_from_google_sheet_process(cmd)
+    stdin, stdout, stderr, wait_thr = Open3.popen3(cmd)
+    pid = SecureRandom.uuid
+    Thread.new do
+      loop do
+        ready = IO.select([stdout, stderr]).first
+        r = ready.each do |io|
+          data = io.read_nonblock(1024, exception: false)
+          next if data == :wait_readable
+          break :eof unless data
+        end
+        break if r == :eof
+      end
+      [stdin, stdout, stderr].each &:close
+      DatasetsChannel.dataset_update
     end
     render json: { process_id: pid }
   end
