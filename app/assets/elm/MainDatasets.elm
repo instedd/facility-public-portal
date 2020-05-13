@@ -43,7 +43,7 @@ type alias Model =
     , currentTab : FilesetTag
     , downloadEndpoint : String
     , displayDriveModal : Maybe String
-    , driveUrl : Maybe String
+    , driveUrl : String
     }
 
 
@@ -78,8 +78,9 @@ type Msg
     | ImportFailed
     | NoOp
     | DroppedFileEvent (Result String String)
-    | AddedFileURLEvent String (Maybe String)
-    | ToggleDriveModal (Maybe String) (Maybe String)
+    | AddedFileURLEvent String String
+    | OpenDriveModal String String
+    | CloseDriveModal
     | SetDriveUrl String
     | CurrentTime Time
     | UploadingFile String
@@ -129,7 +130,7 @@ init downloadEndpoint =
     , currentTab = Ona
     , downloadEndpoint = downloadEndpoint
     , displayDriveModal = Nothing
-    , driveUrl = Nothing
+    , driveUrl = ""
     }
         ! [ Task.perform Utils.notFailing CurrentTime Time.now ]
 
@@ -295,7 +296,7 @@ filesetView model fileset =
         |> div [ class "row" ]
 
 
-driveModalView : Maybe String -> Maybe String -> Html Msg
+driveModalView : String -> Maybe String -> Html Msg
 driveModalView driveUrl fileName = 
     case fileName of
         Nothing ->
@@ -310,7 +311,7 @@ driveModalView driveUrl fileName =
                             button [
                                 id "close-modal"
                                 , class "btn btn-flat"
-                                , onClick <| ToggleDriveModal Nothing Nothing
+                                , onClick <| CloseDriveModal
                             ] [
                                 i [class "material-icons"] [text "close"]
                             ]
@@ -320,7 +321,7 @@ driveModalView driveUrl fileName =
                         input
                             [
                                 onInput SetDriveUrl
-                                , value (Maybe.withDefault "" driveUrl)
+                                , value driveUrl
                                 , placeholder "Enter the URL for a public Google Spreadsheet"
                             ]
                             []
@@ -419,7 +420,7 @@ driveButton name config =
         div [
             class "drive-button"
             , title "Upload with Google Drive"
-            , onClick <| ToggleDriveModal (Just name) config.url
+            , onClick <| OpenDriveModal name (Maybe.withDefault "" config.url)
         ] [
             i [ class "material-icons" ] [ text "link" ]
         ]
@@ -554,8 +555,11 @@ update msg model =
         AddedFileURLEvent fileName fileUrl ->
             handleAddFileUrl model fileName fileUrl
         
-        ToggleDriveModal name url ->
-            toggleDriveModal model name url ! []
+        OpenDriveModal name url ->
+            openDriveModal model name url ! []
+
+        CloseDriveModal ->
+            closeDriveModal model ! []
 
         SetDriveUrl url ->
             setDriveUrl model url ! []
@@ -572,7 +576,7 @@ update msg model =
         SelectTab tab ->
             selectTab model tab ! []
 
-handleAddFileUrl : Model -> String -> Maybe String -> ( Model, Cmd msg )
+handleAddFileUrl : Model -> String -> String -> ( Model, Cmd msg )
 handleAddFileUrl ({dataset, currentTab} as model) fileName fileUrl = 
     let
         fileSetToModify = tabFileset dataset currentTab
@@ -584,24 +588,24 @@ handleAddFileUrl ({dataset, currentTab} as model) fileName fileUrl =
             {
                 model
                 | displayDriveModal = Nothing
-                    , driveUrl = Nothing
+                    , driveUrl = ""
                     , dataset = 
                         case currentTab of
                             Raw ->
-                                { dataset | raw = Dict.update fileName (\_ -> (Just { file | url = fileUrl })) fileSetToModify }
+                                { dataset | raw = Dict.update fileName (\_ -> (Just { file | url = (Just fileUrl) })) fileSetToModify }
                             Ona ->
-                                { dataset | ona = Dict.update fileName (\_ -> (Just { file | url = fileUrl })) fileSetToModify }
-            } ! [ requestFileUpload (fileName, fileUrl) ]
+                                { dataset | ona = Dict.update fileName (\_ -> (Just { file | url = (Just fileUrl) })) fileSetToModify }
+            } ! [ requestFileUpload (fileName, (Just fileUrl)) ]
 
-toggleDriveModal : Model -> Maybe String -> Maybe String -> Model
-toggleDriveModal model fileName url = {
-        model
-        | displayDriveModal = fileName
-        , driveUrl = url
-    }
+openDriveModal : Model -> String -> String -> Model
+openDriveModal model fileName url = { model | displayDriveModal = (Just fileName), driveUrl = url }
+
+closeDriveModal : Model -> Model
+closeDriveModal model = {
+        model | displayDriveModal = Nothing, driveUrl = "" }
 
 setDriveUrl : Model -> String -> Model
-setDriveUrl model url = { model | driveUrl = (Just url) }
+setDriveUrl model url = { model | driveUrl = url }
 
 selectTab : Model -> FilesetTag -> Model
 selectTab model tab =
