@@ -16,18 +16,18 @@ class DatasetsChannel < ApplicationCable::Channel
     broadcast_to("events", type: :datasets_update, datasets: datasets)
   end
 
-  def self.directory_for(file)
-    if ONA_FILES.include?(file)
+  def self.directory_for(filename)
+    if ONA_FILES.map { |f| f[:name] }.include?(filename)
       Rails.root.join(Settings.input_dir, 'ona')
-    elsif (FILES + RAW_FILES).include?(file)
+    elsif (FILES + RAW_FILES).map { |f| f[:name] }.include?(filename)
       Rails.root.join(Settings.input_dir)
     else
       raise ArgumentError.new("Unknown filename")
     end
   end
 
-  def self.path_for(file)
-    Rails.root.join(directory_for(file), file[:name])
+  def self.path_for(filename)
+    Rails.root.join(directory_for(filename), filename)
   end
 
   private
@@ -52,7 +52,7 @@ class DatasetsChannel < ApplicationCable::Channel
   def self.files_to_hash(files)
     files.each_with_object({}) { |file, datasets|
       datasets[file[:name]] = {
-        state: file_state(path_for(file)),
+        state: file_state(path_for(file[:name])),
         drive_enabled: file[:drive_enabled],
       }
     }

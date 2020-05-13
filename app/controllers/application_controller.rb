@@ -4,6 +4,7 @@ class ApplicationController < ActionController::Base
   before_action :set_js_flags
 
   skip_before_action :verify_authenticity_token, only: :report_facility
+  rescue_from ActionController::BadRequest, with: :bad_request
 
   def map
     @js_flags.merge!({
@@ -53,5 +54,9 @@ class ApplicationController < ActionController::Base
       I18n.locale = I18n.default_locale
     end
     cookies[:locale] = I18n.locale
+  end
+
+  def bad_request(exception)
+    render status: 400, json: {:error => exception.message}.to_json 
   end
 end

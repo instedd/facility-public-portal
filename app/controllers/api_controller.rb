@@ -52,11 +52,6 @@ class ApiController < ActionController::Base
     render_if_stale(categories)
   end
 
-  def test_sheet
-    content = SpreadsheetService.get_data(params.permit(:sheetId)[:sheetId])
-    render json: content
-  end
-
   private
 
   def search_params

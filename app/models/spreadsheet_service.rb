@@ -5,29 +5,21 @@ class SpreadsheetService
     service = Google::Apis::SheetsV4::SheetsService.new
     service.key = ENV['GOOGLE_SHEET_API_KEY']
 
-    range='Sheet1'
-    response1 = service.get_spreadsheet_values(spreadsheet_id, range)
-    response2 = service.get_spreadsheet_values(spreadsheet_id, range)
+    begin 
+      sheet = service.get_spreadsheet(spreadsheet_id)
+      # A1 notation: range == 'All Cells' 
+      range = sheet.sheets[0].properties.title
+      response = service.get_spreadsheet_values(spreadsheet_id, range)
+    rescue Exception => e
+      raise ActionController::BadRequest.new(), e.message()
+    end
 
-    res = { "items" => [], "config" => {} }
-    headers = []
+    rows = response.values
 
-    response1.values.each_with_index do |row, i|
-      if i == 0
-        headers = row
-      else
-        item = {}
-        row.each_with_index do |cell,j|
-          item[headers[j]] = cell
-        end
-        res["items"] << item unless item.empty?
+    Enumerator.new do |enum|
+      rows.each do |row|
+        enum << row
       end
     end
-
-    response2.values.each do |row|
-      res["config"][row[0]] = row[1]
-    end
-
-    res
   end
 end

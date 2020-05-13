@@ -15,35 +15,28 @@ class DatasetsController < ApplicationController
   end
 
   def upload
-    # TODO: Refactor `if/else` mess
-    uploaded_io = params["file"]
-    url = params["url"]
-    name = params["name"]
+    validate_upload_params
+    filename = (params["file"] && params["file"].original_filename) || params["name"]
+    FileUtils.mkdir_p DatasetsChannel.directory_for(filename)
 
-    # TODO: Add parsing Sheet logic
-    if url && name
-      sheetId = url.match /^.*\/d\/(.*)\/.*$/
-      if !sheetId
-        render :json => {:error => "SheetId Not Found"}.to_json, :status => 404
-      else
-        render json: :ok
+    if params["url"] 
+      sheetId = sheet_id_match(params["url"])
+      data_enum = SpreadsheetService.get_data(sheetId)
+      CSV.open(DatasetsChannel.path_for(filename), 'wb') do |file|
+        data_enum.each do |row|
+          file << row
+        end
       end
     else
-      if uploaded_io 
-        filename_to_upload = uploaded_io.original_filename
-        # TODO: Don't hardcode drive_enabled = `false `
-        file_to_upload = {name: filename_to_upload, drive_enabled: false}
-
-        FileUtils.mkdir_p DatasetsChannel.directory_for(file_to_upload)
-
-        File.open(DatasetsChannel.path_for(file_to_upload), 'wb') do |file|
-          file.write(uploaded_io.read)
+      if params["file"] 
+        File.open(DatasetsChannel.path_for(filename), 'wb') do |file|
+          file.write(params[:file].read)
         end
-
-        DatasetsChannel.dataset_update
       end
-      render json: :ok
     end
+
+    DatasetsChannel.dataset_update
+    render json: :ok
   end
 
   def download
@@ -74,5 +67,19 @@ class DatasetsController < ApplicationController
       DatasetsChannel.import_complete(pid, wait_thr.value.exitstatus)
     end
     render json: { process_id: pid }
+  end
+
+  def validate_upload_params
+    if params["file"] 
+      raise ActionController::BadRequest.new(), "Invalid file" unless params["file"].original_filename
+    else
+      raise ActionController::BadRequest.new(), "Invalid url or filename" unless params["url"] && params["name"]
+      raise ActionController::BadRequest.new(), "Missing SheetId in url" unless sheet_id_match(params["url"])
+    end
+  end
+
+  def sheet_id_match(url)
+    match = url.match /^.*\/d\/(?<sheetId>.*)\/.*$/
+    match && match[:sheetId]
   end
 end
