@@ -5,6 +5,7 @@ import Dataset
         ( Dataset
         , Event(..)
         , FileState
+        , FileConfig
         , Fileset
         , FilesetTag(..)
         , ImportStartResult
@@ -19,10 +20,10 @@ import Dataset
 import Date exposing (Date)
 import Dict exposing (Dict)
 import Dom.Scroll exposing (toBottom)
-import Html exposing (Html, a, button, div, h1, i, li, p, pre, span, text, ul)
+import Html exposing (Html, a, button, div, h1, h5, i, li, p, pre, span, text, ul, input)
 import Html.App
-import Html.Attributes exposing (attribute, class, download, href, id)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (attribute, class, download, href, id, value, title, placeholder)
+import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (decodeValue, string)
 import Process
@@ -38,8 +39,11 @@ type alias Model =
     , importState : Maybe ImportState
     , currentDate : Maybe Date
     , uploading : Dict String ()
+    , errors : Dict String String
     , currentTab : FilesetTag
     , downloadEndpoint : String
+    , displayDriveModal : Maybe String
+    , driveUrl : String
     }
 
 
@@ -74,9 +78,13 @@ type Msg
     | ImportFailed
     | NoOp
     | DroppedFileEvent (Result String String)
+    | AddedFileURLEvent String String
+    | OpenDriveModal String String
+    | CloseDriveModal
+    | SetDriveUrl String
     | CurrentTime Time
     | UploadingFile String
-    | UploadedFile String
+    | UploadedFile (String, (Maybe String))
     | SelectTab FilesetTag
 
 
@@ -86,13 +94,13 @@ port datasetEvent : (Json.Decode.Value -> msg) -> Sub msg
 port droppedFileEvent : (Json.Decode.Value -> msg) -> Sub msg
 
 
-port uploadedFile : (String -> msg) -> Sub msg
+port uploadedFile : ((String, Maybe String) -> msg) -> Sub msg
 
 
 port uploadingFile : (String -> msg) -> Sub msg
 
 
-port requestFileUpload : String -> Cmd msg
+port requestFileUpload : (String, Maybe String) -> Cmd msg
 
 
 port showModal : String -> Cmd msg
@@ -118,8 +126,11 @@ init downloadEndpoint =
     , importState = Nothing
     , currentDate = Nothing
     , uploading = Dict.empty
+    , errors = Dict.empty
     , currentTab = Ona
     , downloadEndpoint = downloadEndpoint
+    , displayDriveModal = Nothing
+    , driveUrl = ""
     }
         ! [ Task.perform Utils.notFailing CurrentTime Time.now ]
 
@@ -163,6 +174,7 @@ view model =
                     (importAction model.currentTab model.importState)
                 ]
             ]
+            , driveModalView model.driveUrl model.displayDriveModal
         ]
 
 
@@ -284,9 +296,51 @@ filesetView model fileset =
         |> div [ class "row" ]
 
 
-configureFileView : Model -> ( String, Maybe FileState ) -> Html Msg
-configureFileView model ( filename, fileState ) =
-    fileView model.downloadEndpoint model.currentDate ( filename, fileState ) (Dict.member filename model.uploading)
+driveModalView : String -> Maybe String -> Html Msg
+driveModalView driveUrl fileName = 
+    case fileName of
+        Nothing ->
+                div [] []
+
+        Just name ->
+            div [ id "drive-modal", class "modal open" ] [
+                div [ class "modal-content" ] [
+                    div [ class "header row" ] [
+                        h5 [ class "col s10" ] [text ("Upload " ++ name ++ " with Google Drive")],
+                        div [ class "col s2" ] [
+                            button [
+                                id "close-modal"
+                                , class "btn btn-flat"
+                                , onClick <| CloseDriveModal
+                            ] [
+                                i [class "material-icons"] [text "close"]
+                            ]
+                        ]
+                    ]
+                    , div [ class "body" ] [
+                        input
+                            [
+                                onInput SetDriveUrl
+                                , value driveUrl
+                                , placeholder "Enter the URL for a public Google Spreadsheet"
+                            ]
+                            []
+                        ]
+                    ]
+                , div [ class "modal-footer" ] [ 
+                    button [
+                        class "btn btn-flat"
+                        , onClick <| AddedFileURLEvent name driveUrl
+                    ] [
+                        text "Add Google Spreadsheet"
+                    ]
+                ]
+            ]
+
+
+configureFileView : Model -> ( String, FileConfig ) -> Html Msg
+configureFileView model ( filename, config ) =
+    fileView model.downloadEndpoint model.currentDate ( filename, config ) (Dict.member filename model.uploading) (model.errors |> Dict.get filename)
 
 
 importDetails : ImportState -> ImportDetails
@@ -317,21 +371,25 @@ importView importState =
     pre [ id "import-log" ] (importState |> importDetails |> .log |> List.map text)
 
 
-fileView : String -> Maybe Date -> ( String, Maybe FileState ) -> Bool -> Html Msg
-fileView downloadEndpoint currentDate ( name, state ) isUploading =
+fileView : String -> Maybe Date -> ( String, FileConfig ) -> Bool -> Maybe String -> Html Msg
+fileView downloadEndpoint currentDate ( name, config ) isUploading errorMessage =
     div [ class "col m4 s12" ]
-        [ div [ class <| appliedClass "card-panel z-depth-0 file-card file-applied" state ]
-            [ div [] [ text name ]
-            , fileLineView <| fileLabel state "not yet uploaded" humanReadableFileSize
-            , fileLineView <| fileLabel state "" (humanReadableFileTimestamp currentDate)
+        [ div [ class <| appliedClass "card-panel z-depth-0 file-card file-applied" config.state ]
+            [ div [ class "file-title" ] [
+                text name
+                , driveButton name config
+            ]
+            , fileError errorMessage
+            , fileLineView <| fileLabel config.state "not yet uploaded" humanReadableFileSize
+            , fileLineView <| fileLabel config.state "" (humanReadableFileTimestamp currentDate)
             , fileLineView <|
                 if isUploading then
                     "Uploading..."
 
                 else
                     ""
-            , downloadButton downloadEndpoint name state
-            ]
+            , downloadButton downloadEndpoint name config.state
+        ]
         ]
 
 
@@ -351,10 +409,23 @@ downloadButton downloadEndpoint name mayF =
                     , download True
                     ]
                     [ i
-                        [ class "material-icons file-download"
-                        ]
+                        [ class "material-icons file-download" ]
                         [ text "arrow_downward" ]
                     ]
+
+
+driveButton : String -> FileConfig -> Html Msg
+driveButton name config =
+    if config.drive_enabled then
+        div [
+            class "drive-button"
+            , title "Upload with Google Drive"
+            , onClick <| OpenDriveModal name (Maybe.withDefault "" config.url)
+        ] [
+            i [ class "material-icons" ] [ text "link" ]
+        ]
+    else
+        div [] []
 
 
 appliedClass : String -> Maybe FileState -> String
@@ -375,6 +446,16 @@ fileLineView : String -> Html msg
 fileLineView line =
     div [ class "file-info" ] [ text line ]
 
+fileError : Maybe String -> Html msg
+fileError error =
+    case error of
+        Nothing -> div [] []
+        Just errorMessage ->
+            div [ class "file-info orange-text text-darken-2 upload-error"] [ 
+                i [ class "material-icons"] [ text "error" ]
+                , text errorMessage
+            ]
+
 
 missingFiles : Model -> Bool
 missingFiles model =
@@ -384,7 +465,9 @@ missingFiles model =
 
 missingFilesForProcess : Fileset -> Bool
 missingFilesForProcess set =
-    set |> Dict.values |> List.any ((==) Nothing)
+    set |> Dict.values
+        |> List.map .state
+        |> List.any (((==) Nothing))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -469,18 +552,60 @@ update msg model =
                 Err _ ->
                     model ! []
 
+        AddedFileURLEvent fileName fileUrl ->
+            handleAddFileUrl model fileName fileUrl
+        
+        OpenDriveModal name url ->
+            openDriveModal model name url ! []
+
+        CloseDriveModal ->
+            closeDriveModal model ! []
+
+        SetDriveUrl url ->
+            setDriveUrl model url ! []
+
         CurrentTime now ->
             { model | currentDate = Just (Date.fromTime now) } ! []
 
         UploadingFile filename ->
             fileUploading model filename ! []
 
-        UploadedFile filename ->
-            fileUploaded model filename ! []
+        UploadedFile (filename, errorMessage) ->
+            fileUploaded model filename errorMessage ! []
 
         SelectTab tab ->
             selectTab model tab ! []
 
+handleAddFileUrl : Model -> String -> String -> ( Model, Cmd msg )
+handleAddFileUrl ({dataset, currentTab} as model) fileName fileUrl = 
+    let
+        fileSetToModify = tabFileset dataset currentTab
+        fileToModify = fileSetToModify |> Dict.get fileName
+    in 
+    case fileToModify of
+        Nothing -> model ! []
+        Just file ->
+            {
+                model
+                | displayDriveModal = Nothing
+                    , driveUrl = ""
+                    , dataset = 
+                        case currentTab of
+                            Raw ->
+                                { dataset | raw = Dict.update fileName (\_ -> (Just { file | url = (Just fileUrl) })) fileSetToModify }
+                            Ona ->
+                                { dataset | ona = Dict.update fileName (\_ -> (Just { file | url = (Just fileUrl) })) fileSetToModify }
+            } ! [ requestFileUpload (fileName, (Just fileUrl)) ]
+
+openDriveModal : Model -> String -> String -> Model
+openDriveModal model fileName url = { model | displayDriveModal = (Just fileName), driveUrl = url }
+
+closeDriveModal : Model -> Model
+closeDriveModal model = {
+        model | displayDriveModal = Nothing, driveUrl = "" }
+
+setDriveUrl : Model -> String -> Model
+setDriveUrl model url = { model | driveUrl = url }
 
 selectTab : Model -> FilesetTag -> Model
 selectTab model tab =
@@ -488,13 +613,28 @@ selectTab model tab =
 
 
 fileUploading : Model -> String -> Model
-fileUploading model filename =
-    { model | uploading = Dict.insert filename () model.uploading }
+fileUploading ({errors, uploading} as model) filename =
+    { 
+        model | uploading = Dict.insert filename () uploading
+        , errors = Dict.remove filename errors
+    }
 
 
-fileUploaded : Model -> String -> Model
-fileUploaded model filename =
-    { model | uploading = Dict.remove filename model.uploading }
+fileUploaded : Model -> String -> Maybe String -> Model
+fileUploaded ({errors, uploading} as model) filename errorMessage =
+    case errorMessage of
+        Nothing -> 
+            {
+                model
+                | uploading = Dict.remove filename uploading
+                , errors = Dict.remove filename errors 
+            }
+        error ->
+            {
+                model
+                | uploading = Dict.remove filename uploading
+                , errors = Dict.update filename (\_ -> error) errors
+            }
 
 
 subscriptions : Model -> Sub Msg
@@ -532,13 +672,13 @@ handleFileDrop : Model -> String -> ( Model, Cmd msg )
 handleFileDrop model filename =
     if Dataset.knownFile filename model.dataset then
         if not (Dataset.inFileset filename model.dataset.ona) && model.currentTab == Ona then
-            selectTab model Raw ! [ requestFileUpload filename ]
+            selectTab model Raw ! [ requestFileUpload (filename, Nothing) ]
 
         else if not (Dataset.inFileset filename model.dataset.raw) && model.currentTab == Raw then
-            selectTab model Ona ! [ requestFileUpload filename ]
+            selectTab model Ona ! [ requestFileUpload (filename, Nothing) ]
 
         else
-            model ! [ requestFileUpload filename ]
+            model ! [ requestFileUpload (filename, Nothing) ]
 
     else
         model

@@ -52,7 +52,6 @@ class ApiController < ActionController::Base
     render_if_stale(categories)
   end
 
-
   private
 
   def search_params

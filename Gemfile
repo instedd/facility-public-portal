@@ -6,7 +6,7 @@ gem 'devise'
 gem 'pg'
 gem 'puma', '~> 3.0'
 gem 'sass-rails', '~> 5.0'
-gem 'uglifier', '>= 1.3.0'
+gem 'uglifier', '~> 4.2'
 gem 'coffee-rails', '~> 4.2'
 gem 'redcarpet'
 # See https://github.com/rails/execjs#readme for more supported runtimes
@@ -23,6 +23,7 @@ gem 'elasticsearch'
 gem 'config'
 gem 'i18n-js', '>= 3.0.0.rc14'
 gem 'http_accept_language'
+gem 'google-api-client'
 
 source 'https://rails-assets.org' do
   gem 'rails-assets-materialize'

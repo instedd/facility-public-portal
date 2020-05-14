@@ -11,7 +11,9 @@ $(document).ready(function() {
 
   droppedFiles = {};
 
-  app.ports.requestFileUpload.subscribe(function(filename) {
+  app.ports.requestFileUpload.subscribe(function(args) {
+    const [filename, fileUrl] = args;
+    if (fileUrl) droppedFiles[filename] = { ...droppedFiles[filename], url: fileUrl, name: filename };
     uploadFile(droppedFiles[filename]);
   });
 
@@ -48,15 +50,20 @@ $(document).ready(function() {
     }
   }
 
-  function uploadFile(file) {
+  async function uploadFile(file) {
     var url = '/datasets/upload';
     var formData = new FormData()
-
-    formData.append('file', file)
+    
+    if (!file.url) {
+      formData.append('file', file)
+    } else {
+      formData.append('url', file.url);
+      formData.append('name', file.name);
+    }
 
     app.ports.uploadingFile.send(file.name);
 
-    fetch(url, {
+    let result = await fetch(url, {
       method: 'POST',
       body: formData,
       beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
@@ -64,9 +71,9 @@ $(document).ready(function() {
         'X-Requested-With': 'XMLHttpRequest',
         'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
       }
-    })
-    .then(function () { app.ports.uploadedFile.send(file.name) })
-    .catch(function () { /* Error. Inform the user */ })
+    });
+    result = await result.json()
+    app.ports.uploadedFile.send([ file.name, result.error || null ]);
   }
 
   function preventDefaults(e) {

@@ -7,25 +7,32 @@ class DatasetsController < ApplicationController
   layout "content"
 
   def import
-    run_process("#{Rails.root}/bin/import-dataset #{Rails.root.join(Settings.input_dir).to_s}")
+    run_import_process("#{Rails.root}/bin/import-dataset #{Rails.root.join(Settings.input_dir).to_s}")
   end
 
   def import_ona
-    run_process("#{Rails.root}/bin/end-to-end-import #{Rails.root.join(Settings.input_dir).to_s}")
+    run_import_process("#{Rails.root}/bin/end-to-end-import #{Rails.root.join(Settings.input_dir).to_s}")
   end
 
   def upload
-    uploaded_io = params["file"]
-    filename_to_upload = uploaded_io.original_filename
+    validate_upload_params
+    filename = (params["file"] && params["file"].original_filename) || params["name"]
+    FileUtils.mkdir_p DatasetsChannel.directory_for(filename)
 
-    FileUtils.mkdir_p DatasetsChannel.directory_for(filename_to_upload)
+    if params["url"] 
+      sheetId = sheet_id_match(params["url"])
+      range = SpreadsheetService.get_range(sheetId)
 
-    File.open(DatasetsChannel.path_for(filename_to_upload), 'wb') do |file|
-      file.write(uploaded_io.read)
+      run_upload_from_google_sheet_process("#{Rails.root}/bin/upload-from-google-sheet #{filename} #{sheetId} #{range}")
+    else
+      if params["file"] 
+        File.open(DatasetsChannel.path_for(filename), 'wb') do |file|
+          file.write(params[:file].read)
+        end
+      end
+      DatasetsChannel.dataset_update
+      render json: :ok
     end
-
-    DatasetsChannel.dataset_update
-    render json: :ok
   end
 
   def download
@@ -38,7 +45,7 @@ class DatasetsController < ApplicationController
 
   private
 
-  def run_process(cmd)
+  def run_import_process(cmd)
     stdin, stdout, stderr, wait_thr = Open3.popen3(cmd)
     pid = SecureRandom.uuid
     Thread.new do
@@ -56,5 +63,38 @@ class DatasetsController < ApplicationController
       DatasetsChannel.import_complete(pid, wait_thr.value.exitstatus)
     end
     render json: { process_id: pid }
+  end
+
+  def run_upload_from_google_sheet_process(cmd)
+    stdin, stdout, stderr, wait_thr = Open3.popen3(cmd)
+    pid = SecureRandom.uuid
+    Thread.new do
+      loop do
+        ready = IO.select([stdout, stderr]).first
+        r = ready.each do |io|
+          data = io.read_nonblock(1024, exception: false)
+          next if data == :wait_readable
+          break :eof unless data
+        end
+        break if r == :eof
+      end
+      [stdin, stdout, stderr].each &:close
+      DatasetsChannel.dataset_update
+    end
+    render json: { process_id: pid }
+  end
+
+  def validate_upload_params
+    if params["file"] 
+      raise ActionController::BadRequest.new(), "Invalid file" unless params["file"].original_filename
+    else
+      raise ActionController::BadRequest.new(), "Invalid url or filename" unless params["url"] && params["name"]
+      raise ActionController::BadRequest.new(), "Missing SheetId in url" unless sheet_id_match(params["url"])
+    end
+  end
+
+  def sheet_id_match(url)
+    match = url.match /^.*\/d\/(?<sheetId>.*)\/.*$/
+    match && match[:sheetId]
   end
 end

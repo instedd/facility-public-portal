@@ -1,4 +1,4 @@
-class DatasetsChannel < ActionCable::Channel::Base
+class DatasetsChannel < ApplicationCable::Channel
   def subscribed
     transmit(type: :datasets_update, datasets: DatasetsChannel.datasets)
     stream_for "events"
@@ -17,9 +17,9 @@ class DatasetsChannel < ActionCable::Channel::Base
   end
 
   def self.directory_for(filename)
-    if ONA_FILES.include?(filename)
+    if ONA_FILES.map { |f| f[:name] }.include?(filename)
       Rails.root.join(Settings.input_dir, 'ona')
-    elsif (FILES + RAW_FILES).include?(filename)
+    elsif (FILES + RAW_FILES).map { |f| f[:name] }.include?(filename)
       Rails.root.join(Settings.input_dir)
     else
       raise ArgumentError.new("Unknown filename")
@@ -32,26 +32,29 @@ class DatasetsChannel < ActionCable::Channel::Base
 
   private
 
-  FILES = %w(
-    categories.csv
-    category_groups.csv
-    facility_types.csv
-    locations.csv
-  )
+  FILES = [
+    {name: "categories.csv", drive_enabled: false},
+    {name: "category_groups.csv", drive_enabled: false},
+    {name: "facility_types.csv", drive_enabled: false},
+    {name: "locations.csv", drive_enabled: false},
+  ]
 
-  RAW_FILES = %w(
-    facilities.csv
-    facility_categories.csv
-  )
+  RAW_FILES = [
+    {name: "facilities.csv", drive_enabled: false},
+    {name: "facility_categories.csv", drive_enabled: false},
+  ]
 
-  ONA_FILES = %w(
-    data.csv
-    mapping.csv
-  )
+  ONA_FILES = [
+    {name: "data.csv", drive_enabled: true},
+    {name: "mapping.csv", drive_enabled: false},
+  ]
 
   def self.files_to_hash(files)
     files.each_with_object({}) { |file, datasets|
-      datasets[file] = file_state(path_for(file))
+      datasets[file[:name]] = {
+        state: file_state(path_for(file[:name])),
+        drive_enabled: file[:drive_enabled],
+      }
     }
   end
 
