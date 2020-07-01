@@ -29,21 +29,21 @@ class ConvertFromOna
 
     @dataset[:ona_source].each do |line|
       data << [
-          line["_id"],
-          line["section1/section1.1/facility_name"],
-          line["section1/section1.1/_general_gps_coordinates_latitude"],
-          line["section1/section1.1/_general_gps_coordinates_longitude"],
-          line["section1/section1.1/city"],
+          line["id"],
+          line["Facility name"],
+          line["Latitude"],
+          line["Longitude"],
+          line["City/District"],
           "laboratory",
-          line["section1/section1.1/Laboratory_affiliation"],
-          line["section1/section1.1/laboratory_adress"],
-          line["section1/section1.1/contact_name"],
-          line["section1/section1.1/contact_email"],
-          line["section1/section1.1/contact_phone"]
+          line["Affiliation"],
+          line["Address"],
+          line["Contact name"],
+          line["Contact email address"],
+          line["Contact phone"]
         ].concat(get_opening_hours_array(line))
         .concat([
           nil,
-          line["end_time"]
+          line["End time"]
         ])
     end
 
@@ -57,12 +57,12 @@ class ConvertFromOna
   end
 
   def get_opening_hours line, lang
-    days = line["section1/section1.1/days"]
-    opening_hours_weekday = get_hours(line["section1/section1.1/open_hoursm"])
-    closing_hours_weekday = get_hours(line["section1/section1.1/close_hoursm"])
+    days = line["days"]
+    opening_hours_weekday = get_hours(line["Opening time Monday"])
+    closing_hours_weekday = get_hours(line["Closing time Monday"])
 
-    opening_hours_friday = get_hours(line["section1/section1.1/open_hoursf"])
-    closing_hours_friday = get_hours(line["section1/section1.1/close_hoursf"])
+    opening_hours_friday = get_hours(line["Opening time Friday"])
+    closing_hours_friday = get_hours(line["Closing time Friday"])
 
     opens_saturday = days.downcase.include? "saturday"
     opens_sunday = days.downcase.include? "sunday"
@@ -77,12 +77,12 @@ class ConvertFromOna
 
     if opens_saturday
       # Saturday from #{get_hours(line["section1/section1.1/open_hourssa"])} to #{get_hours(line["section1/section1.1/close_hourssa"])}
-      result = result + ", #{I18n.t(:sat, locale: lang)} #{I18n.t(:from, locale: lang)} #{get_hours(line["section1/section1.1/open_hourssa"])} #{I18n.t(:to, locale: lang)} #{get_hours(line["section1/section1.1/close_hourssa"])}"
+      result = result + ", #{I18n.t(:sat, locale: lang)} #{I18n.t(:from, locale: lang)} #{get_hours(line["Opening time Saturday"])} #{I18n.t(:to, locale: lang)} #{get_hours(line["Closing time Saturday"])}"
     end
 
     if opens_sunday
       # Sunday from #{get_hours(line["section1/section1.1/open_hourssu"])} to #{get_hours(line["section1/section1.1/close_hourssu"])}
-      result = result + ", #{I18n.t(:sun, locale: lang)} #{I18n.t(:from, locale: lang)} #{get_hours(line["section1/section1.1/open_hourssu"])} #{I18n.t(:to, locale: lang)} #{get_hours(line["section1/section1.1/close_hourssu"])}"
+      result = result + ", #{I18n.t(:sun, locale: lang)} #{I18n.t(:from, locale: lang)} #{get_hours(line["Opening time Sunday"])} #{I18n.t(:to, locale: lang)} #{get_hours(line["Closing time Sunday"])}"
     end
 
     result
