@@ -27,12 +27,12 @@ class OnaTransformation
   end
 
   def self.validate_facility_headers!(headers)
-    raise ArgumentError.new("ONA data.csv file must have a '_id' column containing the facility ids.") unless headers.map{|h| h.downcase}.include?("_id")
+    raise ArgumentError.new("ONA data.csv file must have an 'id' column containing the facility ids.") unless headers.map{|h| h.downcase}.include?("id")
     headers
   end
 
   def self.facility_id_column_index(headers)
-    headers.find_index "_id"
+    headers.find_index "id"
   end
 
   def self.facility_categories(facility_data, categories, mappings)

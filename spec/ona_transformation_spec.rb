@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe OnaTransformation do
   def facility_data_sample
     [
-      ["_id", "fac_field_1", "fac_field_2", "fac_field_3"],
+      ["id", "fac_field_1", "fac_field_2", "fac_field_3"],
       ["1", "value_1_1", "value_1_2", "value_1_3"]
     ]
   end
@@ -186,19 +186,19 @@ RSpec.describe OnaTransformation do
     OnaTransformation.facility_categories(facility_data, categories, mappings)
   end
 
-  it "validates there is an _id column in data file" do
+  it "validates there is an 'id' column in data file" do
     facility_data = [["facility_id", "fac_field_1", "fac_field_2", "fac_field_3"]]
     categories = categories_data_sample
     mappings = mappings_data_sample
 
     expect {OnaTransformation.facility_categories(facility_data, categories, mappings)}
       .to raise_error(ArgumentError,
-        "ONA data.csv file must have a '_id' column containing the facility ids.")
+        "ONA data.csv file must have an 'id' column containing the facility ids.")
   end
 
-  it "grabs facility ids from the _id column" do
+  it "grabs facility ids from the 'id' column" do
     facility_data = [
-      ["fac_field_1", "fac_field_2", "_id", "fac_field_3"],
+      ["fac_field_1", "fac_field_2", "id", "fac_field_3"],
       ["value_1_1", "value_1_2", "1", "value_1_3"]
     ]
     categories = categories_data_sample
