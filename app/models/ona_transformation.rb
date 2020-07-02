@@ -63,13 +63,13 @@ class OnaTransformation
 
             false_match = false
             false_values.each do |false_v|
-              false_match = false_match || mapping_value.include?(false_v)
+              false_match = false_match || (!mapping_value.nil? && mapping_value.include?(false_v))
             end
 
             if !false_match
               true_match = false
               true_values.each do |true_v|
-                true_match = true_match || mapping_value.include?(true_v)
+                true_match = true_match || (!mapping_value.nil? && mapping_value.include?(true_v))
               end
 
               if true_values.length == 0 || true_match
