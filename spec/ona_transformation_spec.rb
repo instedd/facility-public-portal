@@ -213,4 +213,23 @@ RSpec.describe OnaTransformation do
         ["1", "category_id_1"]
       ])
   end
+
+  it "allows data to be nil for a mapped field" do
+    facility_data = [
+      ["id", "fac_field_1", "fac_field_2", "fac_field_3"],
+      ["1", nil, "value_1_2", "value_1_3"]
+    ]
+
+    categories = categories_data_sample
+
+    mappings = [
+      MAPPINGS_HEADER,
+      ["category_id_1", "fac_field_1", "", "no result"]
+    ]
+    expect(OnaTransformation.facility_categories(facility_data, categories, mappings))
+      .to eq([
+        FACILITY_CATEGORIES_HEADER,
+        ["1", "category_id_1"]
+      ])
+  end
 end
