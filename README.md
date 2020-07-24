@@ -108,4 +108,4 @@ See [this guide](docs/importing.md) to learn about data schema.
 
 See [this guide](docs/google_sheets_upload_setup.md) to setup file uploading using Google Sheets links.
 
-Take a look at [these examples](docs/google_apps_scripts.md) to see how Google Spreadsheets can be curated before being imported into LabMap.
+Head over to [Google Spreadsheet Curation section](docs/google_apps_scripts/index.md) to see how Google Spreadsheets' data can be processed before importing it into LabMap.
