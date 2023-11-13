@@ -144,7 +144,7 @@ class ElasticsearchService
   end
 
   def get_category_groups
-    result = client.search({index: @index_name, type: 'category_group', body: { size: 1000, sort: { order: { order: "asc" } }}})
+    result = client.search({index: @index_name, type: 'category_group', body: { size: 1000, sort: { id: { order: "asc" } }}})
 
     result["hits"]["hits"].map { |r|
       h = r["_source"]

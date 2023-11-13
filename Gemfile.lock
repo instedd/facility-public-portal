@@ -1,6 +1,6 @@
 GEM
   remote: https://rubygems.org/
-  remote: https://rails-assets.org/
+  remote: http://insecure.rails-assets.org/
   specs:
     actioncable (5.0.0.1)
       actionpack (= 5.0.0.1)
@@ -264,6 +264,7 @@ DEPENDENCIES
   pg
   puma (~> 3.0)
   rails (~> 5.0.0, >= 5.0.0.1)
+  rails-assets-jquery!
   rails-assets-leaflet!
   rails-assets-leaflet.markercluster!
   rails-assets-materialize!
