@@ -57,7 +57,6 @@ GEM
       activesupport (>= 3.0)
       deep_merge (~> 1.1.1)
     crass (1.0.4)
-    debug_inspector (0.0.2)
     declarative (0.0.10)
     declarative-option (0.1.0)
     deep_merge (1.1.1)
@@ -237,11 +236,6 @@ GEM
       execjs (>= 0.3.0, < 3)
     warden (1.2.8)
       rack (>= 2.0.6)
-    web-console (3.3.1)
-      actionview (>= 5.0)
-      activemodel (>= 5.0)
-      debug_inspector
-      railties (>= 5.0)
     websocket-driver (0.6.4)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.2)
@@ -264,6 +258,7 @@ DEPENDENCIES
   pg
   puma (~> 3.0)
   rails (~> 5.0.0, >= 5.0.0.1)
+  rails-assets-jquery!
   rails-assets-leaflet!
   rails-assets-leaflet.markercluster!
   rails-assets-materialize!
@@ -273,7 +268,6 @@ DEPENDENCIES
   spring
   spring-watcher-listen (~> 2.0.0)
   uglifier (~> 4.2)
-  web-console
 
 BUNDLED WITH
    1.17.3
