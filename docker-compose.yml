@@ -12,7 +12,7 @@ services:
       - '3081:3080'
 
   db:
-    image: postgres:9.5-alpine
+    image: postgres:12-alpine
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
@@ -43,4 +43,3 @@ volumes:
   elastic:
   bundle:
   elm-stuff:
-

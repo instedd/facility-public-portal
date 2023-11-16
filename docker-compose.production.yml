@@ -12,7 +12,7 @@ services:
       - '3080:3080'
 
   db:
-    image: postgres:9.5
+    image: postgres:12-alpine
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD:
@@ -44,4 +44,3 @@ services:
 volumes:
   db:
   elastic:
-
