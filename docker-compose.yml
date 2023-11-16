@@ -1,7 +1,7 @@
 version: '2'
 services:
   elasticsearch:
-    image: elasticsearch:2.4
+    image: elasticsearch:2.4-alpine
     volumes:
       - elastic:/usr/share/elasticsearch/data
 
@@ -9,10 +9,10 @@ services:
     image: 'djfarrelly/maildev:latest'
     command: 'bin/maildev --web 3080 --smtp 1025 --incoming-user smtp --incoming-pass smtp'
     ports:
-      - '3080:3080'
+      - '3081:3080'
 
   db:
-    image: postgres:12.5
+    image: postgres:12-alpine
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root

@@ -24,6 +24,7 @@
 
 # Elm
 /elm-stuff
+/vendor/assets/elm
 
 /data
 
