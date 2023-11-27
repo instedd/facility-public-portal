@@ -22,6 +22,7 @@ chdir APP_ROOT do
   unless Dir.exists?('vendor/assets/elm/elm-autocomplete')
     system! 'git clone -b 4.0.2 https://github.com/thebritican/elm-autocomplete vendor/assets/elm/elm-autocomplete'
   end
+  system "sed -i 's/_thebritican\\$elm_autocomplete/_user$project/' vendor/assets/elm/elm-autocomplete/src/Native/Tricks.js"
   system! 'elm package install --yes'
 
   puts "\n== Updating database =="
