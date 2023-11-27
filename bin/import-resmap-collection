@@ -288,9 +288,9 @@ end
 #
 
 ResourceMap::Collection.origin = ENV.fetch("RESMAP_ORIGIN",  "http://web.resourcemap.lvh.me:3000")
-ResourceMap::Collection.username = ENV.fetch("RESMAP_USERNAME", "lradusky@manas.tech")
-ResourceMap::Collection.password = ENV.fetch("RESMAP_PASSWORD", "7214Lrad")
-collection_id = ENV.fetch("RESMAP_COLLECTION", "2").to_i
+ResourceMap::Collection.username = ENV.fetch("RESMAP_USERNAME", "")
+ResourceMap::Collection.password = ENV.fetch("RESMAP_PASSWORD", "")
+collection_id = ENV.fetch("RESMAP_COLLECTION", "").to_i
 output_dir = ARGV[0]
 
 unless ARGV.size == 1
