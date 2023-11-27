@@ -1,0 +1,333 @@
+#!/usr/bin/env ruby
+APP_PATH = File.expand_path('../../config/application',  __dir__)
+require_relative '../config/boot'
+require_relative '../config/environment'
+
+require "json"
+require "net/http"
+require "uri"
+require 'digest'
+
+unless defined?(Rails)
+  require "logger"
+  require "time"
+end
+
+module ResourceMap
+  class Collection
+    def self.origin=(origin)
+      @@origin = URI(origin)
+    end
+    
+    def self.username=(username)
+      @@username = URI(username)
+    end
+    
+    def self.password=(password)
+      @@password = URI(password)
+    end
+    
+    def initialize(id)
+      @id = id
+    end
+    
+    def sites(**params)
+      @sites ||= [].tap { |sites| each_site(**params) { |site| sites << site } }
+    end
+    
+    def fields(&block)
+      @fields ||= [].tap { |fields| each_field { |field| fields << field } }
+    end
+    
+    def each_site(updated_since: nil, deleted_since: nil, locale: nil, &block)
+      params = {}
+      params[:updated_since] = updated_since.iso8601 if updated_since
+      params[:deleted_since] = deleted_since.iso8601 if deleted_since
+      params[:locale] = locale.to_s if locale
+      query_params = URI.encode_www_form(params)
+      
+      find_each("/api/collections/#{@id}.json?#{query_params}") do |response|
+        response["sites"].each { |site| yield site }
+        response
+      end
+    end
+    
+    def each_field(&block)
+      find_each("/api/collections/#{@id}/layers.json") do |response|
+        if fields = response.dig(0, "fields")
+          fields.each { |field| yield field }
+        end
+        response[0]
+      end
+    end
+
+    private
+
+    def find_each(request_uri)
+      loop do
+        response = yield request(request_uri)
+        
+        if next_page = response["nextPage"]
+          request_uri = URI(next_page).request_uri
+        else
+          break
+        end
+      end
+    end
+
+    def request(request_uri)
+      Net::HTTP.start(@@origin.host, @@origin.port, use_ssl: @@origin.scheme == "https") do |http|
+        logger.info { "GET #{@@origin}#{request_uri}" }
+        
+        request = Net::HTTP::Get.new(request_uri)
+        request.basic_auth(@@username, @@password)
+        response = http.request(request)
+        
+        if response.code == "200"
+          JSON.parse(response.body)
+        else
+          raise "ERROR: #{response.inspect}"
+        end
+      end
+    end
+
+    def logger
+      @logger ||=
+      if defined?(Rails)
+        Rails.logger
+      else
+        Logger.new(STDERR)
+      end
+    end
+  end
+end
+
+class ResmapSiteParser
+  attr_reader :facilities, 
+              :locations, 
+              :categories, 
+              :category_groups, 
+              :services, 
+              :facility_categories, 
+              :facility_services,
+              :facility_types,
+              :sites_with_missing_data_count
+
+  def initialize(output_dir)
+    @facilities = {}
+    @locations = {}
+    @categories = {}
+    @category_groups = {}
+    @services = {}
+    @facility_categories = []
+    @facility_services = []
+    @facility_types = [{ "name" => "Institution", "priority" => 1}] #TODO: define facility types
+
+    @output_dir = output_dir
+    FileUtils.mkdir_p(@output_dir)
+
+    @sites_with_missing_data_count = 0
+  end
+
+  def parse_site(site, locale)
+    properties = site["properties"]
+    facility = extract_facility(site, properties)
+    if facility.nil?
+      log_missing_data("Missing coordinates for site #{site["id"]}: #{site["name"]}")
+      return
+    end
+
+    facility_id = facility["id"]
+    @facilities[facility_id] = facility
+
+    facility["location_id"] = extract_location_hierarchy(properties, @locations)
+    facility["facility_type"] = "Institution"
+
+    facility_category_id = extract_category(properties, @categories, @category_groups, locale)
+    log_missing_data("Missing category for site #{site["id"]}: #{site["name"]}") if facility_category_id.nil?
+
+    @facility_categories << { "facility_id" => facility_id, "category_id" => facility_category_id } unless facility_category_id.nil?
+
+    service_ids = extract_services(properties, @services, locale)
+    service_ids.each do |service_id|
+      @facility_services << { "facility_id" => facility_id, "service_id" => service_id }
+    end
+  end
+
+  def write_csvs
+    write_csv(File.join(@output_dir, "facilities.csv"), @facilities.values)
+    write_csv(File.join(@output_dir, "categories.csv"), @categories.values)
+    write_csv(File.join(@output_dir, "category_groups.csv"), @category_groups.values)
+    write_csv(File.join(@output_dir, "locations.csv"), @locations.values)
+    write_csv(File.join(@output_dir, "services.csv"), @services.values)
+    write_csv(File.join(@output_dir, "facility_categories.csv"), @facility_categories)
+    write_csv(File.join(@output_dir, "facility_services.csv"), @facility_services)
+    write_csv(File.join(@output_dir, "facility_types.csv"), @facility_types)
+  end
+
+  private
+
+  def log_missing_data(message)
+    File.open(File.join(@output_dir, "missing_data.log"), "a") do |f|
+      f.puts message
+      @sites_with_missing_data_count += 1
+    end
+  end
+
+  def write_csv(filename, data)
+    CSV.open(filename, "w") do |csv|
+      csv << data.first.keys
+      data.each { |row| csv << row.values }
+    end
+  end
+
+  def generate_unique_id(name)
+    return nil if name.nil?
+    Digest::MD5.hexdigest(name) # TODO: use UUIDs? How to enconde ids?
+  end
+
+  def extract_location_hierarchy(properties, locations)
+    return nil if properties.nil?
+  
+    parent_ids = {}
+    lowest_level_id = nil
+    
+    properties.each do |key, value|
+      next unless key.start_with?("admin_div-")
+      
+      level = key.split('-').last.to_i
+      location_id = generate_unique_id(value)
+      
+      unless locations.key?(location_id)
+        location = {}
+        location["id"] = location_id
+        location["name"] = value
+        location["parent_id"] = parent_ids[level - 1]  # Parent from previous level
+        
+        locations[location_id] = location
+      end
+      
+      parent_ids[level] = location_id
+      lowest_level_id = location_id
+    end
+    
+    lowest_level_id
+  end
+
+  def extract_services(properties, services, locale)
+    service_ids = []
+  
+    properties.each do |key, value|
+      if key.start_with?("services_", "clinicalservices_")
+        service_id = generate_unique_id(value)
+        
+        unless services.key?(service_id)
+          services[service_id] = { "id" => service_id, "name:#{locale}" => value }
+        end
+        
+        service_ids << service_id
+      end
+    end
+    
+    service_ids
+  end
+
+  def extract_category(properties, categories, category_groups, locale)
+    category_name = properties["fac_type-2"] || properties["fac_type-1"]
+    category_id = generate_unique_id(category_name)
+    category_group_name = properties["fac_ type-2"] ? properties["fac_type-1"] : category_name
+    category_group_id = generate_unique_id(category_group_name)
+    
+    return nil if category_name.nil?
+    
+    # Create or find the category
+    unless categories.has_key?(category_name)
+      categories[category_id] = {
+        "id" => category_id,
+        "category_group_id" => nil, # To be updated later
+        "name:#{locale}" => category_name
+      }
+    end
+
+    # Create or find the category group
+    unless category_groups.has_key?(category_group_name)
+      category_groups[category_group_id] = {
+      "id" => category_group_id,
+      "name:#{locale}" => category_group_name
+    }
+    end
+    
+    # Link category to its category group
+    categories[category_id]["category_group_id"] = category_group_id
+    
+    category_id
+  end
+
+  def extract_facility(site, properties)
+    facility = {}
+    facility_id = generate_unique_id(site["name"])
+    facility["id"] = facility_id
+    facility["name"] = site["name"]
+    facility["lat"] = site["lat"]
+    return nil if facility["lat"].nil?
+    facility["lng"] = site["long"]
+    return nil if facility["lng"].nil?
+    facility["ownership"] = properties["ownership"].presence
+    facility["contact_name"] = properties["incharge_name"].presence 
+    facility["contact_email"] = properties["incharge_email"].presence || properties["officialemail"].presence
+    facility["contact_phone"] = properties["officermobilenumber"].presence || properties["incharge_mobile"].presence || properties["officialphone"].presence
+    facility["last"] = nil # TODO
+    facility["photo"] = nil # TODO
+    facility
+  end
+end
+
+
+# 
+# SCRIPT
+#
+
+ResourceMap::Collection.origin = ENV.fetch("RESMAP_ORIGIN",  "http://web.resourcemap.lvh.me:3000")
+ResourceMap::Collection.username = ENV.fetch("RESMAP_USERNAME", "lradusky@manas.tech")
+ResourceMap::Collection.password = ENV.fetch("RESMAP_PASSWORD", "7214Lrad")
+collection_id = ENV.fetch("RESMAP_COLLECTION", "2").to_i
+output_dir = ARGV[0]
+
+unless ARGV.size == 1
+  puts "Usage: #{__FILE__} path/to/csvs/output-directory"
+  exit 1
+end
+
+locales = %w[en]
+last_update = nil # TODO: fetch last update (the last time a resource was updated)
+
+collection = ResourceMap::Collection.new(collection_id)
+site_parser = ResmapSiteParser.new(output_dir)
+
+puts "Processing ResMap collection #{collection_id}"
+
+locales.each do |locale|
+  collection.each_site(updated_since: last_update, locale: locale) do |site|
+    site_parser.parse_site(site, locale)
+  end
+end
+
+# Show the computed data
+puts "Processed, found:"
+puts "Facilities: #{site_parser.facilities.size}"
+puts "Locations: #{site_parser.locations.size}"
+puts "Categories: #{site_parser.categories.size}"
+puts "Category groups: #{site_parser.category_groups.size}"
+puts "Services: #{site_parser.services.size}"
+puts "Facility categories: #{site_parser.facility_categories.size}"
+puts "Facility services: #{site_parser.facility_services.size}"
+puts "Facility types: #{site_parser.facility_types.size}"
+puts 
+if site_parser.sites_with_missing_data_count > 0
+  puts "WARNING: some sites have missing data"
+  puts "Sites with missing data: #{site_parser.sites_with_missing_data_count}"
+  puts "See #{File.join(output_dir, "missing_data.log")} for details"
+end
+
+#Write the computed data to CSV files in the output directory
+site_parser.write_csvs

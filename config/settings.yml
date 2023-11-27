@@ -10,12 +10,12 @@ initial_position:
   lat: 8.979787
   lng: 38.758917
 map_bounds:
-  top: 16.191368
-  left: 28.774925
-  bottom: 0.283346
-  right: 52.637229
+  top: 37.000000
+  left: -17.000000
+  bottom: -35.000000
+  right: 51.000000
 map_zoom:
-  min: 7
+  min: 2
   max: 18
   default: 13
 user_position: fake

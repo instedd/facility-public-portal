@@ -141,6 +141,7 @@ class Indexing
           name: f[:name].to_s.gsub(/\u00A0/,"").strip,
           address: f[:address] ? f[:address].to_s : nil,
           opening_hours: localized_string(f, :opening_hours),
+          photo: f[:photo].presence,
 
           position: {
             lat: f[:lat],
