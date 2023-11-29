@@ -20,7 +20,7 @@ gem 'redcarpet'
 
 # assets
 gem 'coffee-rails', '~> 4.2'
-gem 'i18n-js', "3.0.0.rc2"
+gem 'i18n-js', '3.0.0.rc14'
 gem 'jquery-rails'
 gem 'sass-rails', '~> 5.0'
 gem 'uglifier', '~> 4.2'
