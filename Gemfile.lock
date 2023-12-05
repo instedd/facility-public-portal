@@ -234,6 +234,7 @@ GEM
     uber (0.1.0)
     uglifier (4.2.0)
       execjs (>= 0.3.0, < 3)
+    uuidtools (2.2.0)
     warden (1.2.8)
       rack (>= 2.0.6)
     websocket-driver (0.6.4)
@@ -268,6 +269,7 @@ DEPENDENCIES
   spring
   spring-watcher-listen (~> 2.0.0)
   uglifier (~> 4.2)
+  uuidtools
 
 BUNDLED WITH
    1.17.3
