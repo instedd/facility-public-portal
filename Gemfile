@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 # frameworks
-gem 'rails', '~> 5.2.Z', '>= 5.2.8.1'
+gem 'rails', '~> 5.2.8'
 gem 'devise'
 
 # services
