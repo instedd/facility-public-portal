@@ -1,6 +1,9 @@
 $(document).ready(function() {
   var elmContainer = document.getElementById('elm');
   if(!elmContainer) return;
+  FPP.settings.locales = Object.keys(FPP.settings.locales).map(function(key) {
+    return [key, FPP.settings.locales[key]];
+  });
   var elm = Elm.Main.embed(elmContainer, FPP.settings);
 
   FPP.mapSettings = {

@@ -1,5 +1,6 @@
 admin_user: "admin"
 admin_pass: "admin"
 locales:
+  en: English
   # es: Español
   # am: አማርኛ
