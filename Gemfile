@@ -17,6 +17,7 @@ gem 'http_accept_language'
 gem 'jbuilder', '~> 2.5'
 gem 'redcarpet'
 # gem 'therubyracer', platforms: :ruby
+gem 'uuidtools'
 
 # assets
 gem 'coffee-rails', '~> 4.2'

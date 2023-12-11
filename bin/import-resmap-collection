@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+APP_PATH = File.expand_path('../../config/application',  __dir__)
+require_relative '../config/boot'
+require_relative '../config/environment'
+require_relative '../app/models/resmap/collection'
+require_relative '../app/models/resmap/site_normalizer'
+
+unless defined?(Rails)
+  require "logger"
+  require "time"
+end
+
+ResourceMap::Collection.origin = ENV.fetch("RESMAP_ORIGIN",  "http://web.resourcemap.lvh.me:3000")
+ResourceMap::Collection.username = ENV.fetch("RESMAP_USERNAME")
+ResourceMap::Collection.password = ENV.fetch("RESMAP_PASSWORD")
+collection_id = ENV.fetch("RESMAP_COLLECTION")
+output_dir = ARGV[0]
+
+unless ARGV.size == 1
+  puts "Usage: #{__FILE__} path/to/csvs/output-directory"
+  exit 1
+end
+
+locales = %w[en]
+last_update = nil # TODO: fetch last update (the last time a resource was updated)
+
+collection = ResourceMap::Collection.new(collection_id)
+site_parser = ResourceMap::SiteNormalizer.new(output_dir)
+
+puts "Processing ResMap collection #{collection_id}"
+
+locales.each do |locale|
+  collection.each_site(updated_since: last_update, locale: locale) do |site|
+    site_parser.parse_site(site, locale)
+  end
+end
+
+# Show the computed data
+puts "Processed, found:"
+puts "Facilities: #{site_parser.facilities.size}"
+puts "Locations: #{site_parser.locations.size}"
+puts "Categories: #{site_parser.categories.size}"
+puts "Category groups: #{site_parser.category_groups.size}"
+puts "Services: #{site_parser.services.size}"
+puts "Facility categories: #{site_parser.facility_categories.size}"
+puts "Facility services: #{site_parser.facility_services.size}"
+puts "Facility types: #{site_parser.facility_types.size}"
+puts 
+if site_parser.sites_with_missing_data_count > 0
+  puts "WARNING: some sites have missing data"
+  puts "Sites with missing data: #{site_parser.sites_with_missing_data_count}"
+  puts "See #{File.join(output_dir, "missing_data.log")} for details"
+end
+
+#Write the computed data to CSV files in the output directory
+site_parser.write_csvs
