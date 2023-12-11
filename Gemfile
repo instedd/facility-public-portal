@@ -1,12 +1,12 @@
 source 'https://rubygems.org'
 
 # frameworks
-gem 'rails', '~> 5.0.0', '>= 5.0.0.1'
+gem 'rails', '~> 5.2.8'
 gem 'devise'
 
 # services
 gem 'pg'
-gem 'elasticsearch'
+gem 'elasticsearch', '~> 5.0'
 gem 'puma', '~> 3.0'
 
 # libraries
@@ -21,15 +21,15 @@ gem 'uuidtools'
 
 # assets
 gem 'coffee-rails', '~> 4.2'
-gem 'i18n-js', '>= 3.0.0.rc14'
+gem 'i18n-js', '3.0.0.rc14'
 gem 'jquery-rails'
 gem 'sass-rails', '~> 5.0'
 gem 'uglifier', '~> 4.2'
 
 source 'https://rails-assets.org' do
   gem 'rails-assets-materialize'
-  gem 'rails-assets-leaflet'
-  gem 'rails-assets-leaflet.markercluster'
+  gem 'rails-assets-leaflet', '1.0'
+  gem 'rails-assets-leaflet.markercluster', '1.0'
   gem 'rails-assets-jquery'
 end
 
