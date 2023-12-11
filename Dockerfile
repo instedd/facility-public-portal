@@ -1,10 +1,5 @@
 FROM ruby:2.7
 
-# Cleanup expired Let's Encrypt CA (Sept 30, 2021)
-RUN sed -i '/^mozilla\/DST_Root_CA_X3/s/^/!/' /etc/ca-certificates.conf && update-ca-certificates -f
-
-# Update to a newer Debian version if needed
-# The below lines are for Debian Stretch, consider updating to Buster or Bullseye
 RUN echo 'deb http://deb.debian.org/debian/ buster main\n\
   deb http://security.debian.org/debian-security buster/updates main' > /etc/apt/sources.list
 
