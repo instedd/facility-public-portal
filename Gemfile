@@ -7,7 +7,7 @@ gem 'devise'
 # services
 gem 'pg'
 gem 'elasticsearch', '~> 5.0'
-gem 'puma', '~> 3.0'
+gem 'puma', '~> 5.6'
 
 # libraries
 # gem 'bcrypt', '~> 3.1.7'
